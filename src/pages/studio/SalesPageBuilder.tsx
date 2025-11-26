@@ -93,71 +93,88 @@ export default function SalesPageBuilder() {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto p-6">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Sparkles className="h-6 w-6 text-primary" />
+    <div className="space-y-8 animate-fade-in">
+      {/* Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-14 h-14 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="h-7 w-7" />
           </div>
-          <h1 className="text-3xl font-bold">Générateur de Page de Vente IA</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-1">
+              Générateur de Page de Vente IA
+            </h1>
+            <p className="text-base text-slate-600 leading-relaxed">
+              Créez des pages de vente persuasives en quelques secondes avec l'IA
+            </p>
+          </div>
         </div>
-        <p className="text-muted-foreground">
-          Créez des pages de vente persuasives en quelques secondes avec l'IA
-        </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-8">
         {/* Input Form */}
-        <Card>
+        <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium">
           <CardHeader>
-            <CardTitle>Informations du cours</CardTitle>
+            <CardTitle className="text-xl font-bold text-[#1e293b] tracking-tight">
+              Informations du cours
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="courseName">Nom du cours</Label>
+              <Label htmlFor="courseName" className="text-slate-900 font-medium text-sm">
+                Nom du cours
+              </Label>
               <Input
                 id="courseName"
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
                 placeholder="Ex: Maîtriser le Marketing Digital"
+                className="rounded-xl border-slate-200"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="targetAudience">Public cible</Label>
+              <Label htmlFor="targetAudience" className="text-slate-900 font-medium text-sm">
+                Public cible
+              </Label>
               <Input
                 id="targetAudience"
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value)}
                 placeholder="Ex: Entrepreneurs et freelances débutants"
+                className="rounded-xl border-slate-200"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="benefits">Bénéfices clés</Label>
+              <Label htmlFor="benefits" className="text-slate-900 font-medium text-sm">
+                Bénéfices clés
+              </Label>
               <Textarea
                 id="benefits"
                 value={benefits}
                 onChange={(e) => setBenefits(e.target.value)}
                 placeholder="Ex: Augmenter sa visibilité en ligne, générer plus de leads, maîtriser les réseaux sociaux..."
-                rows={4}
+                rows={5}
+                className="rounded-xl border-slate-200"
               />
             </div>
 
             <Button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full"
+              variant="gradient"
+              className="w-full shadow-lg"
               size="lg"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Génération en cours...
                 </>
               ) : (
                 <>
-                  <Sparkles className="mr-2 h-4 w-4" />
+                  <Sparkles className="mr-2 h-5 w-5" />
                   Générer la page de vente
                 </>
               )}
@@ -169,12 +186,15 @@ export default function SalesPageBuilder() {
         <div className="space-y-6">
           {generatedContent ? (
             <>
-              <Card>
+              <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium">
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>Titre et Sous-titre</CardTitle>
+                  <CardTitle className="text-lg font-bold text-[#1e293b] tracking-tight">
+                    Titre et Sous-titre
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="rounded-full hover:bg-slate-50"
                     onClick={() =>
                       copyToClipboard(
                         `${generatedContent.title}\n${generatedContent.subtitle}`,
@@ -183,48 +203,60 @@ export default function SalesPageBuilder() {
                     }
                   >
                     {copiedSection === "header" ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-4 w-4 text-slate-500" />
                     )}
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <h2 className="text-3xl font-bold mb-2">{generatedContent.title}</h2>
-                  <p className="text-xl text-muted-foreground">
-                    {generatedContent.subtitle}
-                  </p>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-pink-50 border border-orange-100">
+                    <h2 className="text-3xl font-bold mb-3 text-[#1e293b] tracking-tight leading-tight">
+                      {generatedContent.title}
+                    </h2>
+                    <p className="text-lg text-slate-700 leading-relaxed">
+                      {generatedContent.subtitle}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium">
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>Description</CardTitle>
+                  <CardTitle className="text-lg font-bold text-[#1e293b] tracking-tight">
+                    Description
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="rounded-full hover:bg-slate-50"
                     onClick={() =>
                       copyToClipboard(generatedContent.description, "description")
                     }
                   >
                     {copiedSection === "description" ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-4 w-4 text-slate-500" />
                     )}
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <p className="whitespace-pre-wrap">{generatedContent.description}</p>
+                  <p className="whitespace-pre-wrap text-slate-700 leading-relaxed">
+                    {generatedContent.description}
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium">
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>Bénéfices</CardTitle>
+                  <CardTitle className="text-lg font-bold text-[#1e293b] tracking-tight">
+                    Bénéfices
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="rounded-full hover:bg-slate-50"
                     onClick={() =>
                       copyToClipboard(
                         generatedContent.benefits.map((b) => `${b.icon} ${b.text}`).join("\n"),
@@ -233,30 +265,35 @@ export default function SalesPageBuilder() {
                     }
                   >
                     {copiedSection === "benefits" ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-4 w-4 text-slate-500" />
                     )}
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3">
+                  <ul className="space-y-4">
                     {generatedContent.benefits.map((benefit, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <span className="text-2xl">{benefit.icon}</span>
-                        <span>{benefit.text}</span>
+                      <li key={idx} className="flex items-start gap-4">
+                        <div className="rounded-xl bg-orange-100 text-orange-600 p-2 w-10 h-10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xl">{benefit.icon}</span>
+                        </div>
+                        <span className="text-slate-700 leading-relaxed pt-1.5">{benefit.text}</span>
                       </li>
                     ))}
                   </ul>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium">
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>Témoignages</CardTitle>
+                  <CardTitle className="text-lg font-bold text-[#1e293b] tracking-tight">
+                    Témoignages
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="rounded-full hover:bg-slate-50"
                     onClick={() =>
                       copyToClipboard(
                         generatedContent.testimonials
@@ -267,17 +304,17 @@ export default function SalesPageBuilder() {
                     }
                   >
                     {copiedSection === "testimonials" ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-4 w-4 text-slate-500" />
                     )}
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {generatedContent.testimonials.map((testimonial, idx) => (
-                    <div key={idx} className="p-4 bg-muted rounded-lg">
-                      <p className="italic mb-2">"{testimonial.text}"</p>
-                      <p className="text-sm font-medium">
+                    <div key={idx} className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100">
+                      <p className="italic mb-3 text-slate-700 leading-relaxed">"{testimonial.text}"</p>
+                      <p className="text-sm font-semibold text-slate-900">
                         - {testimonial.name}, {testimonial.role}
                       </p>
                     </div>
@@ -285,33 +322,41 @@ export default function SalesPageBuilder() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-primary/5 border-primary/20">
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 rounded-3xl shadow-premium">
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>Call-to-Action</CardTitle>
+                  <CardTitle className="text-lg font-bold text-[#1e293b] tracking-tight">
+                    Call-to-Action
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="rounded-full hover:bg-white/50"
                     onClick={() => copyToClipboard(generatedContent.cta, "cta")}
                   >
                     {copiedSection === "cta" ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-4 w-4 text-slate-500" />
                     )}
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <Button size="lg" className="w-full">
+                  <Button variant="gradient" size="lg" className="w-full shadow-lg">
                     {generatedContent.cta}
                   </Button>
                 </CardContent>
               </Card>
             </>
           ) : (
-            <Card className="flex items-center justify-center h-full min-h-[400px]">
-              <CardContent className="text-center">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
+            <Card className="flex items-center justify-center h-full min-h-[500px] bg-white border border-slate-100 rounded-3xl shadow-premium">
+              <CardContent className="text-center py-16">
+                <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="h-8 w-8" />
+                </div>
+                <p className="text-lg font-semibold text-slate-900 mb-2 tracking-tight">
+                  Prêt à créer votre page de vente ?
+                </p>
+                <p className="text-slate-600 leading-relaxed max-w-md">
                   Remplissez le formulaire et cliquez sur "Générer" pour créer votre page
                   de vente
                 </p>
