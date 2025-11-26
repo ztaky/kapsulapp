@@ -6,9 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import Invoices from "./pages/Invoices";
-import Certificates from "./pages/Certificates";
 import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
 import StudioLayout from "./pages/studio/StudioLayout";
@@ -21,6 +18,12 @@ import StudioBranding from "./pages/studio/Branding";
 import AIAssistant from "./pages/studio/AIAssistant";
 import SalesPageBuilder from "./pages/studio/SalesPageBuilder";
 import LearningSpace from "./pages/learning/LearningSpace";
+import StudentLayout from "./pages/student/StudentLayout";
+import StudentDashboard from "./pages/student/StudentDashboard";
+import StudentProfile from "./pages/student/StudentProfile";
+import StudentInvoices from "./pages/student/StudentInvoices";
+import StudentCertificates from "./pages/student/StudentCertificates";
+import StudentAssistant from "./pages/student/StudentAssistant";
 
 const queryClient = new QueryClient();
 
@@ -34,10 +37,16 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/certificates" element={<Certificates />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
+          
+          {/* Student Routes */}
+          <Route path="/student" element={<StudentLayout />}>
+            <Route index element={<StudentDashboard />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="invoices" element={<StudentInvoices />} />
+            <Route path="certificates" element={<StudentCertificates />} />
+            <Route path="assistant" element={<StudentAssistant />} />
+          </Route>
           
           {/* Studio Routes */}
           <Route path="/school/:slug/studio" element={<StudioLayout />}>
