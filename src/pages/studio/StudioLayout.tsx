@@ -10,7 +10,7 @@ export default function StudioLayout() {
   const { organizations, loading: orgsLoading } = useUserOrganizations();
   
   const currentOrg = organizations.find((org) => org.slug === slug);
-  const { isAdmin, loading: roleLoading } = useOrganizationRole(currentOrg?.id);
+  const { isCoach, loading: roleLoading } = useOrganizationRole(currentOrg?.id);
 
   if (orgsLoading || roleLoading) {
     return (
@@ -20,7 +20,7 @@ export default function StudioLayout() {
     );
   }
 
-  if (!currentOrg || !isAdmin) {
+  if (!currentOrg || !isCoach) {
     return <Navigate to="/dashboard" replace />;
   }
 
