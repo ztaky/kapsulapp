@@ -1,5 +1,9 @@
-import { LayoutDashboard, GraduationCap, Users, Palette, Bot, Wand2 } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Palette, Bot, Wand2, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 
 interface StudioSidebarProps {
@@ -56,7 +61,14 @@ const navItems = [
 
 export function StudioSidebar({ organization }: StudioSidebarProps) {
   const { open } = useSidebar();
+  const navigate = useNavigate();
   const baseUrl = `/school/${organization.slug}/studio`;
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Déconnexion réussie");
+    navigate("/");
+  };
 
   return (
     <Sidebar 
@@ -91,6 +103,17 @@ export function StudioSidebar({ organization }: StudioSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-3 border-t border-slate-200">
+        <Button
+          onClick={handleSignOut}
+          variant="outline"
+          className={`w-full justify-start gap-3 rounded-xl border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all ${!open ? 'px-2' : ''}`}
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          {open && <span className="text-sm font-medium">Déconnexion</span>}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }
