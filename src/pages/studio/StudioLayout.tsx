@@ -45,15 +45,15 @@ export default function StudioLayout() {
       <div className="flex min-h-screen w-full">
         <StudioSidebar organization={currentOrg} />
         
-        <main className="flex-1 bg-background">
-          <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <main className="flex-1 bg-no-grid">
+          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-sm">
             <div className="flex h-16 items-center justify-between px-6">
               <div>
-                <p className="text-sm text-muted-foreground">Instructor Studio</p>
-                <h1 className="text-lg font-semibold">{currentOrg.name}</h1>
+                <p className="text-sm font-medium text-slate-600">Instructor Studio</p>
+                <h1 className="text-lg font-bold text-slate-900">{currentOrg.name}</h1>
               </div>
               
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" className="rounded-full" asChild>
                 <a href={`/school/${currentOrg.slug}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Voir l'école

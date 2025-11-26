@@ -52,6 +52,23 @@ export default {
           DEFAULT: "hsl(var(--navy))",
           foreground: "hsl(var(--navy-foreground))",
         },
+        // Warm Premium Tech colors
+        cream: {
+          DEFAULT: "hsl(40, 57%, 97%)", // #fdfbf7
+        },
+        slate: {
+          900: "hsl(222, 47%, 11%)", // #0f172a
+          600: "hsl(215, 16%, 47%)", // #475569
+          200: "hsl(214, 32%, 91%)", // #e2e8f0
+        },
+        orange: {
+          600: "hsl(22, 93%, 48%)", // #ea580c
+          100: "hsl(32, 100%, 91%)", // #ffedd5
+        },
+        pink: {
+          600: "hsl(333, 71%, 51%)", // #db2777
+          100: "hsl(326, 100%, 94%)", // #fce7f3
+        },
         blue: {
           500: "hsl(217, 91%, 60%)",
         },
@@ -61,6 +78,10 @@ export default {
         purple: {
           500: "hsl(271, 91%, 65%)",
         },
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-hover': 'var(--gradient-hover)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',

@@ -59,12 +59,12 @@ export function StudioSidebar({ organization }: StudioSidebarProps) {
   const baseUrl = `/school/${organization.slug}/studio`;
 
   return (
-    <Sidebar className={open ? "w-64" : "w-14"} collapsible="icon">
-      <SidebarTrigger className="m-2 self-end" />
+    <Sidebar className={`${open ? "w-64" : "w-14"} bg-no-grid border-slate-200`} collapsible="icon">
+      <SidebarTrigger className="m-2 self-end text-slate-600 hover:text-slate-900" />
 
-      <SidebarContent>
+      <SidebarContent className="bg-no-grid">
         <SidebarGroup>
-          <SidebarGroupLabel>Studio</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-slate-600 font-semibold">Studio</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -73,10 +73,10 @@ export function StudioSidebar({ organization }: StudioSidebarProps) {
                     <NavLink
                       to={`${baseUrl}${item.url}`}
                       end={item.url === ""}
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className="text-slate-600 hover:bg-orange-50/50 hover:text-primary rounded-xl transition-all"
+                      activeClassName="bg-gradient-to-r from-orange-100/80 to-pink-100/50 text-primary font-semibold border-l-4 border-l-primary"
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-5 w-5" />
                       {open && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
