@@ -11,19 +11,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, BookOpen, LayoutDashboard, Settings } from "lucide-react";
+import { User, LogOut, BookOpen, LayoutDashboard, Settings, Building2 } from "lucide-react";
 import { toast } from "sonner";
+import { useUserRole, useUserOrganizations } from "@/hooks/useUserRole";
 
 interface Profile {
   full_name: string | null;
   avatar_url: string | null;
-  role: string;
 }
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [user, setUser] = useState<any>(null);
+  const { isSuperAdmin } = useUserRole();
+  const { organizations } = useUserOrganizations();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,9 +50,9 @@ const Navbar = () => {
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("full_name, avatar_url, role")
+      .select("full_name, avatar_url")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     if (!error && data) {
       setProfile(data);
@@ -63,7 +65,9 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const isAdmin = profile?.role === "admin";
+  const hasSchoolAccess = organizations.some(org => 
+    org.userRole === "owner" || org.userRole === "admin"
+  );
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -100,12 +104,21 @@ const Navbar = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                   <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Tableau de bord
+                  Mes Formations
                 </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                {hasSchoolAccess && (
+                  <DropdownMenuItem onClick={() => {
+                    const firstOrg = organizations.find(o => o.userRole === "owner" || o.userRole === "admin");
+                    if (firstOrg) navigate(`/school/${firstOrg.slug}/admin`);
+                  }}>
+                    <Building2 className="mr-2 h-4 w-4" />
+                    Mon École
+                  </DropdownMenuItem>
+                )}
+                {isSuperAdmin && (
+                  <DropdownMenuItem onClick={() => navigate("/super-admin")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Administration
+                    Super Admin
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
