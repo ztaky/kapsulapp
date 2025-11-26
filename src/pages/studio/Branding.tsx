@@ -56,69 +56,99 @@ export default function StudioBranding() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Branding</h2>
-        <p className="text-muted-foreground">Personnalisez l'apparence de votre école</p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
+            Branding
+          </h1>
+          <p className="text-base text-slate-600 leading-relaxed">
+            Personnalisez l'apparence de votre école
+          </p>
+        </div>
       </div>
 
-      <Card>
+      <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium">
         <CardHeader>
-          <CardTitle>Identité visuelle</CardTitle>
+          <CardTitle className="text-xl font-bold text-[#1e293b] tracking-tight">
+            Identité visuelle
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Nom de l'école</Label>
+              <Label htmlFor="name" className="text-slate-900 font-medium text-sm">
+                Nom de l'école
+              </Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="rounded-xl border-slate-200"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="slug">Slug (URL)</Label>
-              <Input id="slug" value={formData.slug} disabled />
-              <p className="text-xs text-muted-foreground">
+              <Label htmlFor="slug" className="text-slate-900 font-medium text-sm">
+                Slug (URL)
+              </Label>
+              <Input 
+                id="slug" 
+                value={formData.slug} 
+                disabled 
+                className="rounded-xl border-slate-200 bg-slate-50"
+              />
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Le slug ne peut pas être modifié
               </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="logo_url">Logo (URL)</Label>
+            <Label htmlFor="logo_url" className="text-slate-900 font-medium text-sm">
+              Logo (URL)
+            </Label>
             <Input
               id="logo_url"
               type="url"
               placeholder="https://..."
               value={formData.logo_url}
               onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+              className="rounded-xl border-slate-200"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="brand_color">Couleur de marque</Label>
+            <Label htmlFor="brand_color" className="text-slate-900 font-medium text-sm">
+              Couleur de marque
+            </Label>
             <div className="flex gap-4 items-center">
               <Input
                 id="brand_color"
                 type="color"
                 value={formData.brand_color}
                 onChange={(e) => setFormData({ ...formData, brand_color: e.target.value })}
-                className="w-20 h-10"
+                className="w-20 h-12 rounded-xl border-slate-200 cursor-pointer"
               />
               <Input
                 type="text"
                 value={formData.brand_color}
                 onChange={(e) => setFormData({ ...formData, brand_color: e.target.value })}
                 placeholder="#d97706"
+                className="rounded-xl border-slate-200"
               />
             </div>
           </div>
 
-          <Button onClick={() => updateOrgMutation.mutate(formData)}>
-            <Save className="mr-2 h-4 w-4" />
-            Sauvegarder
+          <Button 
+            onClick={() => updateOrgMutation.mutate(formData)}
+            variant="gradient"
+            size="lg"
+            className="shadow-lg"
+          >
+            <Save className="mr-2 h-5 w-5" />
+            Sauvegarder les modifications
           </Button>
         </CardContent>
       </Card>
