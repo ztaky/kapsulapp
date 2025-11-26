@@ -59,25 +59,30 @@ export function StudioSidebar({ organization }: StudioSidebarProps) {
   const baseUrl = `/school/${organization.slug}/studio`;
 
   return (
-    <Sidebar className={`${open ? "w-64" : "w-14"} bg-no-grid border-slate-200`} collapsible="icon">
-      <SidebarTrigger className="m-2 self-end text-slate-600 hover:text-slate-900" />
+    <Sidebar 
+      className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-200/60`} 
+      collapsible="icon"
+    >
+      <SidebarTrigger className="m-3 self-end text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg" />
 
-      <SidebarContent className="bg-no-grid">
+      <SidebarContent className="bg-transparent px-3">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-slate-600 font-semibold">Studio</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">
+            Studio
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="w-full">
                     <NavLink
                       to={`${baseUrl}${item.url}`}
                       end={item.url === ""}
-                      className="text-slate-600 hover:bg-orange-50/50 hover:text-primary rounded-xl transition-all"
-                      activeClassName="bg-gradient-to-r from-orange-100/80 to-pink-100/50 text-primary font-semibold border-l-4 border-l-primary"
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-all"
+                      activeClassName="bg-orange-50 text-orange-700 font-bold"
                     >
-                      <item.icon className="h-5 w-5" />
-                      {open && <span>{item.title}</span>}
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {open && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

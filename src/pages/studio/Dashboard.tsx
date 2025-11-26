@@ -18,6 +18,7 @@ interface StatCardProps {
     isPositive: boolean;
   };
   colorClass: string;
+  iconBgClass: string;
 }
 
 export default function StudioDashboard() {
@@ -125,29 +126,25 @@ export default function StudioDashboard() {
     };
   }, [currentOrg?.id, refetch]);
 
-  const StatCard = ({ title, value, description, icon: Icon, colorClass }: StatCardProps) => (
-    <Card className="relative overflow-hidden group bg-white">
-      <div className="absolute top-0 right-0 w-32 h-32 opacity-5 -mr-8 -mt-8">
-        <Icon className="w-full h-full" />
-      </div>
-      
+  const StatCard = ({ title, value, description, icon: Icon, colorClass, iconBgClass }: StatCardProps & { iconBgClass: string }) => (
+    <Card className="relative overflow-hidden bg-white border border-slate-100 rounded-3xl shadow-premium hover:shadow-lg transition-all duration-300">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-medium text-slate-600">
+        <CardTitle className="text-sm font-medium text-slate-600 tracking-tight">
           {title}
         </CardTitle>
         <div className={cn(
-          "p-3 rounded-2xl",
-          colorClass
+          "rounded-2xl p-3 w-12 h-12 flex items-center justify-center",
+          iconBgClass
         )}>
           <Icon className="h-6 w-6" />
         </div>
       </CardHeader>
       
-      <CardContent>
-        <div className="text-4xl font-bold tracking-tight mb-2 text-slate-900">
+      <CardContent className="pt-0">
+        <div className="text-4xl font-bold tracking-tight mb-1 text-slate-900">
           {value}
         </div>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-500 leading-relaxed">
           {description}
         </p>
       </CardContent>
@@ -160,42 +157,46 @@ export default function StudioDashboard() {
       value: stats?.totalCourses || 0,
       icon: BookOpen,
       description: "Total de formations créées",
-      colorClass: "bg-orange-100/50 text-orange-600",
+      colorClass: "text-orange-600",
+      iconBgClass: "bg-orange-100 text-orange-600",
     },
     {
       title: "Étudiants",
       value: stats?.totalStudents || 0,
       icon: Users,
       description: "Membres de votre communauté",
-      colorClass: "bg-blue-100/50 text-blue-600",
+      colorClass: "text-blue-600",
+      iconBgClass: "bg-blue-100 text-blue-600",
     },
     {
       title: "Revenus",
       value: `${stats?.totalRevenue || 0} €`,
       icon: DollarSign,
       description: "Chiffre d'affaires total",
-      colorClass: "bg-green-100/50 text-green-600",
+      colorClass: "text-green-600",
+      iconBgClass: "bg-green-100 text-green-600",
     },
     {
       title: "Ventes",
       value: stats?.totalPurchases || 0,
       icon: TrendingUp,
       description: "Nombre total d'achats",
-      colorClass: "bg-purple-100/50 text-purple-600",
+      colorClass: "text-purple-600",
+      iconBgClass: "bg-purple-100 text-purple-600",
     },
   ];
 
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="relative overflow-hidden rounded-3xl bg-white p-10 border border-slate-200 shadow-card">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
           <Skeleton className="h-12 w-80 mb-3" />
           <Skeleton className="h-6 w-96" />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="bg-white">
+            <Card key={i} className="bg-white border border-slate-100 rounded-3xl shadow-premium">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-12 w-12 rounded-2xl" />
@@ -213,22 +214,19 @@ export default function StudioDashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header - Style Warm Premium */}
-      <div className="relative overflow-hidden rounded-3xl bg-white p-10 border border-slate-200 shadow-card">
+      {/* Hero Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
         <div className="relative z-10">
-          <h1 className="text-5xl font-extrabold mb-3 text-slate-900 leading-tight">
+          <h1 className="text-3xl font-bold mb-2 text-[#1e293b] tracking-tight">
             Vue d'ensemble
           </h1>
-          <p className="text-lg text-slate-600">
-            Tableau de bord de votre école <span className="font-semibold text-primary">{currentOrg?.name}</span>
+          <p className="text-base text-slate-600 leading-relaxed">
+            Tableau de bord de votre école <span className="font-semibold text-orange-600">{currentOrg?.name}</span>
           </p>
         </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-orange-200/40 to-pink-200/40 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-pink-200/30 to-orange-200/30 rounded-full blur-3xl" />
       </div>
 
+      {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
           <StatCard key={stat.title} {...stat} />
@@ -236,38 +234,35 @@ export default function StudioDashboard() {
       </div>
 
       {/* Quick Actions Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-white p-8 border border-slate-200 shadow-card">
+      <div className="relative overflow-hidden rounded-3xl bg-white p-8 border border-slate-100 shadow-premium">
         <div className="relative z-10">
-          <h3 className="text-2xl font-bold mb-6 text-slate-900">Actions rapides</h3>
+          <h3 className="text-xl font-bold mb-6 text-[#1e293b] tracking-tight">Actions rapides</h3>
           <div className="grid gap-4 md:grid-cols-3">
-            <button className="p-6 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-2xl border border-orange-200/50 hover:shadow-card transition-all text-left group">
-              <div className="p-3 rounded-full bg-orange-600/10 w-fit mb-4 group-hover:scale-110 transition-transform">
-                <BookOpen className="h-6 w-6 text-orange-600" />
+            <button className="p-6 bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-2xl border border-orange-100 hover:shadow-lg transition-all text-left group">
+              <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <BookOpen className="h-6 w-6" />
               </div>
-              <div className="font-bold text-slate-900 mb-2">Créer une formation</div>
-              <div className="text-sm text-slate-600">Démarrez une nouvelle formation</div>
+              <div className="font-bold text-slate-900 mb-2 tracking-tight">Créer une formation</div>
+              <div className="text-sm text-slate-500 leading-relaxed">Démarrez une nouvelle formation</div>
             </button>
             
-            <button className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-200/50 hover:shadow-card transition-all text-left group">
-              <div className="p-3 rounded-full bg-blue-600/10 w-fit mb-4 group-hover:scale-110 transition-transform">
-                <Users className="h-6 w-6 text-blue-600" />
+            <button className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-2xl border border-blue-100 hover:shadow-lg transition-all text-left group">
+              <div className="rounded-2xl bg-blue-100 text-blue-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Users className="h-6 w-6" />
               </div>
-              <div className="font-bold text-slate-900 mb-2">Inviter des étudiants</div>
-              <div className="text-sm text-slate-600">Agrandissez votre communauté</div>
+              <div className="font-bold text-slate-900 mb-2 tracking-tight">Inviter des étudiants</div>
+              <div className="text-sm text-slate-500 leading-relaxed">Agrandissez votre communauté</div>
             </button>
             
-            <button className="p-6 bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl border border-green-200/50 hover:shadow-card transition-all text-left group">
-              <div className="p-3 rounded-full bg-green-600/10 w-fit mb-4 group-hover:scale-110 transition-transform">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+            <button className="p-6 bg-gradient-to-br from-green-50 to-green-100/30 rounded-2xl border border-green-100 hover:shadow-lg transition-all text-left group">
+              <div className="rounded-2xl bg-green-100 text-green-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-6 w-6" />
               </div>
-              <div className="font-bold text-slate-900 mb-2">Voir les analyses</div>
-              <div className="text-sm text-slate-600">Suivez vos performances</div>
+              <div className="font-bold text-slate-900 mb-2 tracking-tight">Voir les analyses</div>
+              <div className="text-sm text-slate-500 leading-relaxed">Suivez vos performances</div>
             </button>
           </div>
         </div>
-        
-        {/* Decorative element */}
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-gradient-to-br from-pink-200/30 to-orange-200/30 rounded-full blur-3xl" />
       </div>
     </div>
   );
