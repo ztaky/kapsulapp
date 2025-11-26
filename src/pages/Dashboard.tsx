@@ -136,37 +136,47 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
       <Navbar />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Mes Formations</h1>
-          <p className="text-muted-foreground">Continuez votre apprentissage où vous l'avez laissé</p>
+        {/* Header - Premium Style */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium mb-8">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
+              Mes Formations
+            </h1>
+            <p className="text-base text-slate-600 leading-relaxed">
+              Continuez votre apprentissage où vous l'avez laissé
+            </p>
+          </div>
         </div>
 
         {loading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
-                <div className="h-48 bg-muted rounded-t-lg" />
+                <div className="h-48 bg-muted rounded-t-3xl" />
                 <CardHeader>
-                  <div className="h-6 bg-muted rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-muted rounded w-full" />
+                  <div className="h-6 bg-muted rounded-xl w-3/4 mb-2" />
+                  <div className="h-4 bg-muted rounded-xl w-full" />
                 </CardHeader>
               </Card>
             ))}
           </div>
         ) : courses.length === 0 ? (
-          <Card className="shadow-card">
+          <Card className="shadow-premium border-slate-100">
             <CardHeader className="text-center py-12">
-              <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <CardTitle>Aucune formation</CardTitle>
-              <CardDescription>
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mb-4">
+                <BookOpen className="h-8 w-8 text-orange-600" />
+              </div>
+              <CardTitle className="text-slate-900 tracking-tight">Aucune formation</CardTitle>
+              <CardDescription className="text-slate-600 leading-relaxed">
                 Vous n'avez pas encore de formations. Explorez notre catalogue pour commencer !
               </CardDescription>
               <Button 
-                className="mt-6 bg-gradient-to-r from-primary to-[hsl(340,85%,55%)] hover:opacity-90"
+                variant="gradient"
+                className="mt-6 shadow-lg"
                 onClick={() => navigate("/")}
               >
                 Découvrir les formations
@@ -176,41 +186,43 @@ const Dashboard = () => {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <Card key={course.id} className="shadow-card hover:shadow-elevated transition-shadow cursor-pointer" onClick={() => navigate(`/course/${course.id}`)}>
-                <div className="relative h-48 bg-muted rounded-t-lg overflow-hidden">
+              <Card key={course.id} className="shadow-premium hover:shadow-elevated transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" onClick={() => navigate(`/course/${course.id}`)}>
+                <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-50 rounded-t-3xl overflow-hidden">
                   {course.cover_image ? (
                     <img
                       src={course.cover_image}
                       alt={course.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <BookOpen className="h-16 w-16 text-muted-foreground" />
+                      <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center">
+                        <BookOpen className="h-8 w-8 text-orange-600" />
+                      </div>
                     </div>
                   )}
                   {course.progress === 100 && (
-                    <div className="absolute top-4 right-4 bg-green-500 text-white p-2 rounded-full">
+                    <div className="absolute top-4 right-4 bg-gradient-to-br from-green-500 to-green-600 text-white p-2 rounded-full shadow-lg">
                       <CheckCircle2 className="h-5 w-5" />
                     </div>
                   )}
                 </div>
                 <CardHeader>
-                  <CardTitle className="line-clamp-1">{course.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">{course.description}</CardDescription>
+                  <CardTitle className="line-clamp-1 text-slate-900 tracking-tight">{course.title}</CardTitle>
+                  <CardDescription className="line-clamp-2 text-slate-600 leading-relaxed">{course.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Progression</span>
-                      <span className="font-semibold text-primary">{course.progress}%</span>
+                      <span className="text-slate-600 font-medium">Progression</span>
+                      <span className="font-bold text-orange-600">{course.progress}%</span>
                     </div>
                     <Progress value={course.progress} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       {course.completedLessons} / {course.totalLessons} leçons terminées
                     </p>
                   </div>
-                  <Button className="w-full mt-4 bg-primary hover:bg-primary/90" size="sm">
+                  <Button variant="gradient" className="w-full mt-4 shadow-lg" size="sm">
                     <PlayCircle className="mr-2 h-4 w-4" />
                     Continuer
                   </Button>
