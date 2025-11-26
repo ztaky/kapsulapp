@@ -70,12 +70,12 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center space-x-2">
           <div className="flex items-center">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-[hsl(340,85%,55%)] bg-clip-text text-transparent">
+            <BookOpen className="h-6 w-6 text-orange-600" />
+            <span className="ml-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent tracking-tight">
               LMS Platform
             </span>
           </div>
@@ -85,53 +85,54 @@ const Navbar = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-orange-50">
+                  <Avatar className="border-2 border-orange-200">
                     <AvatarImage src={profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                    <AvatarFallback className="bg-gradient-to-br from-orange-100 to-orange-200 text-orange-700 font-semibold">
                       {profile?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuLabel>
+              <DropdownMenuContent className="w-56 rounded-2xl border-slate-200 shadow-premium" align="end">
+                <DropdownMenuLabel className="px-3 py-2">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{profile?.full_name || "Utilisateur"}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm font-semibold text-slate-900">{profile?.full_name || "Utilisateur"}</p>
+                    <p className="text-xs text-slate-500">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Mes Formations
+                <DropdownMenuSeparator className="bg-slate-100" />
+                <DropdownMenuItem onClick={() => navigate("/dashboard")} className="mx-1 rounded-lg hover:bg-orange-50 cursor-pointer">
+                  <LayoutDashboard className="mr-2 h-4 w-4 text-orange-600" />
+                  <span className="text-sm font-medium">Mes Formations</span>
                 </DropdownMenuItem>
                 {hasSchoolAccess && (
                   <DropdownMenuItem onClick={() => {
                     const firstOrg = organizations.find(o => o.userRole === "owner" || o.userRole === "admin");
                     if (firstOrg) navigate(`/school/${firstOrg.slug}/admin`);
-                  }}>
-                    <Building2 className="mr-2 h-4 w-4" />
-                    Mon École
+                  }} className="mx-1 rounded-lg hover:bg-orange-50 cursor-pointer">
+                    <Building2 className="mr-2 h-4 w-4 text-orange-600" />
+                    <span className="text-sm font-medium">Mon École</span>
                   </DropdownMenuItem>
                 )}
                 {isSuperAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/super-admin")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Super Admin
+                  <DropdownMenuItem onClick={() => navigate("/super-admin")} className="mx-1 rounded-lg hover:bg-orange-50 cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4 text-orange-600" />
+                    <span className="text-sm font-medium">Super Admin</span>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuSeparator className="bg-slate-100" />
+                <DropdownMenuItem onClick={handleSignOut} className="mx-1 mb-1 rounded-lg hover:bg-red-50 text-red-600 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Déconnexion
+                  <span className="text-sm font-semibold">Déconnexion</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button 
               onClick={() => navigate("/auth")}
-              className="bg-gradient-to-r from-primary to-[hsl(340,85%,55%)] hover:opacity-90 transition-opacity"
+              variant="gradient"
+              className="shadow-lg"
             >
               Se connecter
             </Button>
