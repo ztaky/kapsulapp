@@ -15,6 +15,7 @@ import CourseBuilder from "./pages/studio/CourseBuilder";
 import LessonEditor from "./pages/studio/LessonEditor";
 import StudioStudents from "./pages/studio/Students";
 import StudioBranding from "./pages/studio/Branding";
+import LearningSpace from "./pages/learning/LearningSpace";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,10 @@ const App = () => (
             <Route path="branding" element={<StudioBranding />} />
           </Route>
           <Route path="/school/:slug/studio/lessons/:lessonId" element={<LessonEditor />} />
+          
+          {/* Learning Space Routes */}
+          <Route path="/school/:slug/learn/:courseId" element={<LearningSpace />} />
+          <Route path="/school/:slug/learn/:courseId/lessons/:lessonId" element={<LearningSpace />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
