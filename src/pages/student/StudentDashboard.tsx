@@ -11,6 +11,7 @@ interface Course {
   title: string;
   description: string;
   cover_image: string | null;
+  organization_slug: string;
 }
 
 interface CourseWithProgress extends Course {
@@ -45,7 +46,11 @@ const StudentDashboard = () => {
           id,
           title,
           description,
-          cover_image
+          cover_image,
+          organization_id,
+          organizations (
+            slug
+          )
         )
       `)
       .eq("user_id", userId);
@@ -96,7 +101,11 @@ const StudentDashboard = () => {
         const progress = totalLessons ? Math.round(((completedLessons || 0) / totalLessons) * 100) : 0;
 
         return {
-          ...course,
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          cover_image: course.cover_image,
+          organization_slug: course.organizations?.slug || '',
           progress,
           totalLessons: totalLessons || 0,
           completedLessons: completedLessons || 0,
@@ -153,7 +162,7 @@ const StudentDashboard = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <Card key={course.id} className="shadow-premium hover:shadow-elevated transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" onClick={() => navigate(`/course/${course.id}`)}>
+            <Card key={course.id} className="shadow-premium hover:shadow-elevated transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" onClick={() => navigate(`/school/${course.organization_slug}/learn/${course.id}`)}>
               <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-50 rounded-t-3xl overflow-hidden">
                 {course.cover_image ? (
                   <img
