@@ -45,8 +45,8 @@ export default function StudioLayout() {
       <div className="flex min-h-screen w-full">
         <StudioSidebar organization={currentOrg} />
         
-        <main className="flex-1 bg-transparent">
-          <header className="sticky top-0 z-10 border-b border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-sm">
+        <main className="flex-1 flex flex-col bg-transparent overflow-hidden">
+          <header className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-sm shrink-0">
             <div className="flex h-16 items-center justify-between px-8">
               <div>
                 <p className="text-xs font-medium text-slate-500 tracking-wide uppercase">Studio</p>
@@ -62,7 +62,7 @@ export default function StudioLayout() {
             </div>
           </header>
 
-          <div className="p-8">
+          <div className="flex-1 overflow-y-auto p-8">
             <Outlet />
           </div>
         </main>

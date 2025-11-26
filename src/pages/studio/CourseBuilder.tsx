@@ -126,36 +126,43 @@ export default function CourseBuilder() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/school/${slug}/studio/courses`)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">{course?.title}</h2>
-            <p className="text-muted-foreground">Constructeur de cours</p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate(`/school/${slug}/studio/courses`)} className="hover:bg-orange-50">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-1">
+                {course?.title}
+              </h1>
+              <p className="text-base text-slate-600 leading-relaxed">
+                Constructeur de cours
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={course?.is_published}
-              onCheckedChange={(checked) => togglePublishMutation.mutate(checked)}
-            />
-            <Label>Publié</Label>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-2xl border border-slate-200">
+              <Switch
+                checked={course?.is_published}
+                onCheckedChange={(checked) => togglePublishMutation.mutate(checked)}
+              />
+              <Label className="text-sm font-medium text-slate-900">Publié</Label>
+            </div>
+            <Button variant="gradient" size="lg" className="shadow-lg">
+              <Save className="mr-2 h-5 w-5" />
+              Sauvegarder
+            </Button>
           </div>
-          <Button variant="outline">
-            <Save className="mr-2 h-4 w-4" />
-            Sauvegarder
-          </Button>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold">Modules & Leçons</h3>
+          <h3 className="text-xl font-bold text-[#1e293b] tracking-tight">Modules & Leçons</h3>
           <Dialog open={moduleDialogOpen} onOpenChange={setModuleDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -202,10 +209,10 @@ export default function CourseBuilder() {
         </DndContext>
 
         {modules.length === 0 && (
-          <div className="flex h-64 items-center justify-center rounded-lg border border-dashed">
+          <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 border-dashed bg-white/50">
             <div className="text-center">
-              <p className="text-lg font-medium">Aucun module</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-lg font-medium text-slate-900">Aucun module</p>
+              <p className="text-sm text-slate-600 leading-relaxed">
                 Créez votre premier module pour commencer
               </p>
             </div>
