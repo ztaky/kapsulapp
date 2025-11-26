@@ -52,6 +52,15 @@ export default {
           DEFAULT: "hsl(var(--navy))",
           foreground: "hsl(var(--navy-foreground))",
         },
+        blue: {
+          500: "hsl(217, 91%, 60%)",
+        },
+        green: {
+          500: "hsl(142, 71%, 45%)",
+        },
+        purple: {
+          500: "hsl(271, 91%, 65%)",
+        },
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
