@@ -1,4 +1,4 @@
-import { LayoutDashboard, GraduationCap, Users, Palette } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Palette, Bot, Wand2 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -36,6 +36,16 @@ const navItems = [
     title: "Communauté",
     url: "/students",
     icon: Users,
+  },
+  {
+    title: "Assistant IA",
+    url: "/assistant",
+    icon: Bot,
+  },
+  {
+    title: "Pages de vente",
+    url: "/sales-pages",
+    icon: Wand2,
   },
   {
     title: "Branding",

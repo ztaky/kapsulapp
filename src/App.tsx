@@ -15,6 +15,8 @@ import CourseBuilder from "./pages/studio/CourseBuilder";
 import LessonEditor from "./pages/studio/LessonEditor";
 import StudioStudents from "./pages/studio/Students";
 import StudioBranding from "./pages/studio/Branding";
+import AIAssistant from "./pages/studio/AIAssistant";
+import SalesPageBuilder from "./pages/studio/SalesPageBuilder";
 import LearningSpace from "./pages/learning/LearningSpace";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,9 @@ const App = () => (
             <Route path="courses" element={<StudioCourses />} />
             <Route path="courses/:courseId/curriculum" element={<CourseBuilder />} />
             <Route path="students" element={<StudioStudents />} />
+            <Route path="assistant" element={<AIAssistant />} />
+            <Route path="sales-pages" element={<SalesPageBuilder />} />
+            <Route path="sales-pages/:courseId" element={<SalesPageBuilder />} />
             <Route path="branding" element={<StudioBranding />} />
           </Route>
           <Route path="/school/:slug/studio/lessons/:lessonId" element={<LessonEditor />} />
