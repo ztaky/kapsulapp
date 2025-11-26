@@ -84,75 +84,113 @@ export default function StudioCourses() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between p-6 rounded-lg bg-gradient-to-r from-primary/5 via-purple-500/5 to-blue-500/5 border">
-        <div>
-          <h2 className="text-4xl font-bold tracking-tight">Mes Formations</h2>
-          <p className="text-muted-foreground text-lg">Gérez le catalogue de votre école</p>
-        </div>
-
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Créer une formation
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Nouvelle formation</DialogTitle>
-            </DialogHeader>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                createCourseMutation.mutate(formData);
-              }}
-              className="space-y-4"
-            >
-              <div>
-                <Label htmlFor="title">Titre *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={4}
-                />
-              </div>
-              <div>
-                <Label htmlFor="price">Prix (€)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="cover_image">Image de couverture (URL)</Label>
-                <Input
-                  id="cover_image"
-                  type="url"
-                  value={formData.cover_image}
-                  onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={createCourseMutation.isPending}>
-                Créer la formation
+    <div className="space-y-8 animate-fade-in">
+      {/* Header - Style Warm Premium */}
+      <div className="relative overflow-hidden rounded-3xl bg-white p-10 border border-slate-200 shadow-card">
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="max-w-2xl">
+            <h1 className="text-5xl font-extrabold mb-4 text-slate-900 leading-tight">
+              Mes Formations
+            </h1>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Créez et gérez vos cours en ligne. Partagez votre expertise avec le monde.
+            </p>
+          </div>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="gradient" size="lg">
+                <Plus className="mr-2 h-5 w-5" />
+                Nouvelle Formation
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-slate-900">Nouvelle formation</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  createCourseMutation.mutate(formData);
+                }}
+                className="space-y-5 pt-4"
+              >
+                <div>
+                  <Label htmlFor="title" className="text-slate-900 font-medium">Titre *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="mt-1.5 rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description" className="text-slate-900 font-medium">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="mt-1.5 rounded-xl"
+                    rows={4}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="price" className="text-slate-900 font-medium">Prix (€)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="mt-1.5 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cover_image" className="text-slate-900 font-medium">Image de couverture (URL)</Label>
+                  <Input
+                    id="cover_image"
+                    type="url"
+                    value={formData.cover_image}
+                    onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
+                    placeholder="https://..."
+                    className="mt-1.5 rounded-xl"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  variant="gradient" 
+                  className="w-full mt-6" 
+                  disabled={createCourseMutation.isPending}
+                  size="lg"
+                >
+                  {createCourseMutation.isPending ? "Création..." : "Créer la formation"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-orange-200/40 to-pink-200/40 rounded-full blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-pink-200/30 to-orange-200/30 rounded-full blur-3xl" />
+      </div>
+
+      {/* Stats bar */}
+      <div className="flex items-center justify-between p-6 bg-white rounded-2xl border border-slate-200 shadow-card">
+        <div className="flex items-center gap-6">
+          <div>
+            <p className="text-sm font-medium text-slate-600">Total</p>
+            <p className="text-3xl font-bold text-slate-900">{courses?.length || 0}</p>
+          </div>
+          <div className="h-12 w-px bg-slate-200" />
+          <div>
+            <p className="text-sm font-medium text-slate-600">Publiées</p>
+            <p className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              {courses?.filter(c => c.is_published).length || 0}
+            </p>
+          </div>
+        </div>
       </div>
 
       <CourseTable courses={courses || []} isLoading={isLoading} organizationSlug={slug || ""} />

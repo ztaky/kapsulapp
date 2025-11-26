@@ -69,127 +69,127 @@ export function CourseTable({ courses, isLoading, organizationSlug }: CourseTabl
         return (
           <Card
             key={course.id}
-            className={`overflow-hidden border-l-4 transition-all duration-300 hover:shadow-elevated cursor-pointer group ${
-              isPublished ? "border-l-primary/50" : "border-l-gray-400/50"
-            }`}
+            className="overflow-hidden cursor-pointer group bg-white"
             onClick={() =>
               navigate(`/school/${organizationSlug}/studio/courses/${course.id}/curriculum`)
             }
           >
-            {/* Cover Image */}
-            <div className="relative h-48 bg-gradient-to-br from-primary/20 to-purple-500/20 overflow-hidden">
+            {/* Cover Image - 50% de la carte */}
+            <div className="relative h-56 bg-gradient-to-br from-orange-100 via-pink-50 to-orange-50 overflow-hidden">
               {course.cover_image ? (
                 <img
                   src={course.cover_image}
                   alt={course.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <BookOpen className="h-16 w-16 text-primary/40" />
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-600/10 to-pink-600/10">
+                  <BookOpen className="h-20 w-20 text-primary/30" />
                 </div>
               )}
               <div className="absolute top-4 right-4">
                 <Badge
                   variant={isPublished ? "default" : "secondary"}
-                  className="shadow-lg"
+                  className={`shadow-lg font-semibold ${
+                    isPublished 
+                      ? "bg-gradient-primary text-white border-0" 
+                      : "bg-white/90 backdrop-blur-sm text-muted-foreground"
+                  }`}
                 >
-                  {isPublished ? "Publié" : "Brouillon"}
+                  {isPublished ? "✓ Publié" : "Brouillon"}
                 </Badge>
               </div>
             </div>
 
             {/* Content */}
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Title & Description */}
-                <div>
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                    {course.title}
-                  </h3>
-                  {course.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {course.description}
-                    </p>
-                  )}
-                </div>
+            <CardContent className="p-6 space-y-5">
+              {/* Title & Description */}
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-primary transition-colors leading-tight">
+                  {course.title}
+                </h3>
+                {course.description && (
+                  <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                    {course.description}
+                  </p>
+                )}
+              </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Students */}
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-500/10">
-                    <div className="p-1.5 rounded bg-blue-500/20">
-                      <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Inscrits</p>
-                      <p className="text-lg font-bold">{purchaseCount}</p>
-                    </div>
+              {/* Stats Grid - Style Pastel */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Students */}
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-100/50">
+                  <div className="p-2 rounded-full bg-orange-600/10">
+                    <Users className="h-5 w-5 text-orange-600" />
                   </div>
-
-                  {/* Modules */}
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-purple-500/10">
-                    <div className="p-1.5 rounded bg-purple-500/20">
-                      <Layers className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Modules</p>
-                      <p className="text-lg font-bold">{moduleCount}</p>
-                    </div>
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10">
-                    <div className="p-1.5 rounded bg-green-500/20">
-                      <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Prix</p>
-                      <p className="text-lg font-bold">{course.price} €</p>
-                    </div>
-                  </div>
-
-                  {/* Revenue */}
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/10">
-                    <div className="p-1.5 rounded bg-primary/20">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Revenus</p>
-                      <p className="text-lg font-bold">{revenue} €</p>
-                    </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-600">Inscrits</p>
+                    <p className="text-xl font-bold text-slate-900">{purchaseCount}</p>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2 pt-2">
+                {/* Modules */}
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-pink-100/50">
+                  <div className="p-2 rounded-full bg-pink-600/10">
+                    <Layers className="h-5 w-5 text-pink-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-600">Modules</p>
+                    <p className="text-xl font-bold text-slate-900">{moduleCount}</p>
+                  </div>
+                </div>
+
+                {/* Price */}
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-green-100/50">
+                  <div className="p-2 rounded-full bg-green-600/10">
+                    <DollarSign className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-600">Prix</p>
+                    <p className="text-xl font-bold text-slate-900">{course.price} €</p>
+                  </div>
+                </div>
+
+                {/* Revenue */}
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-purple-100/50">
+                  <div className="p-2 rounded-full bg-purple-600/10">
+                    <TrendingUp className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-600">Revenus</p>
+                    <p className="text-xl font-bold text-slate-900">{revenue} €</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="gradient"
+                  size="sm"
+                  className="flex-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(
+                      `/school/${organizationSlug}/studio/courses/${course.id}/curriculum`
+                    );
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Éditer le cours
+                </Button>
+                {isPublished && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(
-                        `/school/${organizationSlug}/studio/courses/${course.id}/curriculum`
-                      );
+                      // TODO: Navigate to course preview
                     }}
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Éditer
+                    <Eye className="h-4 w-4" />
                   </Button>
-                  {isPublished && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Navigate to course preview
-                      }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>

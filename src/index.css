@@ -8,59 +8,59 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm beige background - matching reference design */
-    --background: 32 33% 98%;
-    --foreground: 240 10% 10%;
+    /* Warm Premium Tech - Background Principal: Beige crème #fdfbf7 */
+    --background: 40 57% 97%;
+    --foreground: 222 47% 11%; /* Navy foncé #0f172a */
 
-    /* Card surfaces */
+    /* Card surfaces - Blanc pur */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card-foreground: 222 47% 11%;
 
     /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary brand color - Amber/Orange accent */
-    --primary: 28 92% 48%;
+    /* Primary - Orange vibrant #ea580c */
+    --primary: 22 93% 48%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 28 95% 55%;
+    --primary-glow: 22 100% 55%;
 
-    /* Secondary - Light amber tint */
-    --secondary: 32 95% 95%;
-    --secondary-foreground: 28 92% 38%;
+    /* Secondary - Pêche/Nude subtle #ffedd5 */
+    --secondary: 32 100% 91%;
+    --secondary-foreground: 22 93% 48%;
 
     /* Muted surfaces */
-    --muted: 32 50% 94%;
-    --muted-foreground: 240 5% 45%;
+    --muted: 40 40% 94%;
+    --muted-foreground: 215 16% 47%; /* Slate-600 #475569 */
 
-    /* Accent - Slightly darker amber */
-    --accent: 28 80% 52%;
+    /* Accent - Rose/Violet #db2777 */
+    --accent: 333 71% 51%;
     --accent-foreground: 0 0% 100%;
 
     /* Navy dark sections */
-    --navy: 234 36% 12%;
-    --navy-foreground: 32 33% 98%;
+    --navy: 222 47% 11%;
+    --navy-foreground: 40 57% 97%;
 
     /* Destructive states */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders and inputs */
-    --border: 32 30% 88%;
-    --input: 32 30% 88%;
-    --ring: 28 92% 48%;
+    /* Borders - Très subtle */
+    --border: 214 32% 91%; /* #e2e8f0 slate-200 */
+    --input: 214 32% 91%;
+    --ring: 22 93% 48%;
 
-    /* Border radius */
-    --radius: 0.75rem;
+    /* Border radius - Très arrondi */
+    --radius: 1rem;
 
-    /* Gradients for CTAs */
-    --gradient-primary: linear-gradient(135deg, hsl(28, 92%, 48%), hsl(340, 85%, 55%));
-    --gradient-soft: linear-gradient(180deg, hsl(32, 33%, 98%), hsl(32, 40%, 96%));
+    /* Gradients pour CTAs - Orange vers Rose */
+    --gradient-primary: linear-gradient(90deg, hsl(22, 93%, 48%) 0%, hsl(333, 71%, 51%) 100%);
+    --gradient-hover: linear-gradient(90deg, hsl(22, 93%, 42%) 0%, hsl(333, 71%, 45%) 100%);
     
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(28 92% 48% / 0.15);
-    --shadow-card: 0 2px 12px -2px hsl(240 10% 10% / 0.08);
-    --shadow-elevated: 0 8px 32px -8px hsl(240 10% 10% / 0.12);
+    /* Shadows - Douces et diffuses */
+    --shadow-soft: 0 4px 20px -4px hsl(215 16% 47% / 0.10);
+    --shadow-card: 0 2px 12px -2px hsl(215 16% 47% / 0.08);
+    --shadow-elevated: 0 8px 32px -8px hsl(215 16% 47% / 0.15);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -108,6 +108,15 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image: 
+      linear-gradient(to right, hsl(214 32% 91% / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(214 32% 91% / 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Utility pour fond sans grid pattern */
+  .bg-no-grid {
+    background-image: none;
   }
 }
