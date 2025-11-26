@@ -8,6 +8,13 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
+import StudioLayout from "./pages/studio/StudioLayout";
+import StudioDashboard from "./pages/studio/Dashboard";
+import StudioCourses from "./pages/studio/Courses";
+import CourseBuilder from "./pages/studio/CourseBuilder";
+import LessonEditor from "./pages/studio/LessonEditor";
+import StudioStudents from "./pages/studio/Students";
+import StudioBranding from "./pages/studio/Branding";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +29,17 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
+          
+          {/* Studio Routes */}
+          <Route path="/school/:slug/studio" element={<StudioLayout />}>
+            <Route index element={<StudioDashboard />} />
+            <Route path="courses" element={<StudioCourses />} />
+            <Route path="courses/:courseId/curriculum" element={<CourseBuilder />} />
+            <Route path="students" element={<StudioStudents />} />
+            <Route path="branding" element={<StudioBranding />} />
+          </Route>
+          <Route path="/school/:slug/studio/lessons/:lessonId" element={<LessonEditor />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
