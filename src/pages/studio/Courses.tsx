@@ -84,11 +84,11 @@ export default function StudioCourses() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between p-6 rounded-lg bg-gradient-to-r from-primary/5 via-purple-500/5 to-blue-500/5 border">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Mes Formations</h2>
-          <p className="text-muted-foreground">Gérez le catalogue de votre école</p>
+          <h2 className="text-4xl font-bold tracking-tight">Mes Formations</h2>
+          <p className="text-muted-foreground text-lg">Gérez le catalogue de votre école</p>
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
