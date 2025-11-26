@@ -12,7 +12,8 @@ export default function StudioLayout() {
   const currentOrg = organizations.find((org) => org.slug === slug);
   const { isCoach, loading: roleLoading } = useOrganizationRole(currentOrg?.id);
 
-  if (orgsLoading || roleLoading) {
+  // Wait for organizations to load first
+  if (orgsLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -20,7 +21,22 @@ export default function StudioLayout() {
     );
   }
 
-  if (!currentOrg || !isCoach) {
+  // If no matching organization found, redirect
+  if (!currentOrg) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Wait for role check to complete
+  if (roleLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // If not a coach, redirect
+  if (!isCoach) {
     return <Navigate to="/dashboard" replace />;
   }
 
