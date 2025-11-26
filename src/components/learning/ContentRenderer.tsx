@@ -22,19 +22,19 @@ export function ContentRenderer({ lesson }: ContentRendererProps) {
           {lesson.video_url && <VideoPlayer url={lesson.video_url} />}
           
           {lesson.content_text && (
-            <div className="prose prose-lg max-w-none">
-              <p className="whitespace-pre-wrap">{lesson.content_text}</p>
+            <div className="prose prose-lg max-w-none p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-premium">
+              <p className="whitespace-pre-wrap text-slate-700 leading-relaxed">{lesson.content_text}</p>
             </div>
           )}
 
           {lesson.resource_url && (
-            <div className="p-4 border rounded-lg bg-muted/30">
-              <p className="text-sm font-medium mb-2">Ressource téléchargeable</p>
+            <div className="p-6 border border-orange-200 rounded-3xl bg-gradient-to-br from-orange-50 to-slate-50 shadow-premium">
+              <p className="text-sm font-semibold mb-3 text-slate-900">Ressource téléchargeable</p>
               <a
                 href={lesson.resource_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline text-sm"
+                className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium text-sm hover:underline transition-colors"
               >
                 📥 Télécharger la ressource
               </a>
@@ -48,8 +48,8 @@ export function ContentRenderer({ lesson }: ContentRendererProps) {
 
     default:
       return (
-        <div className="p-8 border rounded-lg bg-muted/30 text-center">
-          <p className="text-muted-foreground">
+        <div className="p-8 border border-slate-200 rounded-3xl bg-white/60 backdrop-blur-sm text-center shadow-premium">
+          <p className="text-slate-600">
             Type de contenu non pris en charge : {lesson.type}
           </p>
         </div>

@@ -131,9 +131,9 @@ export default function LearningSpace() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gradient-to-br from-white via-slate-50/30 to-orange-50/20">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-80 border-r bg-muted/30 overflow-y-auto">
+      <aside className="hidden lg:block w-80 border-r border-slate-100 bg-white/60 backdrop-blur-sm overflow-y-auto">
         <CourseSidebar
           course={course}
           modules={modules}
@@ -146,11 +146,11 @@ export default function LearningSpace() {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="rounded-2xl shadow-lg bg-white/90 backdrop-blur-sm border-slate-200">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0">
+          <SheetContent side="left" className="w-80 p-0 bg-white/95 backdrop-blur-md">
             <CourseSidebar
               course={course}
               modules={modules}
@@ -167,7 +167,9 @@ export default function LearningSpace() {
           {currentLesson && (
             <>
               <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">{currentLesson.title}</h1>
+                <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-slate-900 via-slate-800 to-orange-900 bg-clip-text text-transparent tracking-tight">
+                  {currentLesson.title}
+                </h1>
               </div>
 
               <ContentRenderer lesson={currentLesson} />
