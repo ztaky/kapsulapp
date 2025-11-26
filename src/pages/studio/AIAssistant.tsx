@@ -124,15 +124,16 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      <div className="p-6 border-b bg-gradient-to-r from-primary/5 to-purple-500/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Sparkles className="h-6 w-6 text-primary" />
+    <div className="flex flex-col h-[calc(100vh-8rem)] space-y-6">
+      {/* Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-8 border border-slate-100 shadow-premium">
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-14 h-14 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Assistant IA</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-1">Assistant IA</h1>
+            <p className="text-base text-slate-600 leading-relaxed">
               Votre expert personnel en création de formations
             </p>
           </div>
@@ -140,27 +141,29 @@ export default function AIAssistant() {
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">
-        <ScrollArea className="flex-1 p-6">
-          <div className="max-w-3xl mx-auto space-y-6">
+        <ScrollArea className="flex-1">
+          <div className="max-w-4xl mx-auto space-y-6 p-6">
             {messages.length === 0 && (
-              <Card className="p-8 text-center border-dashed">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary" />
-                <h3 className="text-xl font-semibold mb-2">
+              <Card className="p-10 text-center bg-white border border-slate-100 rounded-3xl shadow-premium">
+                <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="h-8 w-8" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-[#1e293b] tracking-tight">
                   Bienvenue ! Comment puis-je vous aider ?
                 </h3>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-base text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto">
                   Posez-moi vos questions sur la création de cours, le marketing, l'engagement...
                 </p>
-                <div className="grid gap-2">
+                <div className="grid gap-3 max-w-xl mx-auto">
                   {SUGGESTIONS.map((suggestion, idx) => (
                     <Button
                       key={idx}
                       variant="outline"
-                      className="justify-start text-left h-auto py-3 px-4"
+                      className="justify-start text-left h-auto py-4 px-5 rounded-xl border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 text-sm font-medium"
                       onClick={() => handleSuggestionClick(suggestion)}
                     >
-                      <Sparkles className="h-4 w-4 mr-2 shrink-0" />
-                      {suggestion}
+                      <Sparkles className="h-4 w-4 mr-3 shrink-0 text-orange-600" />
+                      <span className="text-slate-900">{suggestion}</span>
                     </Button>
                   ))}
                 </div>
@@ -175,21 +178,25 @@ export default function AIAssistant() {
                 }`}
               >
                 <Card
-                  className={`p-4 max-w-[80%] ${
+                  className={`p-5 max-w-[80%] rounded-2xl border shadow-sm ${
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      ? "bg-gradient-primary text-white border-0 shadow-lg"
+                      : "bg-white border-slate-100"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className={`whitespace-pre-wrap leading-relaxed ${
+                    message.role === "user" ? "text-white" : "text-slate-700"
+                  }`}>
+                    {message.content}
+                  </p>
                 </Card>
               </div>
             ))}
 
             {isLoading && messages[messages.length - 1]?.content === "" && (
               <div className="flex justify-start">
-                <Card className="p-4 bg-muted">
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                <Card className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                  <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
                 </Card>
               </div>
             )}
@@ -198,21 +205,27 @@ export default function AIAssistant() {
           </div>
         </ScrollArea>
 
-        <div className="p-6 border-t bg-background">
-          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-            <div className="flex gap-2">
+        <div className="p-6 border-t border-slate-200">
+          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+            <div className="flex gap-3">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Posez votre question..."
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 rounded-xl border-slate-200 h-12"
               />
-              <Button type="submit" disabled={isLoading || !input.trim()}>
+              <Button 
+                type="submit" 
+                disabled={isLoading || !input.trim()}
+                variant="gradient"
+                size="lg"
+                className="shadow-lg h-12 px-6"
+              >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 )}
               </Button>
             </div>
