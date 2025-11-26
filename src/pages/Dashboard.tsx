@@ -5,8 +5,9 @@ import { useUserOrganizations } from "@/hooks/useUserRole";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, PlayCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { BookOpen, PlayCircle, CheckCircle2, Loader2, User, Receipt, Award, Bot } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { AIAssistantChat } from "@/components/AIAssistantChat";
 
 interface Course {
   id: string;
@@ -152,6 +153,68 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Quick Access Cards */}
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
+          <Button
+            variant="outline"
+            className="h-auto p-4 rounded-2xl border-slate-200 hover:shadow-lg hover:border-orange-200 transition-all flex flex-col items-start gap-2"
+            onClick={() => navigate("/profile")}
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <User className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="text-left">
+              <div className="font-semibold text-slate-900 text-sm">Mon Profil</div>
+              <div className="text-xs text-slate-500">Gérer mes infos</div>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="h-auto p-4 rounded-2xl border-slate-200 hover:shadow-lg hover:border-orange-200 transition-all flex flex-col items-start gap-2"
+            onClick={() => navigate("/invoices")}
+          >
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <Receipt className="h-5 w-5 text-green-600" />
+            </div>
+            <div className="text-left">
+              <div className="font-semibold text-slate-900 text-sm">Mes Factures</div>
+              <div className="text-xs text-slate-500">Historique d'achats</div>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="h-auto p-4 rounded-2xl border-slate-200 hover:shadow-lg hover:border-orange-200 transition-all flex flex-col items-start gap-2"
+            onClick={() => navigate("/certificates")}
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <Award className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="text-left">
+              <div className="font-semibold text-slate-900 text-sm">Mes Certificats</div>
+              <div className="text-xs text-slate-500">Réussites</div>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="h-auto p-4 rounded-2xl border-slate-200 hover:shadow-lg hover:border-orange-200 transition-all flex flex-col items-start gap-2"
+            onClick={() => {
+              const section = document.getElementById("assistant");
+              section?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-orange-600" />
+            </div>
+            <div className="text-left">
+              <div className="font-semibold text-slate-900 text-sm">Assistant IA</div>
+              <div className="text-xs text-slate-500">Posez vos questions</div>
+            </div>
+          </Button>
+        </div>
+
         {loading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -184,7 +247,7 @@ const Dashboard = () => {
             </CardHeader>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
             {courses.map((course) => (
               <Card key={course.id} className="shadow-premium hover:shadow-elevated transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" onClick={() => navigate(`/course/${course.id}`)}>
                 <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-50 rounded-t-3xl overflow-hidden">
@@ -231,6 +294,19 @@ const Dashboard = () => {
             ))}
           </div>
         )}
+
+        {/* AI Assistant Section */}
+        <div id="assistant" className="mt-12">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">
+              Assistant Pédagogique IA
+            </h2>
+            <p className="text-slate-600">
+              Posez vos questions et obtenez de l'aide sur vos formations
+            </p>
+          </div>
+          <AIAssistantChat />
+        </div>
       </main>
     </div>
   );

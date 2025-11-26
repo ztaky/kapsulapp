@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Invoices from "./pages/Invoices";
+import Certificates from "./pages/Certificates";
 import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
 import StudioLayout from "./pages/studio/StudioLayout";
@@ -31,6 +34,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/invoices" element={<Invoices />} />
+          <Route path="/certificates" element={<Certificates />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           
           {/* Studio Routes */}
