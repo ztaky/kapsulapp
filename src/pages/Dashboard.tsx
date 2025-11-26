@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserOrganizations } from "@/hooks/useUserRole";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, PlayCircle, CheckCircle2 } from "lucide-react";
+import { BookOpen, PlayCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface Course {
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const { organizations, loading: orgsLoading } = useUserOrganizations();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -36,6 +38,16 @@ const Dashboard = () => {
       }
     });
   }, [navigate]);
+
+  // Redirect coaches to their studio
+  useEffect(() => {
+    if (!orgsLoading && organizations.length > 0) {
+      const coachOrg = organizations.find(org => org.userRole === 'coach');
+      if (coachOrg) {
+        navigate(`/school/${coachOrg.slug}/studio`);
+      }
+    }
+  }, [organizations, orgsLoading, navigate]);
 
   const fetchUserCourses = async (userId: string) => {
     setLoading(true);
@@ -114,6 +126,14 @@ const Dashboard = () => {
     setCourses(coursesWithProgress);
     setLoading(false);
   };
+
+  if (orgsLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
