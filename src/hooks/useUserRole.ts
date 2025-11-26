@@ -39,10 +39,18 @@ export const useOrganizationRole = (organizationId?: string) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Keep loading true if organizationId is undefined (not yet available)
+    if (organizationId === undefined) {
+      return;
+    }
+    
+    // Only set loading false if organizationId is explicitly null or empty string
     if (!organizationId) {
+      setRole(null);
       setLoading(false);
       return;
     }
+    
     checkOrgRole();
   }, [organizationId]);
 
