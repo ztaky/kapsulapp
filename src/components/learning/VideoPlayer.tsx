@@ -26,7 +26,7 @@ export function VideoPlayer({ url }: VideoPlayerProps) {
   const isDirectVideo = !url.includes("youtube") && !url.includes("vimeo");
 
   return (
-    <div className="relative w-full rounded-lg overflow-hidden bg-black" style={{ paddingBottom: "56.25%" }}>
+    <div className="relative w-full rounded-3xl overflow-hidden bg-black shadow-premium border border-slate-200" style={{ paddingBottom: "56.25%" }}>
       {isDirectVideo ? (
         <video
           controls

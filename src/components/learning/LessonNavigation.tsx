@@ -97,7 +97,7 @@ export function LessonNavigation({
   });
 
   return (
-    <div className="flex items-center justify-between gap-4 p-6 border-t">
+    <div className="flex items-center justify-between gap-4 p-6 border-t border-slate-200 bg-white/80 backdrop-blur-sm rounded-3xl shadow-premium">
       <Button
         variant="outline"
         onClick={() =>
@@ -105,16 +105,18 @@ export function LessonNavigation({
           navigate(`/school/${slug}/learn/${courseId}/lessons/${previousLesson.id}`)
         }
         disabled={!previousLesson}
+        className="rounded-xl border-slate-200 hover:bg-slate-50 hover:border-slate-300"
       >
         <ChevronLeft className="mr-2 h-4 w-4" />
         Précédent
       </Button>
 
       <Button
+        variant="gradient"
         size="lg"
         onClick={() => markAsCompleteMutation.mutate()}
         disabled={isCompleted || markAsCompleteMutation.isPending}
-        className="min-w-[200px]"
+        className="min-w-[220px] shadow-lg"
       >
         <CheckCircle className="mr-2 h-5 w-5" />
         {isCompleted ? "Terminé ✓" : "Marquer comme terminé"}
@@ -126,6 +128,7 @@ export function LessonNavigation({
           nextLesson && navigate(`/school/${slug}/learn/${courseId}/lessons/${nextLesson.id}`)
         }
         disabled={!nextLesson}
+        className="rounded-xl border-slate-200 hover:bg-slate-50 hover:border-slate-300"
       >
         Suivant
         <ChevronRight className="ml-2 h-4 w-4" />

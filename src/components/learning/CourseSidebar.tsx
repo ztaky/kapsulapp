@@ -70,19 +70,19 @@ export function CourseSidebar({ course, modules, progress, currentLessonId }: Co
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b">
-        <h2 className="font-semibold text-lg mb-1">{course.title}</h2>
+      <div className="p-6 border-b border-slate-100">
+        <h2 className="font-semibold text-xl mb-1 text-slate-900 tracking-tight">{course.title}</h2>
         {course.organizations && (
-          <p className="text-sm text-muted-foreground">{course.organizations.name}</p>
+          <p className="text-sm text-slate-600">{course.organizations.name}</p>
         )}
         
-        <div className="mt-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Progression</span>
-            <span className="font-medium">{Math.round(progressPercent)}%</span>
+        <div className="mt-6 p-4 bg-gradient-to-br from-orange-50 to-slate-50 rounded-2xl border border-orange-100/50">
+          <div className="flex justify-between text-sm mb-3">
+            <span className="text-slate-700 font-medium">Progression</span>
+            <span className="font-semibold text-orange-600">{Math.round(progressPercent)}%</span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-1">
+          <Progress value={progressPercent} className="h-2.5 bg-slate-200" />
+          <p className="text-xs text-slate-600 mt-2">
             {completedLessons} sur {totalLessons} leçons terminées
           </p>
         </div>
@@ -92,15 +92,15 @@ export function CourseSidebar({ course, modules, progress, currentLessonId }: Co
         <Accordion
           type="multiple"
           defaultValue={activeModuleId ? [activeModuleId] : []}
-          className="space-y-2"
+          className="space-y-3"
         >
           {modules.map((module) => (
-            <AccordionItem key={module.id} value={module.id} className="border rounded-lg">
-              <AccordionTrigger className="px-4 hover:no-underline">
-                <span className="font-medium text-sm">{module.title}</span>
+            <AccordionItem key={module.id} value={module.id} className="border border-slate-200 rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+              <AccordionTrigger className="px-4 hover:no-underline hover:bg-slate-50/50 rounded-t-2xl transition-colors">
+                <span className="font-semibold text-sm text-slate-900">{module.title}</span>
               </AccordionTrigger>
               <AccordionContent className="px-2 pb-2">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {module.lessons.map((lesson) => {
                     const status = getLessonStatus(lesson.id);
                     const isActive = lesson.id === currentLessonId;
@@ -110,10 +110,10 @@ export function CourseSidebar({ course, modules, progress, currentLessonId }: Co
                         key={lesson.id}
                         to={`/school/${slug}/learn/${courseId}/lessons/${lesson.id}`}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all",
                           isActive
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                            ? "bg-gradient-to-r from-orange-100 to-orange-50 text-orange-900 font-semibold shadow-sm border border-orange-200"
+                            : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
                         )}
                       >
                         {getLessonIcon(status)}
