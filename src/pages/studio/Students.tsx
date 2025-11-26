@@ -39,13 +39,20 @@ export default function StudioStudents() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Communauté</h2>
-        <p className="text-muted-foreground">Gérez les étudiants de votre école</p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
+            Communauté
+          </h1>
+          <p className="text-base text-slate-600 leading-relaxed">
+            Gérez les étudiants de votre école
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="rounded-3xl border border-slate-100 shadow-premium bg-white overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -83,10 +90,10 @@ export default function StudioStudents() {
       </div>
 
       {students?.length === 0 && (
-        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed">
+        <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 border-dashed bg-white/50">
           <div className="text-center">
-            <p className="text-lg font-medium">Aucun étudiant</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-lg font-medium text-slate-900">Aucun étudiant</p>
+            <p className="text-sm text-slate-600 leading-relaxed">
               Les étudiants apparaîtront ici après inscription
             </p>
           </div>

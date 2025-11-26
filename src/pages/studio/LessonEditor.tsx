@@ -89,27 +89,34 @@ export default function LessonEditor() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Éditeur de Leçon</h2>
-            <p className="text-muted-foreground">{formData.title || "Nouvelle leçon"}</p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header - Premium Style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="hover:bg-orange-50">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-1">
+                Éditeur de Leçon
+              </h1>
+              <p className="text-base text-slate-600 leading-relaxed">
+                {formData.title || "Nouvelle leçon"}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <Button onClick={handleSave}>
-          <Save className="mr-2 h-4 w-4" />
-          Sauvegarder
-        </Button>
+          <Button onClick={handleSave} variant="gradient" size="lg" className="shadow-lg">
+            <Save className="mr-2 h-5 w-5" />
+            Sauvegarder
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <div className="space-y-4 rounded-lg border p-6">
+          <div className="space-y-4 rounded-3xl border border-slate-100 shadow-premium bg-white p-8">
             <div>
               <Label htmlFor="title">Titre de la leçon</Label>
               <Input
@@ -186,8 +193,8 @@ export default function LessonEditor() {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-lg border p-6 space-y-4">
-            <h3 className="font-semibold">Paramètres</h3>
+          <div className="rounded-3xl border border-slate-100 shadow-premium bg-white p-8 space-y-4">
+            <h3 className="font-bold text-[#1e293b] text-lg tracking-tight">Paramètres</h3>
             
             <div>
               <Label htmlFor="resource_url">Ressource téléchargeable</Label>
