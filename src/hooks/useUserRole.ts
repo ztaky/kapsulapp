@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "super_admin" | "user";
-export type OrgRole = "owner" | "admin" | "student";
+export type OrgRole = "coach" | "student";
 
 export const useUserRole = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -67,11 +67,10 @@ export const useOrganizationRole = (organizationId?: string) => {
     setLoading(false);
   };
 
-  const isOwner = role === "owner";
-  const isAdmin = role === "admin" || role === "owner";
+  const isCoach = role === "coach";
   const isStudent = role === "student";
 
-  return { role, isOwner, isAdmin, isStudent, loading };
+  return { role, isCoach, isStudent, loading };
 };
 
 export const useUserOrganizations = () => {

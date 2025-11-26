@@ -98,11 +98,11 @@ const SuperAdmin = () => {
         .maybeSingle();
 
       if (profile) {
-        // Add owner to organization
+        // Add coach to organization
         await supabase.from("organization_members").insert({
           organization_id: org.id,
           user_id: profile.id,
-          role: "owner",
+          role: "coach",
         });
       }
 
