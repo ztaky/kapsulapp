@@ -11,9 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, BookOpen, LayoutDashboard, Settings, Building2 } from "lucide-react";
+import { LogOut, LayoutDashboard, Settings, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { useUserRole, useUserOrganizations } from "@/hooks/useUserRole";
+import kapsulLogo from "@/assets/kapsul-logo.png";
 
 interface Profile {
   full_name: string | null;
@@ -72,13 +73,11 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center space-x-2">
-          <div className="flex items-center">
-            <BookOpen className="h-6 w-6 text-orange-600" />
-            <span className="ml-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent tracking-tight">
-              Kapsul
-            </span>
-          </div>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={kapsulLogo} alt="Kapsul" className="h-9 w-9 rounded-lg" />
+          <span className="text-xl font-bold font-gotham tracking-tight text-slate-900">
+            Kapsul
+          </span>
         </Link>
 
         <div className="flex items-center gap-4">
