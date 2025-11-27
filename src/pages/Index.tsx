@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings } from "lucide-react";
+import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import CountdownTimer from "@/components/landing/CountdownTimer";
@@ -48,7 +48,7 @@ const Index = () => {
                 Connexion
               </Button>
               <Button variant="gradient" onClick={() => navigate("/start")} className="shadow-lg shadow-[#DD2476]/25">
-                Essayer Kapsul
+                Profiter de l'offre Fondateur
               </Button>
             </div>
           </div>
@@ -83,9 +83,9 @@ const Index = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Button size="lg" variant="gradient" onClick={() => navigate("/start")} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
-              Créer mon Académie (Essai Gratuit)
+              Profiter de l'offre Fondateur
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+            <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={() => scrollToSection("demo")}>
               Voir la démo
             </Button>
           </div>
@@ -101,8 +101,9 @@ const Index = () => {
                   <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 </div>
                 <div className="flex-1 mx-4">
-                  <div className="bg-background rounded-lg px-4 py-1.5 text-sm text-muted-foreground text-center">
-                    app.kapsul.io/studio
+                  <div className="bg-background rounded-lg px-4 py-1.5 text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
+                    <span className="text-green-500">🔒</span>
+                    <span>https://kapsulapp.io/studio</span>
                   </div>
                 </div>
               </div>
@@ -270,6 +271,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* DEMO VIDEO SECTION */}
+      <DemoVideoSection />
+
       {/* COMPARISON TABLE */}
       <ComparisonTable />
 
@@ -379,76 +383,90 @@ const Index = () => {
             Un modèle simple et transparent.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* LIFETIME OFFER */}
-            <div className="relative bg-card rounded-3xl p-8 shadow-elevated overflow-hidden">
-              {/* Gradient border effect */}
-              <div className="absolute inset-0 rounded-3xl p-[2px] bg-gradient-to-r from-[#FF512F] to-[#DD2476]">
-                <div className="w-full h-full bg-card rounded-3xl"></div>
-              </div>
+          {/* PREMIUM FOUNDER CARD */}
+          <div className="max-w-lg mx-auto">
+            <div className="relative group">
+              {/* Glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF512F] via-[#F5AF19] to-[#DD2476] rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse"></div>
               
-              <div className="relative z-10">
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white text-sm font-bold mb-6 animate-pulse">
-                  🔥 OFFRE FONDATEUR - Places limitées
-                </div>
+              {/* Card with animated gradient border */}
+              <div className="relative rounded-3xl p-[2px] bg-gradient-to-r from-[#F5AF19] via-[#FF512F] to-[#DD2476] overflow-hidden">
+                {/* Animated border shine */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_3s_infinite]"></div>
+                
+                {/* Inner card - Dark premium background */}
+                <div className="relative bg-gradient-to-br from-[#0A0F1C] via-[#111827] to-[#0F172A] rounded-[22px] p-8 overflow-hidden">
+                  {/* Subtle radial glow inside */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#DD2476]/10 rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#FF512F]/10 rounded-full blur-3xl"></div>
+                  
+                  <div className="relative z-10">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#F5AF19] to-[#FF512F] text-black text-sm font-bold mb-6">
+                      🔥 PLACES LIMITÉES
+                    </div>
 
-                <div className="mb-6">
-                  <span className="text-5xl font-extrabold text-foreground">297€</span>
-                  <span className="text-xl text-muted-foreground ml-2">LIFETIME</span>
-                </div>
-                <p className="text-muted-foreground mb-6">Paiement unique. Accès à vie.</p>
+                    {/* Title */}
+                    <h3 className="text-2xl font-extrabold bg-gradient-to-r from-[#F5AF19] to-[#FF8C00] bg-clip-text text-transparent mb-2">
+                      LICENCE FONDATEUR
+                    </h3>
 
-                <ul className="space-y-3 mb-8">
-                  {["Plateforme complète illimitée", "10 000 tokens IA/mois", "Support priorité fondateurs", "Toutes les futures mises à jour", "Badge \"Fondateur\" dans ton académie", "Garantie 14 jours remboursé"].map((feature, i) => <li key={i} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-foreground">{feature}</span>
-                    </li>)}
-                </ul>
+                    {/* Price */}
+                    <div className="mb-2">
+                      <span className="text-6xl font-black text-white">297€</span>
+                      <span className="text-xl text-white/60 ml-3">LIFETIME</span>
+                    </div>
+                    <p className="text-white/50 mb-6">Paiement unique. Accès à vie.</p>
 
-                <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/start")}>
-                  Devenir fondateur - 297€
-                </Button>
+                    {/* Guarantee badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium mb-6">
+                      <Shield className="w-4 h-4" />
+                      Garantie 30 Jours Satisfait ou Remboursé
+                    </div>
 
-                <div className="mt-6 pt-6 border-t border-border">
-                  <p className="text-center text-sm text-muted-foreground mb-3">
-                    ⏰ Offre limitée aux 100 premiers
-                  </p>
-                  <CountdownTimer targetDate={targetDate} size="normal" />
-                  <p className="text-center text-xs text-muted-foreground mt-3">
-                    jusqu'au 31/12/2025
-                  </p>
+                    <ul className="space-y-3 mb-8">
+                      {[
+                        "Plateforme complète illimitée",
+                        "5 000 crédits IA/mois inclus",
+                        "Support priorité fondateurs",
+                        "Toutes les futures mises à jour",
+                        "Badge \"Fondateur\" dans ton académie"
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
+                          <span className="text-white/90">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/50 hover:shadow-2xl hover:shadow-[#DD2476]/60 transition-all" onClick={() => navigate("/start")}>
+                      Devenir fondateur - 297€
+                    </Button>
+
+                    {/* Token info */}
+                    <p className="text-center text-xs text-white/40 mt-4">
+                      Recharges disponibles dans l'app si besoin de plus de crédits.
+                    </p>
+
+                    <div className="mt-6 pt-6 border-t border-white/10">
+                      <p className="text-center text-sm text-white/60 mb-3">
+                        ⏰ Offre limitée aux 100 premiers
+                      </p>
+                      <div className="[&_*]:text-white">
+                        <CountdownTimer targetDate={targetDate} size="normal" />
+                      </div>
+                      <p className="text-center text-xs text-white/40 mt-3">
+                        jusqu'au 31/12/2025
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* MONTHLY SUBSCRIPTION */}
-            <div className="bg-card rounded-3xl p-8 border border-border shadow-card">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-muted-foreground text-sm font-medium mb-6">
-                Abonnement Mensuel
-              </div>
-
-              <div className="mb-6">
-                <span className="text-5xl font-extrabold text-foreground">29,90€</span>
-                <span className="text-xl text-muted-foreground ml-2">/mois</span>
-              </div>
-              <p className="text-muted-foreground mb-6">7 jours gratuits sans CB</p>
-
-              <ul className="space-y-3 mb-8">
-                {["Plateforme complète", "5 000 tokens IA/mois", "Tokens supplémentaires à l'unité", "Support standard", "Sans engagement"].map((feature, i) => <li key={i} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-foreground">{feature}</span>
-                  </li>)}
-              </ul>
-
-              <Button size="lg" variant="outline" className="w-full text-lg" onClick={() => navigate("/start")}>
-                Essayer 7 jours gratuit
-              </Button>
             </div>
           </div>
 
           <p className="text-center text-muted-foreground mt-8">
-            Besoin de plus de tokens ? <span className="font-semibold text-foreground">1 000 tokens = 4,90€</span>
+            Besoin de plus de crédits ? <span className="font-semibold text-foreground">Recharges disponibles dans l'application.</span>
           </p>
         </div>
       </section>
@@ -471,17 +489,17 @@ const Index = () => {
             <p className="text-white/80 mb-4">Après le 31 décembre 2025 :</p>
             <div className="space-y-2 text-left">
               <p className="text-red-400 flex items-center gap-2">
-                <X className="w-4 h-4" /> Plus d'offre lifetime
+                <X className="w-4 h-4" /> Plus d'offre lifetime à 297€
               </p>
               <p className="text-red-400 flex items-center gap-2">
-                <X className="w-4 h-4" /> Plus de badge fondateur
+                <X className="w-4 h-4" /> Plus de badge fondateur exclusif
               </p>
               <p className="text-red-400 flex items-center gap-2">
-                <X className="w-4 h-4" /> Plus de 10 000 tokens/mois
+                <X className="w-4 h-4" /> Plus de garantie 30 jours
               </p>
             </div>
             <p className="text-white/60 mt-4 text-sm">
-              Il restera uniquement l'abonnement à 29,90€ avec 5 000 tokens.
+              Le prix passera à 497€ après cette date.
             </p>
           </div>
 
@@ -735,7 +753,7 @@ const ComparisonTable = () => {
     kajabi: "149€+",
     systeme: "27€+",
     thrive: "95€+",
-    kapsul: "29,90€"
+    kapsul: "297€ LIFE"
   }];
   const renderCell = (value: string) => {
     switch (value) {
@@ -754,7 +772,7 @@ const ComparisonTable = () => {
       case "auto":
         return <span className="text-xs font-bold gradient-text">🎯 Auto</span>;
       default:
-        return <span className={`text-xs ${value === "29,90€" ? "font-bold gradient-text" : ""}`}>{value}</span>;
+        return <span className={`text-xs ${value === "297€ LIFE" ? "font-bold gradient-text" : ""}`}>{value}</span>;
     }
   };
   return <section id="comparison" className="py-24 px-6">
@@ -789,7 +807,7 @@ const ComparisonTable = () => {
         </div>
 
         <p className="text-center text-muted-foreground mt-8">
-          <span className="font-semibold text-foreground">Lifetime à 297€ = 10 mois d'abonnement.</span> Après, c'est gratuit. À vie.
+          <span className="font-semibold text-foreground">Lifetime à 297€ = moins de 2 ans d'abonnement ailleurs.</span> Après, c'est gratuit. À vie.
         </p>
       </div>
     </section>;
@@ -838,38 +856,82 @@ const QualificationSection = () => {
     </section>;
 };
 
+// DEMO VIDEO SECTION COMPONENT
+const DemoVideoSection = () => {
+  return (
+    <section id="demo" className="py-24 px-6 bg-muted/30">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+          Voyez Kapsul <span className="gradient-text">en action.</span>
+        </h2>
+        <p className="text-center text-muted-foreground mb-12 text-lg">
+          De l'idée à la vente en moins de 5 minutes.
+        </p>
+
+        {/* Video Container */}
+        <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-border/50 bg-gradient-to-br from-[#0F172A] to-[#1E293B]">
+          {/* Video Placeholder / Cover */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] blur-3xl"></div>
+              <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-[#DD2476] to-[#FF512F] blur-3xl"></div>
+            </div>
+            
+            {/* Loom style placeholder text */}
+            <div className="absolute top-6 left-6 flex items-center gap-2 text-white/40">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                </svg>
+              </div>
+              <span className="text-sm font-medium">Démo Vidéo</span>
+            </div>
+
+            {/* Play Button */}
+            <button className="group relative z-10">
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                <Play className="w-10 h-10 text-white ml-1" fill="white" />
+              </div>
+            </button>
+
+            {/* Duration badge */}
+            <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm text-white/70 text-sm">
+              4:32
+            </div>
+          </div>
+        </div>
+
+        <p className="text-center text-muted-foreground mt-6 text-sm">
+          Vidéo de présentation complète — Sans son, avec sous-titres
+        </p>
+      </div>
+    </section>
+  );
+};
+
 // GUARANTEE SECTION COMPONENT
 const GuaranteeSection = () => {
   return <section className="py-24 px-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
           Notre promesse <span className="gradient-text">simple</span>
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Lifetime Guarantee */}
-          <div className="bg-card rounded-3xl p-8 border border-border shadow-card text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476] flex items-center justify-center mx-auto mb-6">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-4">Garantie Lifetime</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              Tu as <span className="font-bold text-foreground">14 jours</span> pour tester Kapsul à fond. 
-              Si tu n'es pas convaincu, on te rembourse intégralement. Sans question. Sans friction.
-            </p>
+        {/* Single centered guarantee card */}
+        <div className="bg-card rounded-3xl p-10 border border-border shadow-elevated text-center max-w-2xl mx-auto">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476] flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-10 h-10 text-white" />
           </div>
-
-          {/* Trial Guarantee */}
-          <div className="bg-card rounded-3xl p-8 border border-border shadow-card text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476] flex items-center justify-center mx-auto mb-6">
-              <Gift className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-4">Essai Gratuit</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              <span className="font-bold text-foreground">7 jours gratuits. Sans CB.</span> Tu testes, 
-              tu valides, tu souscris. Ou tu pars sans payer un centime.
-            </p>
-          </div>
+          <h3 className="text-2xl font-bold text-foreground mb-4">Garantie 30 Jours Satisfait ou Remboursé</h3>
+          <p className="text-muted-foreground leading-relaxed text-lg">
+            Tu as <span className="font-bold text-foreground">30 jours complets</span> pour tester Kapsul à fond et créer ton académie. 
+            Si tu n'es pas 100% convaincu, on te rembourse intégralement. Sans question. Sans friction. Sans justification.
+          </p>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Un simple email suffit. On traite les remboursements sous 48h.
+          </p>
         </div>
 
         <p className="text-center text-xl font-bold text-foreground mt-12">
