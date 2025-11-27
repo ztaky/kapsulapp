@@ -40,6 +40,8 @@ import AdminCourses from "./pages/admin/AdminCourses";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminSupport from "./pages/admin/AdminSupport";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminFAQ from "./pages/admin/AdminFAQ";
+import FAQ from "./pages/FAQ";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +71,7 @@ const App = () => (
             <Route path="courses" element={<AdminCourses />} />
             <Route path="logs" element={<AdminLogs />} />
             <Route path="support/*" element={<AdminSupport />} />
+            <Route path="faq" element={<AdminFAQ />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
@@ -99,6 +102,9 @@ const App = () => (
           {/* Learning Space Routes */}
           <Route path="/school/:slug/learn/:courseId" element={<LearningSpace />} />
           <Route path="/school/:slug/learn/:courseId/lessons/:lessonId" element={<LearningSpace />} />
+          
+          {/* Public FAQ */}
+          <Route path="/faq" element={<FAQ />} />
           
           {/* Public Landing Pages */}
           <Route path="/lp/:slug" element={<LandingPageView />} />

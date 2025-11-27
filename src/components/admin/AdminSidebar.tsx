@@ -9,7 +9,8 @@ import {
   Settings, 
   LogOut,
   ScrollText,
-  MessageCircleQuestion
+  MessageCircleQuestion,
+  HelpCircle
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -75,6 +76,11 @@ const navItems = [
     title: "Tickets Support",
     url: "/support",
     icon: MessageCircleQuestion,
+  },
+  {
+    title: "FAQ",
+    url: "/faq",
+    icon: HelpCircle,
   },
   {
     title: "Paramètres",
