@@ -455,6 +455,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_landing_page_views: {
+        Args: { page_slug: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "super_admin" | "user"

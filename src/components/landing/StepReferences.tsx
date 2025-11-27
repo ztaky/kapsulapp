@@ -2,8 +2,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, X, Image as ImageIcon } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Upload } from "lucide-react";
 import { WizardData } from "./LandingPageWizard";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface StepReferencesProps {
   data: WizardData;
@@ -11,6 +14,8 @@ interface StepReferencesProps {
 }
 
 export function StepReferences({ data, onUpdate }: StepReferencesProps) {
+  const [isUploading, setIsUploading] = useState(false);
+
   const addScreenshot = (url: string) => {
     if (url && data.referenceScreenshots.length < 5) {
       onUpdate({
@@ -23,6 +28,48 @@ export function StepReferences({ data, onUpdate }: StepReferencesProps) {
     onUpdate({
       referenceScreenshots: data.referenceScreenshots.filter((_, i) => i !== index),
     });
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (data.referenceScreenshots.length >= 5) {
+      toast.error("Maximum 5 images autorisées");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Seules les images sont acceptées");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from("landing-page-references")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("landing-page-references")
+        .getPublicUrl(fileName);
+
+      addScreenshot(publicUrl);
+      toast.success("Image ajoutée");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error("Erreur lors de l'upload");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -50,35 +97,63 @@ export function StepReferences({ data, onUpdate }: StepReferencesProps) {
         </div>
       </Card>
 
-      {/* Screenshot Input */}
-      <div className="space-y-2">
-        <Label>URLs des screenshots ({data.referenceScreenshots.length}/5)</Label>
+      {/* Upload or URL Input */}
+      <div className="space-y-3">
+        <Label>Ajouter des références ({data.referenceScreenshots.length}/5)</Label>
+        
+        {/* Upload Button */}
         <div className="flex gap-2">
-          <Input
-            type="url"
-            placeholder="https://exemple.com/screenshot.jpg"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                addScreenshot((e.target as HTMLInputElement).value);
-                (e.target as HTMLInputElement).value = "";
-              }
-            }}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="file-upload"
+            disabled={isUploading || data.referenceScreenshots.length >= 5}
           />
-          <Button
-            variant="outline"
-            onClick={(e) => {
-              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-              addScreenshot(input.value);
-              input.value = "";
-            }}
-            disabled={data.referenceScreenshots.length >= 5}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+          <label htmlFor="file-upload" className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={isUploading || data.referenceScreenshots.length >= 5}
+              asChild
+            >
+              <span>
+                <Upload className="h-4 w-4 mr-2" />
+                {isUploading ? "Upload en cours..." : "Uploader une image"}
+              </span>
+            </Button>
+          </label>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Appuyez sur Entrée ou cliquez sur + pour ajouter
-        </p>
+
+        {/* URL Input */}
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">ou ajouter via URL</Label>
+          <div className="flex gap-2">
+            <Input
+              type="url"
+              placeholder="https://exemple.com/screenshot.jpg"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  addScreenshot((e.target as HTMLInputElement).value);
+                  (e.target as HTMLInputElement).value = "";
+                }
+              }}
+            />
+            <Button
+              variant="outline"
+              onClick={(e) => {
+                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                addScreenshot(input.value);
+                input.value = "";
+              }}
+              disabled={data.referenceScreenshots.length >= 5}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Screenshot Grid */}
