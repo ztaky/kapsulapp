@@ -9,27 +9,38 @@ export const useUserRole = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkRole();
-  }, []);
+    // Check current session
+    const checkRole = async (userId: string | undefined) => {
+      if (!userId) {
+        setIsSuperAdmin(false);
+        setLoading(false);
+        return;
+      }
 
-  const checkRole = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      setIsSuperAdmin(false);
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "super_admin")
+        .maybeSingle();
+
+      setIsSuperAdmin(!!data);
       setLoading(false);
-      return;
-    }
+    };
 
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", session.user.id)
-      .eq("role", "super_admin")
-      .maybeSingle();
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      checkRole(session?.user?.id);
+    });
 
-    setIsSuperAdmin(!!data);
-    setLoading(false);
-  };
+    // Listen to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoading(true);
+      checkRole(session?.user?.id);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return { isSuperAdmin, loading };
 };
