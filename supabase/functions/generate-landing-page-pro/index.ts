@@ -179,77 +179,169 @@ Instructions : Reproduis la structure et le style visuel de cette page\n`;
   }
 
   prompt += `
-## STRUCTURE DEMANDÉE (JSON)
+## STRUCTURE DEMANDÉE (JSON) - STYLE "QUEEN PREMIUM"
 
+Cette landing page doit suivre le design system "Queen" avec des sections à fort contraste.
 Retourne un objet JSON avec cette structure EXACTE :
 
 {
   "hero": {
-    "headline": "Titre ultra-percutant qui capture l'attention",
-    "subheadline": "Sous-titre qui clarifie la promesse",
-    "cta_text": "Texte du bouton principal",
-    "cta_subtext": "Texte sous le bouton (ex: Garantie 30 jours)"
+    "badge": "Badge au-dessus du titre (ex: Pour dirigeants, Formation Premium)",
+    "headline": "Titre ultra-percutant en 8-12 mots max qui capture l'attention",
+    "subheadline": "Sous-titre qui clarifie la promesse en une phrase",
+    "cta_text": "Texte du bouton principal (orienté action immédiate)",
+    "cta_subtext": "Texte rassurant sous le bouton (ex: Garantie 30 jours satisfait ou remboursé)"
   },
   "problem": {
-    "title": "Titre de la section problème",
+    "title": "Titre de la section problème qui résonne émotionnellement",
+    "agitation_text": "Paragraphe qui appuie sur la douleur et crée l'urgence (2-3 phrases max)",
     "pain_points": [
-      "Point de douleur 1 du client cible",
-      "Point de douleur 2",
-      "Point de douleur 3"
+      "Ce que vit le client aujourd'hui - douleur 1 (très spécifique)",
+      "Ce que vit le client aujourd'hui - douleur 2",
+      "Ce que vit le client aujourd'hui - douleur 3"
+    ],
+    "risks": [
+      "Le risque/conséquence si rien ne change - point 1",
+      "Le risque/conséquence si rien ne change - point 2"
     ]
   },
-  "solution": {
-    "title": "Titre de la section solution",
-    "description": "Description de comment la formation résout les problèmes",
-    "benefits": [
-      { "title": "Bénéfice 1", "description": "Explication du bénéfice" },
-      { "title": "Bénéfice 2", "description": "Explication" },
-      { "title": "Bénéfice 3", "description": "Explication" }
+  "method": {
+    "title": "Pourquoi cette méthode fonctionne (titre bénéfice)",
+    "description": "Explication en 2 phrases de la philosophie unique",
+    "pillars": [
+      {
+        "number": 1,
+        "title": "Pilier 1 - Court et mémorable (3-5 mots)",
+        "description": "Explication du pilier en 2-3 phrases max",
+        "icon": "check"
+      },
+      {
+        "number": 2,
+        "title": "Pilier 2 - Court et mémorable",
+        "description": "Explication claire et concrète",
+        "icon": "trending"
+      },
+      {
+        "number": 3,
+        "title": "Pilier 3 - Court et mémorable",
+        "description": "Explication avec bénéfice mesurable si possible",
+        "icon": "clock"
+      }
     ]
+  },
+  "transformation": {
+    "title": "Le résultat concret que vous obtenez",
+    "left_card": {
+      "title": "Premier résultat (ex: Votre Assistant IA)",
+      "description": "Description du résultat concret en 2-3 phrases",
+      "color": "orange"
+    },
+    "right_card": {
+      "title": "Deuxième résultat (ex: Votre Co-Créateur)",
+      "description": "Description du deuxième résultat concret",
+      "color": "pink"
+    }
   },
   "program": {
-    "title": "Ce que vous allez apprendre",
+    "title": "Un programme court, dense et actionnable",
     "modules": [
-      { "title": "Module 1", "description": "Résumé du module", "lessons_count": 5 }
+      {
+        "title": "Module 1 : Titre orienté résultat",
+        "description": "Résumé du module en 1-2 phrases avec bénéfices clairs",
+        "lessons_count": 5
+      }
     ]
   },
   "trainer": {
-    "title": "Votre formateur",
-    "bio_highlight": "Version courte et impactante de la bio",
-    "credentials": ["Accomplissement 1", "Accomplissement 2"],
-    "quote": "Citation inspirante du formateur"
+    "tagline": "Ma mission / Mon expertise",
+    "title": "Votre expert(e)",
+    "bio_highlight": "Bio courte et impactante en 3-4 phrases qui établit crédibilité",
+    "credentials": [
+      "Accomplissement mesurable 1",
+      "Accomplissement mesurable 2",
+      "Accomplissement mesurable 3"
+    ],
+    "quote": "Citation inspirante et authentique du formateur qui révèle sa philosophie"
   },
   "testimonials": [
     {
       "name": "Prénom N.",
+      "role": "Titre/Profession précise",
+      "text": "Témoignage très spécifique avec résultats mesurables et transformation concrète (3-4 phrases)",
+      "rating": 5
+    },
+    {
+      "name": "Prénom M.",
       "role": "Titre/Profession",
-      "text": "Témoignage authentique et spécifique avec résultats",
+      "text": "Témoignage authentique avec avant/après clair",
+      "rating": 5
+    },
+    {
+      "name": "Prénom L.",
+      "role": "Titre/Profession",
+      "text": "Témoignage qui parle d'un bénéfice spécifique inattendu",
       "rating": 5
     }
   ],
   "faq": [
-    { "question": "Question fréquente", "answer": "Réponse rassurante" }
+    {
+      "question": "Question d'objection courante 1",
+      "answer": "Réponse rassurante et complète qui lève l'objection"
+    },
+    {
+      "question": "Question d'objection courante 2",
+      "answer": "Réponse avec preuve sociale ou garantie"
+    },
+    {
+      "question": "Question pratique 3",
+      "answer": "Réponse claire et pratique"
+    }
   ],
   "final_cta": {
-    "title": "Titre final qui pousse à l'action",
-    "subtitle": "Rappel de la transformation",
-    "cta_text": "Texte du bouton",
-    "guarantee": "Texte de la garantie satisfait ou remboursé",
-    "urgency": "Message de rareté/urgence"
+    "urgency_badge": "Message de rareté/urgence (ex: Prix de lancement expire bientôt)",
+    "title": "Ne restez pas sur le quai (titre émotionnel et urgent)",
+    "subtitle": "Rappel de la transformation en une phrase puissante",
+    "cta_text": "Je démarre la formation maintenant",
+    "guarantee": "Satisfait ou remboursé 30 jours - Sans conditions"
   }
 }
 
-CONSIGNES CRITIQUES :
-- Utilise le framework AIDA pour structurer le message
-- Commence chaque section par un bénéfice, pas une fonctionnalité
-- Utilise des power words émotionnels (transformez, maîtrisez, libérez, découvrez)
-- Les témoignages doivent mentionner des résultats spécifiques
-- Les CTAs doivent être orientés action et bénéfice
-- Ton conversationnel mais professionnel
-- Court et scannable : phrases de max 20 mots
-- Inclus des chiffres concrets quand possible
+## CONSIGNES CRITIQUES STYLE "QUEEN" :
 
-Retourne UNIQUEMENT le JSON, sans texte avant ou après.`;
+**SECTION PROBLÈME (Fond sombre - Impact maximal) :**
+- Titre qui pose LA question que le client se pose dans sa tête
+- Agitation text : appuie sur la douleur sans être négatif, crée l'urgence
+- Pain points : très spécifiques à la cible, pas génériques
+- Risks : conséquences concrètes et mesurables si rien ne change
+
+**SECTION MÉTHODE (3 Piliers) :**
+- Les 3 piliers doivent être DIFFÉRENCIÉS et complémentaires
+- Chaque pilier = un principe unique qui rend cette formation différente
+- Pas de redondance entre les 3 piliers
+- Titres courts et mémorables (style "Zéro Blabla", "Rentabilité", "Micro-Learning")
+
+**SECTION TRANSFORMATION (2 Cartes) :**
+- Les 2 résultats doivent être complémentaires mais distincts
+- Chaque carte présente un aspect différent du résultat final
+- Langage concret et visuel, pas abstrait
+
+**COPYWRITING GÉNÉRAL :**
+- Framework AIDA strict : Attention → Interest → Desire → Action
+- Bénéfices AVANT fonctionnalités à chaque fois
+- Power words émotionnels mais adaptés au public (pas de hype artificiel)
+- Témoignages : résultats chiffrés ou transformations très spécifiques
+- CTAs orientés bénéfice immédiat : "Je démarre", "J'accède maintenant"
+- Ton : conversationnel mais expert, pragmatique mais inspirant
+- Phrases courtes : 15-20 mots max
+- Chiffres concrets dès que possible
+
+**AUTHENTICITÉ PREMIUM :**
+- Pas de promesses irréalistes
+- Pas de formules creuses type "révolutionnaire", "secret"
+- Langage direct et professionnel adapté à des dirigeants/cadres
+- Focus sur résultats mesurables et transformation concrète
+
+Retourne UNIQUEMENT le JSON, sans texte avant ou après, sans balises markdown.`;
 
   return prompt;
 }

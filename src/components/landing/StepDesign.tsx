@@ -128,6 +128,51 @@ export function StepDesign({ data, onUpdate }: StepDesignProps) {
         </div>
       </div>
 
+      {/* CTA Style Selection */}
+      <div className="space-y-4">
+        <Label className="text-base">Style des boutons d'action (CTA)</Label>
+        
+        <div className="grid grid-cols-2 gap-4">
+          {/* Option Solid */}
+          <Card
+            className={`p-4 cursor-pointer transition-all hover:border-primary ${
+              data.ctaStyle === 'solid' ? 'border-primary ring-2 ring-primary' : ''
+            }`}
+            onClick={() => onUpdate({ ctaStyle: 'solid' })}
+          >
+            <div className="flex flex-col items-center gap-3">
+              <div 
+                className="w-full h-12 rounded-full flex items-center justify-center text-white font-semibold"
+                style={{ backgroundColor: data.colors[0] || '#d97706' }}
+              >
+                Couleur unie
+              </div>
+              <span className="text-sm text-center">Un seul couleur solide</span>
+            </div>
+          </Card>
+          
+          {/* Option Gradient */}
+          <Card
+            className={`p-4 cursor-pointer transition-all hover:border-primary ${
+              data.ctaStyle === 'gradient' ? 'border-primary ring-2 ring-primary' : ''
+            }`}
+            onClick={() => onUpdate({ ctaStyle: 'gradient' })}
+          >
+            <div className="flex flex-col items-center gap-3">
+              <div 
+                className="w-full h-12 rounded-full flex items-center justify-center text-white font-semibold"
+                style={{ 
+                  background: `linear-gradient(135deg, ${data.colors[0] || '#d97706'}, ${data.colors[1] || '#f59e0b'})`
+                }}
+              >
+                Dégradé
+              </div>
+              <span className="text-sm text-center">Dégradé de 2 couleurs</span>
+            </div>
+          </Card>
+        </div>
+      </div>
+
       {/* Font Selection */}
       <div className="space-y-4">
         <Label className="text-base">Polices</Label>
