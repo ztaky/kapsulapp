@@ -220,7 +220,7 @@ const Index = () => {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476]"></div>
                   <div>
-                    <p className="text-white text-sm font-medium">Mon École</p>
+                    <p className="text-white text-sm font-medium">L'Académie des Formateurs</p>
                     <p className="text-white/50 text-xs">noreply@monecole.com</p>
                   </div>
                 </div>
