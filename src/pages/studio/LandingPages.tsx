@@ -48,7 +48,7 @@ export default function LandingPages() {
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Landing page supprimée");
+      toast.success("Page de vente supprimée");
       refetch();
     } catch (error) {
       toast.error("Erreur lors de la suppression");
@@ -75,7 +75,7 @@ export default function LandingPages() {
         });
 
       if (error) throw error;
-      toast.success("Landing page dupliquée");
+      toast.success("Page de vente dupliquée");
       refetch();
     } catch (error) {
       toast.error("Erreur lors de la duplication");
@@ -95,8 +95,8 @@ export default function LandingPages() {
       
       toast.success(
         newStatus === "published" 
-          ? "Landing page publiée" 
-          : "Landing page dépubliée"
+          ? "Page de vente publiée" 
+          : "Page de vente dépubliée"
       );
       refetch();
     } catch (error) {
@@ -124,7 +124,7 @@ export default function LandingPages() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-              Landing Pages
+              Pages de vente
             </h1>
             <p className="text-muted-foreground text-lg">
               Créez des pages de vente professionnelles générées par IA
@@ -136,7 +136,7 @@ export default function LandingPages() {
             className="shadow-premium"
           >
             <Plus className="mr-2 h-5 w-5" />
-            Nouvelle Landing Page
+            Nouvelle page de vente
           </Button>
         </div>
       </div>
@@ -245,12 +245,12 @@ export default function LandingPages() {
             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
               <Plus className="h-10 w-10 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold">Aucune landing page</h3>
+            <h3 className="text-xl font-semibold">Aucune page de vente</h3>
             <p className="text-muted-foreground">
-              Créez votre première landing page générée par IA avec un copywriting professionnel
+              Créez votre première page de vente générée par IA avec un copywriting professionnel
             </p>
             <Button onClick={() => setIsWizardOpen(true)} size="lg">
-              Créer ma première landing page
+              Créer ma première page de vente
             </Button>
           </div>
         </Card>

@@ -49,11 +49,6 @@ const navItems = [
   },
   {
     title: "Pages de vente",
-    url: "/sales-pages",
-    icon: Wand2,
-  },
-  {
-    title: "Landing Pages",
     url: "/landing-pages",
     icon: Sparkles,
   },
