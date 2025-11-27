@@ -26,6 +26,7 @@ import StudentInvoices from "./pages/student/StudentInvoices";
 import StudentCertificates from "./pages/student/StudentCertificates";
 import StudentAssistant from "./pages/student/StudentAssistant";
 import LandingPageView from "./pages/LandingPageView";
+import CourseSalesPage from "./pages/CourseSalesPage";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,9 @@ const App = () => (
           
           {/* Public Landing Pages */}
           <Route path="/lp/:slug" element={<LandingPageView />} />
+          
+          {/* Public Course Sales Page */}
+          <Route path="/school/:slug/course/:courseId" element={<CourseSalesPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
