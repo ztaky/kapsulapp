@@ -111,16 +111,54 @@ All colors MUST be HSL.
     @apply text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: #FDFBF7;
-    background-image: 
-      linear-gradient(to right, #80808012 1px, transparent 1px),
-      linear-gradient(to bottom, #80808012 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(circle, #00000008 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 
   /* Utility pour fond sans grid pattern */
   .bg-no-grid {
     background-image: none;
     background-color: transparent;
+  }
+
+  /* Glass effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(90deg, #FF512F 0%, #DD2476 100%);
+  }
+
+  /* Gradient border */
+  .gradient-border {
+    position: relative;
+    background: white;
+    border-radius: 9999px;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    padding: 1.5px;
+    background: linear-gradient(90deg, #FF512F 0%, #DD2476 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* 3D perspective for mockups */
+  .perspective-3d {
+    perspective: 1500px;
+  }
+  .mockup-3d {
+    transform: rotateX(8deg) rotateY(-8deg);
+    transform-style: preserve-3d;
   }
 
   /* Premium card shadow */
