@@ -7,7 +7,8 @@ import {
   DollarSign, 
   BookOpen, 
   Settings, 
-  LogOut 
+  LogOut,
+  ScrollText
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -63,6 +64,11 @@ const navItems = [
     title: "Formations",
     url: "/courses",
     icon: BookOpen,
+  },
+  {
+    title: "Logs d'activité",
+    url: "/logs",
+    icon: ScrollText,
   },
   {
     title: "Paramètres",
