@@ -71,6 +71,8 @@ serve(async (req) => {
 
     const data = await response.json();
     const generatedText = data.choices[0].message.content;
+    
+    console.log("AI Response received, length:", generatedText.length);
 
     // Parse JSON from response
     let content;
@@ -81,8 +83,23 @@ serve(async (req) => {
       } else {
         content = JSON.parse(generatedText);
       }
+      
+      // Log structure for debugging
+      console.log("Generated content structure:", {
+        hasHero: !!content.hero,
+        hasProblem: !!content.problem,
+        hasSolution: !!content.solution,
+        hasProgram: !!content.program,
+        hasTestimonials: !!content.testimonials,
+        hasFaq: !!content.faq,
+        hasFinalCta: !!content.final_cta,
+        modulesCount: content.program?.modules?.length || 0,
+        testimonialsCount: content.testimonials?.length || 0,
+      });
+      
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
+      console.error("Raw AI response:", generatedText.substring(0, 500));
       throw new Error("Failed to parse AI response");
     }
 
