@@ -443,6 +443,7 @@ export type Database = {
       organizations: {
         Row: {
           brand_color: string | null
+          contact_email: string | null
           created_at: string
           id: string
           logo_url: string | null
@@ -455,6 +456,7 @@ export type Database = {
         }
         Insert: {
           brand_color?: string | null
+          contact_email?: string | null
           created_at?: string
           id?: string
           logo_url?: string | null
@@ -467,6 +469,7 @@ export type Database = {
         }
         Update: {
           brand_color?: string | null
+          contact_email?: string | null
           created_at?: string
           id?: string
           logo_url?: string | null
