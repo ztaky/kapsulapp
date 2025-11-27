@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Star, Award, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Star, Award, Clock, Quote } from "lucide-react";
 import { generateDynamicPalette } from "@/lib/color-utils";
 
 export default function LandingPageView() {
@@ -99,28 +99,28 @@ export default function LandingPageView() {
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: bodyFont }}>
       
-      {/* SECTION A: HERO - Fond clair avec pattern */}
+      {/* SECTION A: HERO - Fond clair épuré */}
       <section
-        className="relative py-24 px-4 overflow-hidden"
+        className="relative py-16 sm:py-20 lg:py-28 px-5 sm:px-8 lg:px-12 overflow-hidden"
         style={{ backgroundColor: palette.lightBg }}
       >
-        {/* Grid pattern overlay */}
+        {/* Grid pattern overlay très subtil */}
         <div 
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `repeating-linear-gradient(0deg, ${palette.primary}, ${palette.primary} 1px, transparent 1px, transparent 60px),
                               repeating-linear-gradient(90deg, ${palette.primary}, ${palette.primary} 1px, transparent 1px, transparent 60px)`
           }}
         />
         
-        <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
+        <div className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-8 relative z-10">
           {content?.hero?.badge && (
             <Badge 
-              className="text-sm px-4 py-2 font-semibold"
+              className="text-sm px-5 py-2.5 font-semibold shadow-sm"
               style={{ 
                 backgroundColor: palette.accentLight,
                 color: palette.primary,
-                border: `1px solid ${palette.primary}30`
+                border: `1px solid ${palette.primary}20`
               }}
             >
               {content.hero.badge}
@@ -128,7 +128,7 @@ export default function LandingPageView() {
           )}
           
           <h1
-            className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight"
             style={{
               fontFamily: headingFont,
               color: palette.primary,
@@ -137,14 +137,14 @@ export default function LandingPageView() {
             {content?.hero?.headline || courses?.title}
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             {content?.hero?.subheadline || courses?.description}
           </p>
           
-          <div className="flex flex-col items-center gap-3 pt-6">
+          <div className="flex flex-col items-center gap-3 pt-4 sm:pt-6">
             <Button
               size="lg"
-              className="text-xl px-12 py-7 rounded-full shadow-2xl hover:scale-105 transition-all text-white font-bold"
+              className="text-lg sm:text-xl px-8 sm:px-12 py-6 sm:py-7 rounded-full shadow-lg hover:shadow-2xl hover:scale-105 transition-all text-white font-bold"
               style={ctaButtonStyle}
             >
               {content?.hero?.cta_text || "S'inscrire maintenant"} - {courses?.price}€
@@ -158,52 +158,66 @@ export default function LandingPageView() {
         </div>
       </section>
 
-      {/* SECTION B: PROBLÈME - Fond sombre, contraste fort */}
+      {/* SECTION B: PROBLÈME - Fond sombre uni, cartes glass */}
       {content?.problem && (
         <section 
-          className="py-20 px-4 w-full"
+          className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12"
           style={{ backgroundColor: palette.darkBg }}
         >
           <div className="max-w-6xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-bold text-center mb-16 text-white"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16 text-white"
               style={{ fontFamily: headingFont }}
             >
               {content.problem.title}
             </h2>
             
             {content.problem.agitation_text && (
-              <p className="text-xl text-gray-300 text-center mb-12 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-gray-300 text-center mb-10 sm:mb-12 max-w-3xl mx-auto leading-relaxed">
                 {content.problem.agitation_text}
               </p>
             )}
             
-            <div className="grid md:grid-cols-2 gap-12">
-              {/* Colonne gauche: Pain points avec croix rouges */}
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: headingFont }}>
+            <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
+              {/* Colonne gauche: Pain points avec cartes glass */}
+              <div className="space-y-5">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-6" style={{ fontFamily: headingFont }}>
                   Ce que vous vivez aujourd'hui...
                 </h3>
                 {content.problem.pain_points?.map((pain: string, index: number) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <XCircle className="h-6 w-6 flex-shrink-0 text-red-500 mt-1" />
-                    <p className="text-white text-lg leading-relaxed">{pain}</p>
+                  <div 
+                    key={index} 
+                    className="p-5 sm:p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  >
+                    <div className="flex items-start gap-4">
+                      <XCircle className="h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 text-red-400 mt-1" />
+                      <p className="text-white text-base sm:text-lg leading-relaxed">{pain}</p>
+                    </div>
                   </div>
                 ))}
               </div>
               
-              {/* Colonne droite: Risques avec alertes */}
+              {/* Colonne droite: Risques avec cartes glass */}
               {content.problem.risks && content.problem.risks.length > 0 && (
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: headingFont, color: palette.tertiary }}>
+                <div className="space-y-5">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-6" style={{ fontFamily: headingFont, color: palette.tertiary }}>
                     Le risque si vous ne faites rien...
                   </h3>
                   {content.problem.risks.map((risk: string, index: number) => (
-                    <div key={index} className="flex items-start gap-4">
-                      <AlertTriangle className="h-6 w-6 flex-shrink-0 mt-1" style={{ color: palette.tertiary }} />
-                      <p className="text-lg leading-relaxed" style={{ color: palette.tertiary }}>
-                        {risk}
-                      </p>
+                    <div 
+                      key={index} 
+                      className="p-5 sm:p-6 rounded-2xl backdrop-blur-sm border border-opacity-20 hover:scale-[1.02] transition-all"
+                      style={{ 
+                        backgroundColor: `${palette.tertiary}10`,
+                        borderColor: palette.tertiary
+                      }}
+                    >
+                      <div className="flex items-start gap-4">
+                        <AlertTriangle className="h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 mt-1" style={{ color: palette.tertiary }} />
+                        <p className="text-base sm:text-lg leading-relaxed" style={{ color: palette.tertiary }}>
+                          {risk}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -213,49 +227,49 @@ export default function LandingPageView() {
         </section>
       )}
 
-      {/* SECTION C: MÉTHODE - 3 cartes premium */}
+      {/* SECTION C: MÉTHODE - 3 cartes épurées glass effect */}
       {content?.method && (
         <section 
-          className="py-20 px-4"
+          className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12"
           style={{ backgroundColor: palette.lightBg }}
         >
           <div className="max-w-6xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-bold text-center mb-6"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6"
               style={{ fontFamily: headingFont, color: palette.primary }}
             >
               {content.method.title}
             </h2>
             
             {content.method.description && (
-              <p className="text-xl text-gray-700 text-center mb-16 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-gray-700 text-center mb-12 sm:mb-16 max-w-3xl mx-auto leading-relaxed">
                 {content.method.description}
               </p>
             )}
             
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
               {content.method.pillars?.map((pillar: any, index: number) => (
                 <Card 
                   key={index} 
-                  className="relative bg-white rounded-3xl shadow-xl p-8 hover:shadow-2xl transition-shadow border-0"
+                  className="relative backdrop-blur-sm bg-white/95 rounded-3xl shadow-lg border-0 p-6 sm:p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
-                  {/* Numéro violet en haut */}
+                  {/* Numéro en haut */}
                   <div 
-                    className="absolute -top-4 left-8 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg"
+                    className="absolute -top-4 left-6 sm:left-8 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg"
                     style={{ backgroundColor: palette.secondary }}
                   >
                     {pillar.number || index + 1}
                   </div>
                   
                   <div className="mt-6">
-                    <CheckCircle2 className="h-10 w-10 mb-6" style={{ color: palette.primary }} />
+                    <CheckCircle2 className="h-9 w-9 sm:h-10 sm:w-10 mb-5 sm:mb-6" style={{ color: palette.primary }} />
                     <h3 
-                      className="font-bold text-2xl mb-4" 
+                      className="font-bold text-xl sm:text-2xl mb-3 sm:mb-4" 
                       style={{ fontFamily: headingFont, color: palette.primary }}
                     >
                       {pillar.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed text-lg">
+                    <p className="text-gray-600 leading-relaxed text-base sm:text-lg">
                       {pillar.description}
                     </p>
                   </div>
@@ -266,49 +280,49 @@ export default function LandingPageView() {
         </section>
       )}
 
-      {/* SECTION D: TRANSFORMATION - 2 cartes colorées */}
+      {/* SECTION D: TRANSFORMATION - 2 cartes colorées épurées */}
       {content?.transformation && (
-        <section className="py-20 px-4 bg-white">
+        <section className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12 bg-white">
           <div className="max-w-5xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-bold text-center mb-16"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16"
               style={{ fontFamily: headingFont, color: palette.primary }}
             >
               {content.transformation.title}
             </h2>
             
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Carte gauche - Orange clair */}
+            <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
+              {/* Carte gauche */}
               {content.transformation.left_card && (
                 <Card 
-                  className="rounded-3xl p-10 border-0 shadow-xl hover:shadow-2xl transition-shadow"
+                  className="rounded-3xl p-8 sm:p-10 border-0 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                   style={{ backgroundColor: palette.primaryLight }}
                 >
                   <h3 
-                    className="font-bold text-3xl mb-6" 
+                    className="font-bold text-2xl sm:text-3xl mb-5 sm:mb-6" 
                     style={{ fontFamily: headingFont, color: palette.primaryDark }}
                   >
                     {content.transformation.left_card.title}
                   </h3>
-                  <p className="text-gray-700 leading-relaxed text-lg">
+                  <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
                     {content.transformation.left_card.description}
                   </p>
                 </Card>
               )}
               
-              {/* Carte droite - Rose clair */}
+              {/* Carte droite */}
               {content.transformation.right_card && (
                 <Card 
-                  className="rounded-3xl p-10 border-0 shadow-xl hover:shadow-2xl transition-shadow"
+                  className="rounded-3xl p-8 sm:p-10 border-0 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                   style={{ backgroundColor: palette.secondaryLight }}
                 >
                   <h3 
-                    className="font-bold text-3xl mb-6" 
+                    className="font-bold text-2xl sm:text-3xl mb-5 sm:mb-6" 
                     style={{ fontFamily: headingFont, color: palette.secondaryDark }}
                   >
                     {content.transformation.right_card.title}
                   </h3>
-                  <p className="text-gray-700 leading-relaxed text-lg">
+                  <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
                     {content.transformation.right_card.description}
                   </p>
                 </Card>
@@ -318,49 +332,64 @@ export default function LandingPageView() {
         </section>
       )}
 
-      {/* SECTION E: PROGRAMME - Timeline */}
+      {/* SECTION E: PROGRAMME - Timeline épurée SANS border-l */}
       {content?.program?.modules && (
         <section 
-          className="py-20 px-4"
+          className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12"
           style={{ backgroundColor: palette.lightBg }}
         >
           <div className="max-w-4xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-bold mb-16 text-center"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold mb-12 sm:mb-16 text-center"
               style={{ fontFamily: headingFont, color: palette.primary }}
             >
               {content.program.title || "Un programme court, dense et actionnable"}
             </h2>
             
             <div className="relative">
-              {/* Ligne verticale */}
+              {/* Ligne verticale fine */}
               <div 
-                className="absolute left-8 top-0 bottom-0 w-1 rounded-full"
-                style={{ backgroundColor: `${palette.primary}40` }}
+                className="absolute left-5 sm:left-8 top-0 bottom-0 w-0.5 rounded-full hidden sm:block"
+                style={{ backgroundColor: `${palette.primary}30` }}
               />
               
-              <div className="space-y-8">
+              <div className="space-y-6 sm:space-y-8">
                 {content.program.modules.map((module: any, index: number) => (
-                  <div key={index} className="relative pl-20">
-                    {/* Cercle numéroté */}
+                  <div key={index} className="relative pl-0 sm:pl-20">
+                    {/* Cercle numéroté détaché */}
                     <div 
-                      className="absolute left-4 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg"
+                      className="absolute left-0 sm:left-4 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg hidden sm:flex"
                       style={{ backgroundColor: palette.primary }}
                     >
                       {index + 1}
                     </div>
                     
+                    {/* Carte SANS border-l-4, effet glass */}
                     <Card 
-                      className="p-8 border-0 border-l-4 rounded-2xl shadow-lg hover:shadow-xl transition-shadow bg-white"
-                      style={{ borderLeftColor: palette.primary }}
+                      className="p-6 sm:p-8 rounded-3xl shadow-lg backdrop-blur-sm bg-white/95 border-0 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                     >
+                      <div className="flex items-start gap-4 sm:hidden mb-4">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-lg flex-shrink-0"
+                          style={{ backgroundColor: palette.primary }}
+                        >
+                          {index + 1}
+                        </div>
+                        <h3 
+                          className="font-bold text-xl flex-1" 
+                          style={{ fontFamily: headingFont, color: palette.primary }}
+                        >
+                          {module.title}
+                        </h3>
+                      </div>
+                      
                       <h3 
-                        className="font-bold text-2xl mb-3" 
+                        className="font-bold text-xl sm:text-2xl mb-3 hidden sm:block" 
                         style={{ fontFamily: headingFont, color: palette.primary }}
                       >
                         {module.title}
                       </h3>
-                      <p className="text-gray-600 mb-4 leading-relaxed text-lg">
+                      <p className="text-gray-600 mb-4 leading-relaxed text-base sm:text-lg">
                         {module.description}
                       </p>
                       {module.lessons_count && (
@@ -384,19 +413,30 @@ export default function LandingPageView() {
         </section>
       )}
 
-      {/* SECTION F: EXPERT - Fond sombre moyen */}
+      {/* SECTION F: EXPERT - Fond sombre moyen, épuré */}
       {(content?.trainer || trainer_info) && (
         <section 
-          className="py-20 px-4"
+          className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12"
           style={{ backgroundColor: palette.mediumDarkBg }}
         >
           <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              {/* Gauche: Texte */}
-              <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-10 sm:gap-12 items-center">
+              {/* Image en premier sur mobile */}
+              {trainer_info?.photo && (
+                <div className="flex justify-center order-1 md:order-2">
+                  <img
+                    src={trainer_info.photo}
+                    alt={trainer_info.name}
+                    className="w-full max-w-md h-auto object-cover rounded-3xl shadow-2xl"
+                  />
+                </div>
+              )}
+              
+              {/* Texte */}
+              <div className="space-y-5 sm:space-y-6 order-2 md:order-1">
                 {content?.trainer?.tagline && (
                   <Badge 
-                    className="text-base px-6 py-2 font-semibold"
+                    className="text-sm sm:text-base px-5 sm:px-6 py-2 font-semibold"
                     style={{ 
                       backgroundColor: palette.tertiary,
                       color: 'white'
@@ -407,13 +447,13 @@ export default function LandingPageView() {
                 )}
                 
                 <h2 
-                  className="text-4xl md:text-5xl font-bold text-white"
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold text-white"
                   style={{ fontFamily: headingFont }}
                 >
                   {content?.trainer?.title || trainer_info?.name}
                 </h2>
                 
-                <p className="text-gray-300 text-xl leading-relaxed">
+                <p className="text-gray-300 text-lg sm:text-xl leading-relaxed">
                   {content?.trainer?.bio_highlight || trainer_info?.bio}
                 </p>
                 
@@ -438,7 +478,7 @@ export default function LandingPageView() {
                 
                 {content?.trainer?.quote && (
                   <blockquote 
-                    className="border-l-4 pl-6 italic text-xl mt-8"
+                    className="border-l-4 pl-5 sm:pl-6 italic text-lg sm:text-xl mt-6 sm:mt-8"
                     style={{ 
                       borderColor: palette.tertiary,
                       color: palette.tertiary
@@ -448,60 +488,61 @@ export default function LandingPageView() {
                   </blockquote>
                 )}
               </div>
-              
-              {/* Droite: Photo */}
-              {trainer_info?.photo && (
-                <div className="flex justify-center">
-                  <img
-                    src={trainer_info.photo}
-                    alt={trainer_info.name}
-                    className="w-96 h-96 object-cover rounded-3xl shadow-2xl"
-                    style={{ border: `6px solid ${palette.primary}` }}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </section>
       )}
 
-      {/* SECTION G: TESTIMONIALS */}
+      {/* SECTION G: TESTIMONIALS - Cartes glass avec bordure subtile */}
       {content?.testimonials && content.testimonials.length > 0 && (
         <section 
-          className="py-20 px-4"
-          style={{ 
-            background: `linear-gradient(180deg, ${palette.lightBg}, white)` 
-          }}
+          className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12 bg-white"
         >
           <div className="max-w-6xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-bold text-center mb-16"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16"
               style={{ fontFamily: headingFont, color: palette.primary }}
             >
               Ce que disent nos étudiants
             </h2>
             
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
               {content.testimonials.map((testimonial: any, index: number) => (
-                <Card key={index} className="rounded-2xl shadow-lg hover:shadow-xl transition-shadow border-0 bg-white">
-                  <CardContent className="pt-8 pb-8 px-8">
-                    <div className="flex gap-1 mb-6">
+                <Card 
+                  key={index} 
+                  className="rounded-3xl shadow-lg backdrop-blur-sm bg-white/95 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-2"
+                  style={{ borderColor: `${palette.primary}15` }}
+                >
+                  <CardContent className="pt-6 sm:pt-8 pb-6 sm:pb-8 px-6 sm:px-8">
+                    {/* Icône guillemet décorative */}
+                    <Quote className="h-8 w-8 mb-4 opacity-20" style={{ color: palette.primary }} />
+                    
+                    <div className="flex gap-1 mb-5 sm:mb-6">
                       {[...Array(testimonial.rating || 5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className="h-5 w-5 fill-current" 
+                          className="h-4 w-4 sm:h-5 sm:w-5 fill-current" 
                           style={{ color: palette.tertiary }} 
                         />
                       ))}
                     </div>
-                    <p className="text-gray-700 mb-6 italic text-lg leading-relaxed">
+                    <p className="text-gray-700 mb-5 sm:mb-6 italic text-base sm:text-lg leading-relaxed">
                       "{testimonial.text}"
                     </p>
-                    <div>
-                      <p className="font-bold text-lg" style={{ color: palette.primary }}>
-                        {testimonial.name}
-                      </p>
-                      <p className="text-sm text-gray-600">{testimonial.role}</p>
+                    <div className="flex items-center gap-3">
+                      {/* Avatar placeholder */}
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                        style={{ backgroundColor: palette.primary }}
+                      >
+                        {testimonial.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-base sm:text-lg" style={{ color: palette.primary }}>
+                          {testimonial.name}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600">{testimonial.role}</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -511,12 +552,12 @@ export default function LandingPageView() {
         </section>
       )}
 
-      {/* SECTION H: FAQ */}
+      {/* SECTION H: FAQ - Accordéons épurés */}
       {content?.faq && content.faq.length > 0 && (
-        <section className="py-20 px-4 bg-white">
+        <section className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12" style={{ backgroundColor: palette.lightBg }}>
           <div className="max-w-3xl mx-auto">
             <h2
-              className="text-4xl md:text-5xl font-bold text-center mb-16"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 sm:mb-16"
               style={{ fontFamily: headingFont, color: palette.primary }}
             >
               Questions fréquentes
@@ -527,18 +568,17 @@ export default function LandingPageView() {
                 <AccordionItem 
                   key={index} 
                   value={`item-${index}`} 
-                  className="border-2 rounded-2xl px-6 bg-white shadow-sm hover:shadow-md transition-shadow"
-                  style={{ borderColor: `${palette.primary}20` }}
+                  className="border-0 rounded-3xl px-5 sm:px-6 backdrop-blur-sm bg-white/95 shadow-md hover:shadow-lg transition-all"
                 >
                   <AccordionTrigger 
-                    className="text-left hover:no-underline py-6"
+                    className="text-left hover:no-underline py-5 sm:py-6 [&[data-state=open]>svg]:rotate-180"
                     style={{ color: palette.primary }}
                   >
-                    <span className="font-bold text-lg" style={{ fontFamily: headingFont }}>
+                    <span className="font-bold text-base sm:text-lg pr-4" style={{ fontFamily: headingFont }}>
                       {item.question}
                     </span>
                   </AccordionTrigger>
-                  <AccordionContent className="text-gray-600 pb-6 text-base leading-relaxed">
+                  <AccordionContent className="text-gray-600 pb-5 sm:pb-6 text-sm sm:text-base leading-relaxed">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -548,17 +588,17 @@ export default function LandingPageView() {
         </section>
       )}
 
-      {/* SECTION I: FINAL CTA - Gradient fort */}
+      {/* SECTION I: FINAL CTA - Gradient UNIQUEMENT ici */}
       <section
-        className="py-24 px-4"
+        className="py-20 sm:py-24 px-5 sm:px-8 lg:px-12"
         style={{
           background: `linear-gradient(135deg, ${palette.primary}, ${palette.secondary})`,
         }}
       >
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
           {content?.final_cta?.urgency_badge && (
             <Badge 
-              className="text-base px-6 py-3 font-bold animate-pulse"
+              className="text-sm sm:text-base px-5 sm:px-6 py-2.5 sm:py-3 font-bold animate-pulse"
               style={{ 
                 backgroundColor: palette.tertiary,
                 color: 'white'
@@ -569,19 +609,19 @@ export default function LandingPageView() {
           )}
           
           <h2
-            className="text-4xl md:text-6xl font-extrabold text-white leading-tight"
+            className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white leading-tight"
             style={{ fontFamily: headingFont }}
           >
             {content?.final_cta?.title || "Ne restez pas sur le quai"}
           </h2>
           
-          <p className="text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
             {content?.final_cta?.subtitle || "Rejoignez la formation dès maintenant"}
           </p>
 
           <Button
             size="lg"
-            className="text-2xl px-16 py-8 rounded-full shadow-2xl hover:scale-105 transition-all font-bold mt-8"
+            className="text-lg sm:text-xl md:text-2xl px-12 sm:px-16 py-6 sm:py-8 rounded-full shadow-2xl hover:scale-105 transition-all font-bold mt-6 sm:mt-8"
             style={{
               backgroundColor: 'white',
               color: palette.primary
@@ -591,7 +631,7 @@ export default function LandingPageView() {
           </Button>
 
           {content?.final_cta?.guarantee && (
-            <p className="text-white/80 italic max-w-md mx-auto pt-6 text-lg">
+            <p className="text-white/90 font-medium max-w-md mx-auto pt-5 sm:pt-6 text-base sm:text-lg">
               ✓ {content.final_cta.guarantee}
             </p>
           )}

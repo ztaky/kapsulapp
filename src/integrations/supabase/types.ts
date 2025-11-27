@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      coach_design_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          learned_from_edits: Json | null
+          organization_id: string
+          preferred_colors: string[] | null
+          preferred_cta_style: string | null
+          preferred_fonts: Json | null
+          preferred_layout_style: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          learned_from_edits?: Json | null
+          organization_id: string
+          preferred_colors?: string[] | null
+          preferred_cta_style?: string | null
+          preferred_fonts?: Json | null
+          preferred_layout_style?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          learned_from_edits?: Json | null
+          organization_id?: string
+          preferred_colors?: string[] | null
+          preferred_cta_style?: string | null
+          preferred_fonts?: Json | null
+          preferred_layout_style?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_design_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           cover_image: string | null
