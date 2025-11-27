@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +17,7 @@ import {
   SidebarTrigger,
   useSidebar,
   SidebarFooter,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 
 interface StudioSidebarProps {
@@ -75,7 +77,10 @@ export function StudioSidebar({ organization }: StudioSidebarProps) {
       className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-200/60`} 
       collapsible="icon"
     >
-      <SidebarTrigger className="m-3 self-end text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg" />
+      <SidebarHeader className="flex flex-row items-center justify-between p-3 border-b border-slate-200/60">
+        {open && <NotificationBell variant="light" />}
+        <SidebarTrigger className="text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg" />
+      </SidebarHeader>
 
       <SidebarContent className="bg-transparent px-3">
         <SidebarGroup>
