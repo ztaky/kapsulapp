@@ -1,36 +1,42 @@
-import { Lightbulb } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { CustomEmbedTool } from "./tools/CustomEmbedTool";
+import { RichContentTool } from "./tools/RichContentTool";
+import { QuizTool } from "./tools/QuizTool";
 
 interface InteractiveToolContainerProps {
   lessonId: string;
+  toolId?: string | null;
+  toolConfig?: any;
 }
 
-export function InteractiveToolContainer({ lessonId }: InteractiveToolContainerProps) {
-  return (
-    <Card className="border-2 border-dashed">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-primary" />
-          Outil Interactif
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-center py-12 space-y-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-            <Lightbulb className="h-8 w-8 text-primary" />
-          </div>
-          <div>
-            <p className="text-lg font-medium mb-2">Outil interactif à venir</p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Cette leçon contiendra un outil interactif personnalisé.
-              Le composant sera injecté dynamiquement ici.
-            </p>
-            <p className="text-xs text-muted-foreground mt-4">
-              ID de la leçon : {lessonId}
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+export function InteractiveToolContainer({ lessonId, toolId, toolConfig }: InteractiveToolContainerProps) {
+  if (!toolId || !toolConfig) {
+    return (
+      <Card className="border-2 border-dashed border-purple-300 bg-gradient-to-br from-purple-50 to-background">
+        <CardContent className="text-center py-12">
+          <p className="text-muted-foreground">Outil interactif non configuré</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  switch (toolId) {
+    case "custom_embed":
+      return <CustomEmbedTool config={toolConfig} />;
+    
+    case "rich_content":
+      return <RichContentTool config={toolConfig} />;
+    
+    case "quiz":
+      return <QuizTool config={toolConfig} lessonId={lessonId} />;
+    
+    default:
+      return (
+        <Card className="border-2 border-dashed border-purple-300 bg-gradient-to-br from-purple-50 to-background">
+          <CardContent className="text-center py-12">
+            <p className="text-muted-foreground">Type d'outil inconnu : {toolId}</p>
+          </CardContent>
+        </Card>
+      );
+  }
 }

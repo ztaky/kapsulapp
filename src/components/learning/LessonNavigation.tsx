@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import confetti from "canvas-confetti";
 
 interface Module {
   id: string;
@@ -77,14 +78,25 @@ export function LessonNavigation({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-progress"] });
-      toast({ title: "Leçon terminée !" });
+      // 🎉 Launch confetti!
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#ea580c', '#db2777', '#10b981', '#3b82f6'],
+      });
 
-      // Navigate to next lesson
+      queryClient.invalidateQueries({ queryKey: ["user-progress"] });
+      toast({ 
+        title: "🎉 Félicitations !", 
+        description: "Leçon terminée avec succès" 
+      });
+
+      // Navigate to next lesson after enjoying the confetti
       if (nextLesson) {
         setTimeout(() => {
           navigate(`/school/${slug}/learn/${courseId}/lessons/${nextLesson.id}`);
-        }, 500);
+        }, 1000);
       }
     },
     onError: () => {

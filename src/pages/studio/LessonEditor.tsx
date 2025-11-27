@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { InteractiveToolEditor } from "./LessonEditor_InteractiveTool";
 
 export default function LessonEditor() {
   const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>();
@@ -23,12 +24,16 @@ export default function LessonEditor() {
     video_url: string;
     resource_url: string;
     type: "video" | "interactive_tool";
+    tool_id: string | null;
+    tool_config: any;
   }>({
     title: "",
     content_text: "",
     video_url: "",
     resource_url: "",
     type: "video",
+    tool_id: null,
+    tool_config: {},
   });
 
   const { data: lesson } = useQuery({
@@ -59,6 +64,8 @@ export default function LessonEditor() {
         video_url: lesson.video_url || "",
         resource_url: lesson.resource_url || "",
         type: lesson.type,
+        tool_id: (lesson as any).tool_id || null,
+        tool_config: (lesson as any).tool_config || {},
       });
     }
   }, [lesson]);
@@ -171,22 +178,13 @@ export default function LessonEditor() {
               </TabsContent>
 
               <TabsContent value="interactive_tool" className="space-y-4">
-                <div>
-                  <Label htmlFor="tool_type">Type d'outil</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un outil" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="prompt_generator">Générateur de Prompt</SelectItem>
-                      <SelectItem value="calculator">Calculateur</SelectItem>
-                      <SelectItem value="custom_embed">Embed Personnalisé</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Configuration avancée à venir
-                  </p>
-                </div>
+                <InteractiveToolEditor
+                  toolId={formData.tool_id}
+                  toolConfig={formData.tool_config}
+                  onChange={(toolId, toolConfig) =>
+                    setFormData({ ...formData, tool_id: toolId, tool_config: toolConfig })
+                  }
+                />
               </TabsContent>
             </Tabs>
           </div>

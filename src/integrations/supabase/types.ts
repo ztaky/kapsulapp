@@ -192,6 +192,8 @@ export type Database = {
           position: number
           resource_url: string | null
           title: string
+          tool_config: Json | null
+          tool_id: string | null
           type: Database["public"]["Enums"]["lesson_type"]
           updated_at: string
           video_url: string | null
@@ -204,6 +206,8 @@ export type Database = {
           position?: number
           resource_url?: string | null
           title: string
+          tool_config?: Json | null
+          tool_id?: string | null
           type?: Database["public"]["Enums"]["lesson_type"]
           updated_at?: string
           video_url?: string | null
@@ -216,6 +220,8 @@ export type Database = {
           position?: number
           resource_url?: string | null
           title?: string
+          tool_config?: Json | null
+          tool_id?: string | null
           type?: Database["public"]["Enums"]["lesson_type"]
           updated_at?: string
           video_url?: string | null

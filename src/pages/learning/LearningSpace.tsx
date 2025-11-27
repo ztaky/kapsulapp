@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CourseSidebar } from "@/components/learning/CourseSidebar";
 import { ContentRenderer } from "@/components/learning/ContentRenderer";
 import { LessonNavigation } from "@/components/learning/LessonNavigation";
+import { TutorChatWidget } from "@/components/learning/TutorChatWidget";
 import { Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -213,6 +214,14 @@ export default function LearningSpace() {
           )}
         </div>
       </main>
+
+      {/* AI Tutor Widget */}
+      {course && currentLesson && (
+        <TutorChatWidget 
+          courseTitle={course.title}
+          lessonTitle={currentLesson.title}
+        />
+      )}
     </div>
   );
 }
