@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import kapsulLogo from "@/assets/kapsul-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -66,6 +67,10 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-card">
         <CardHeader className="text-center">
+          <Link to="/" className="inline-flex items-center gap-2 justify-center mb-4">
+            <img src={kapsulLogo} alt="Kapsul" className="h-10 w-10 rounded-lg" />
+            <span className="text-2xl font-bold font-gotham text-slate-900">Kapsul</span>
+          </Link>
           <CardTitle className="text-2xl font-bold">Bienvenue</CardTitle>
           <CardDescription>Connectez-vous à votre plateforme LMS</CardDescription>
         </CardHeader>

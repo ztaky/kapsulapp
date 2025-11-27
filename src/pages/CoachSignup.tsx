@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import kapsulLogo from "@/assets/kapsul-logo.png";
 
 export default function CoachSignup() {
   const navigate = useNavigate();
@@ -94,10 +95,11 @@ export default function CoachSignup() {
     <div className="min-h-screen bg-gradient-to-br from-[#FEF7F0] via-white to-[#FEF7F0] flex flex-col items-center justify-center p-4">
       {/* Logo/Header */}
       <div className="w-full max-w-md mb-8 text-center">
-        <Link to="/" className="inline-block">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+        <Link to="/" className="inline-flex items-center gap-3 justify-center">
+          <img src={kapsulLogo} alt="Kapsul" className="h-12 w-12 rounded-xl" />
+          <span className="text-3xl font-bold font-gotham text-slate-900">
             Kapsul
-          </h1>
+          </span>
         </Link>
       </div>
 
