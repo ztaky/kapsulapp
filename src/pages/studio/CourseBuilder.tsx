@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
@@ -19,6 +22,7 @@ export default function CourseBuilder() {
   const queryClient = useQueryClient();
   const [moduleDialogOpen, setModuleDialogOpen] = useState(false);
   const [moduleTitle, setModuleTitle] = useState("");
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -37,6 +41,7 @@ export default function CourseBuilder() {
         .single();
 
       if (error) throw error;
+      setPaymentLinkUrl(data.payment_link_url || "");
       return data;
     },
   });
@@ -113,6 +118,21 @@ export default function CourseBuilder() {
     },
   });
 
+  const updatePaymentLinkMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const { error } = await supabase
+        .from("courses")
+        .update({ payment_link_url: url })
+        .eq("id", courseId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
+      toast({ title: "Lien de paiement enregistré" });
+    },
+  });
+
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
 
@@ -160,65 +180,145 @@ export default function CourseBuilder() {
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold text-[#1e293b] tracking-tight">Modules & Leçons</h3>
-          <Dialog open={moduleDialogOpen} onOpenChange={setModuleDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nouveau Module
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Créer un module</DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  createModuleMutation.mutate(moduleTitle);
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <Label htmlFor="module-title">Titre du module</Label>
-                  <Input
-                    id="module-title"
-                    value={moduleTitle}
-                    onChange={(e) => setModuleTitle(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Créer
+      <Tabs defaultValue="curriculum" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
+          <TabsTrigger value="settings">Paramètres</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="curriculum" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold text-[#1e293b] tracking-tight">Modules & Leçons</h3>
+            <Dialog open={moduleDialogOpen} onOpenChange={setModuleDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nouveau Module
                 </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={modules.map((m) => m.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-2">
-              {modules.map((module) => (
-                <ModuleAccordion key={module.id} module={module} courseId={courseId!} />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-
-        {modules.length === 0 && (
-          <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 border-dashed bg-white/50">
-            <div className="text-center">
-              <p className="text-lg font-medium text-slate-900">Aucun module</p>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Créez votre premier module pour commencer
-              </p>
-            </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Créer un module</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    createModuleMutation.mutate(moduleTitle);
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <Label htmlFor="module-title">Titre du module</Label>
+                    <Input
+                      id="module-title"
+                      value={moduleTitle}
+                      onChange={(e) => setModuleTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Créer
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
-        )}
-      </div>
+
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={modules.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2">
+                {modules.map((module) => (
+                  <ModuleAccordion key={module.id} module={module} courseId={courseId!} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+
+          {modules.length === 0 && (
+            <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 border-dashed bg-white/50">
+              <div className="text-center">
+                <p className="text-lg font-medium text-slate-900">Aucun module</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Créez votre premier module pour commencer
+                </p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuration du paiement</CardTitle>
+              <CardDescription>
+                Configurez le lien de paiement pour permettre aux étudiants d'acheter ce cours
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="payment-link">Lien de paiement Stripe/PayPal</Label>
+                <Input
+                  id="payment-link"
+                  type="url"
+                  placeholder="https://buy.stripe.com/xxx ou lien PayPal"
+                  value={paymentLinkUrl}
+                  onChange={(e) => setPaymentLinkUrl(e.target.value)}
+                />
+                <p className="text-sm text-slate-500">
+                  💡 Créez un Payment Link dans votre dashboard Stripe ou PayPal et collez-le ici
+                </p>
+              </div>
+              <Button 
+                onClick={() => updatePaymentLinkMutation.mutate(paymentLinkUrl)}
+                disabled={updatePaymentLinkMutation.isPending}
+              >
+                {updatePaymentLinkMutation.isPending ? "Enregistrement..." : "Enregistrer"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Informations du cours</CardTitle>
+              <CardDescription>Titre, description et prix du cours</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="course-title">Titre</Label>
+                <Input
+                  id="course-title"
+                  value={course?.title || ""}
+                  disabled
+                  className="bg-slate-50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-description">Description</Label>
+                <Textarea
+                  id="course-description"
+                  value={course?.description || ""}
+                  disabled
+                  className="bg-slate-50"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-price">Prix (€)</Label>
+                <Input
+                  id="course-price"
+                  type="number"
+                  value={course?.price || 0}
+                  disabled
+                  className="bg-slate-50"
+                />
+              </div>
+              <p className="text-sm text-slate-500">
+                Pour modifier ces informations, retournez à la liste des cours
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

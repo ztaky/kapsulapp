@@ -66,6 +66,7 @@ export type Database = {
           id: string
           is_published: boolean
           organization_id: string | null
+          payment_link_url: string | null
           price: number
           title: string
           updated_at: string
@@ -77,6 +78,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           organization_id?: string | null
+          payment_link_url?: string | null
           price?: number
           title: string
           updated_at?: string
@@ -88,6 +90,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           organization_id?: string | null
+          payment_link_url?: string | null
           price?: number
           title?: string
           updated_at?: string
@@ -374,6 +377,8 @@ export type Database = {
           id: string
           purchased_at: string
           status: string
+          stripe_payment_id: string | null
+          stripe_session_id: string | null
           user_id: string
         }
         Insert: {
@@ -382,6 +387,8 @@ export type Database = {
           id?: string
           purchased_at?: string
           status?: string
+          stripe_payment_id?: string | null
+          stripe_session_id?: string | null
           user_id: string
         }
         Update: {
@@ -390,6 +397,8 @@ export type Database = {
           id?: string
           purchased_at?: string
           status?: string
+          stripe_payment_id?: string | null
+          stripe_session_id?: string | null
           user_id?: string
         }
         Relationships: [
