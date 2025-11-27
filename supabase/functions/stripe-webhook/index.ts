@@ -48,7 +48,7 @@ serve(async (req) => {
 
     console.log(`Received event: ${event.type}`);
 
-    // Gérer l'événement checkout.session.completed
+    // Handle checkout.session.completed
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
@@ -76,13 +76,13 @@ serve(async (req) => {
         );
       }
 
-      // Créer le client Supabase avec la clé service
+      // Create Supabase admin client
       const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
       );
 
-      // Vérifier si l'achat existe déjà
+      // Check if purchase already exists
       const { data: existingPurchase } = await supabaseAdmin
         .from("purchases")
         .select("id")
@@ -97,7 +97,7 @@ serve(async (req) => {
         );
       }
 
-      // Insérer l'achat dans la base de données
+      // Insert purchase into database
       const { data: purchase, error: insertError } = await supabaseAdmin
         .from("purchases")
         .insert({
@@ -120,6 +120,130 @@ serve(async (req) => {
       }
 
       console.log("Purchase recorded successfully:", purchase.id);
+
+      // Fetch course and organization info for emails
+      const { data: course, error: courseError } = await supabaseAdmin
+        .from("courses")
+        .select("title, organization_id")
+        .eq("id", courseId)
+        .single();
+
+      if (courseError || !course) {
+        console.error("Error fetching course:", courseError);
+        // Continue anyway, purchase is recorded
+      } else if (course.organization_id) {
+        // Add student to organization if not already a member
+        const { error: memberError } = await supabaseAdmin
+          .from("organization_members")
+          .upsert(
+            {
+              organization_id: course.organization_id,
+              user_id: userId,
+              role: "student",
+            },
+            { onConflict: "organization_id,user_id" }
+          );
+
+        if (memberError) {
+          console.error("Error adding student to organization:", memberError);
+        } else {
+          console.log("Student added to organization successfully");
+        }
+
+        // Fetch user info for emails
+        const { data: user, error: userError } = await supabaseAdmin
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", userId)
+          .single();
+
+        if (userError || !user) {
+          console.error("Error fetching user:", userError);
+        } else {
+          // Fetch organization for courseUrl
+          const { data: org } = await supabaseAdmin
+            .from("organizations")
+            .select("slug")
+            .eq("id", course.organization_id)
+            .single();
+
+          const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+          const baseUrl = supabaseUrl.replace(".supabase.co", "");
+          const courseUrl = org 
+            ? `https://lovable.dev/school/${org.slug}/learning/${courseId}`
+            : undefined;
+
+          // Send welcome email
+          try {
+            console.log("Sending welcome email to:", user.email);
+            const welcomeResponse = await fetch(
+              `${supabaseUrl}/functions/v1/send-transactional-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                },
+                body: JSON.stringify({
+                  type: "welcome_purchase",
+                  organizationId: course.organization_id,
+                  recipientEmail: user.email,
+                  recipientName: user.full_name || undefined,
+                  courseName: course.title,
+                  courseUrl: courseUrl,
+                }),
+              }
+            );
+
+            if (!welcomeResponse.ok) {
+              const errorText = await welcomeResponse.text();
+              console.error("Welcome email failed:", errorText);
+            } else {
+              console.log("Welcome email sent successfully");
+            }
+          } catch (emailError) {
+            console.error("Error sending welcome email:", emailError);
+          }
+
+          // Send invoice email
+          try {
+            console.log("Sending invoice email to:", user.email);
+            const invoiceResponse = await fetch(
+              `${supabaseUrl}/functions/v1/send-transactional-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                },
+                body: JSON.stringify({
+                  type: "invoice",
+                  organizationId: course.organization_id,
+                  recipientEmail: user.email,
+                  recipientName: user.full_name || undefined,
+                  courseName: course.title,
+                  coursePrice: amountTotal,
+                  purchaseDate: new Date().toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }),
+                  paymentId: session.payment_intent as string,
+                }),
+              }
+            );
+
+            if (!invoiceResponse.ok) {
+              const errorText = await invoiceResponse.text();
+              console.error("Invoice email failed:", errorText);
+            } else {
+              console.log("Invoice email sent successfully");
+            }
+          } catch (emailError) {
+            console.error("Error sending invoice email:", emailError);
+          }
+        }
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {

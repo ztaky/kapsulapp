@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.generate-faq]
 verify_jwt = false
+
+[functions.send-transactional-email]
+verify_jwt = false
