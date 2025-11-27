@@ -61,10 +61,10 @@ export default function StudioBranding() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
         <div className="relative z-10">
           <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
-            Branding
+            Branding de l'académie
           </h1>
           <p className="text-base text-slate-600 leading-relaxed">
-            Personnalisez l'apparence de votre école
+            Personnalisez l'apparence de votre académie Kapsul
           </p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function StudioBranding() {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-slate-900 font-medium text-sm">
-                Nom de l'école
+                Nom de l'académie
               </Label>
               <Input
                 id="name"

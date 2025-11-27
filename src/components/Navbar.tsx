@@ -75,8 +75,8 @@ const Navbar = () => {
         <Link to="/" className="flex items-center space-x-2">
           <div className="flex items-center">
             <BookOpen className="h-6 w-6 text-orange-600" />
-            <span className="ml-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent tracking-tight">
-              LMS Platform
+            <span className="ml-2 text-xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent tracking-tight">
+              Kapsul
             </span>
           </div>
         </Link>
@@ -109,10 +109,10 @@ const Navbar = () => {
                 {hasSchoolAccess && (
                   <DropdownMenuItem onClick={() => {
                     const firstOrg = organizations.find(o => o.userRole === "owner" || o.userRole === "admin");
-                    if (firstOrg) navigate(`/school/${firstOrg.slug}/admin`);
+                    if (firstOrg) navigate(`/school/${firstOrg.slug}/studio`);
                   }} className="mx-1 rounded-lg hover:bg-orange-50 cursor-pointer">
                     <Building2 className="mr-2 h-4 w-4 text-orange-600" />
-                    <span className="text-sm font-medium">Mon École</span>
+                    <span className="text-sm font-medium">Mon Académie</span>
                   </DropdownMenuItem>
                 )}
                 {isSuperAdmin && (

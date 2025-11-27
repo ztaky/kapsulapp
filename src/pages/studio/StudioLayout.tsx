@@ -56,7 +56,7 @@ export default function StudioLayout() {
               <Button variant="outline" size="sm" className="rounded-full border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700" asChild>
                 <a href={`/school/${currentOrg.slug}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  Voir l'école
+                  Voir l'académie
                 </a>
               </Button>
             </div>

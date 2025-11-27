@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
+import CoachSignup from "./pages/CoachSignup";
 import StudioLayout from "./pages/studio/StudioLayout";
 import StudioDashboard from "./pages/studio/Dashboard";
 import StudioCourses from "./pages/studio/Courses";
@@ -39,6 +40,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/start" element={<CoachSignup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           

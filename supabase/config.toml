@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.tutor-chat]
 verify_jwt = false
+
+[functions.create-coach-academy]
+verify_jwt = false

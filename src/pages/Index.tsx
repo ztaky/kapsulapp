@@ -14,38 +14,44 @@ const Index = () => {
       <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-20 md:py-32">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-block mb-4">
+              <span className="text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+                Kapsul - Plateforme de formations
+              </span>
+            </div>
+            
             <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Développez vos compétences avec{" "}
-              <span className="bg-gradient-to-r from-primary to-[hsl(340,85%,55%)] bg-clip-text text-transparent">
-                nos formations
+              Apprenez à votre rythme,{" "}
+              <span className="bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+                progressez sans limite
               </span>
             </h1>
             <p className="mb-8 text-lg text-muted-foreground md:text-xl">
-              Accédez à des formations de qualité, pratiques et orientées résultats. 
-              Apprenez à votre rythme avec des outils interactifs et un suivi personnalisé.
+              Découvrez des formations de qualité adaptées à vos besoins. 
+              Progressez grâce à nos outils interactifs et notre suivi personnalisé.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Button 
                 size="lg"
-                className="bg-gradient-to-r from-primary to-[hsl(340,85%,55%)] hover:opacity-90 transition-opacity shadow-soft"
+                className="bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-700 hover:to-pink-700 text-white font-semibold px-8 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all text-lg"
                 onClick={() => navigate("/auth")}
               >
-                Commencer maintenant
+                Je suis étudiant - Commencer
               </Button>
               <Button 
-                size="lg" 
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10"
+                size="lg"
+                className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all text-lg"
+                onClick={() => navigate("/start")}
               >
-                Découvrir les formations
+                🎯 Je suis formateur - Lancer mon académie
               </Button>
             </div>
           </div>
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 left-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
+        <div className="absolute top-20 left-10 h-72 w-72 rounded-full bg-orange-200/20 blur-3xl" />
+        <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-pink-200/20 blur-3xl" />
       </section>
 
       {/* Features Section */}
@@ -117,7 +123,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8 bg-background">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2024 LMS Platform. Tous droits réservés.</p>
+          <p>© 2024 Kapsul. Tous droits réservés.</p>
         </div>
       </footer>
     </div>
