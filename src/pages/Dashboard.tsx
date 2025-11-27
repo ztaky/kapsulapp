@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganizations } from "@/hooks/useUserRole";
+import { useUserOrganizations, useUserRole } from "@/hooks/useUserRole";
 import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { organizations, loading: orgsLoading } = useUserOrganizations();
+  const { isSuperAdmin, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -16,20 +17,26 @@ const Dashboard = () => {
     });
   }, [navigate]);
 
-  // Redirect coaches to their studio, students to student dashboard
+  // Redirect based on role: super_admin → /super-admin, coach → studio, student → student
   useEffect(() => {
-    if (!orgsLoading && organizations.length > 0) {
+    if (roleLoading || orgsLoading) return;
+
+    if (isSuperAdmin) {
+      navigate("/super-admin");
+      return;
+    }
+
+    if (organizations.length > 0) {
       const coachOrg = organizations.find(org => org.userRole === 'coach');
       if (coachOrg) {
         navigate(`/school/${coachOrg.slug}/studio`);
       } else {
         navigate("/student");
       }
-    } else if (!orgsLoading) {
-      // No organizations, must be a student
+    } else {
       navigate("/student");
     }
-  }, [organizations, orgsLoading, navigate]);
+  }, [isSuperAdmin, roleLoading, organizations, orgsLoading, navigate]);
 
   return (
     <div className="flex h-screen items-center justify-center">
