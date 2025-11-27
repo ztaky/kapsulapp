@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,16 +29,20 @@ const FONT_OPTIONS = [
 ];
 
 export function StepDesign({ data, onUpdate }: StepDesignProps) {
-  const [customColor, setCustomColor] = useState("#000000");
-
   const addColor = () => {
     if (data.colors.length < 3) {
-      onUpdate({ colors: [...data.colors, customColor] });
+      onUpdate({ colors: [...data.colors, "#d97706"] });
     }
   };
 
   const removeColor = (index: number) => {
     onUpdate({ colors: data.colors.filter((_, i) => i !== index) });
+  };
+
+  const updateColor = (index: number, color: string) => {
+    const newColors = [...data.colors];
+    newColors[index] = color;
+    onUpdate({ colors: newColors });
   };
 
   const applyPalette = (colors: string[]) => {
@@ -84,39 +87,43 @@ export function StepDesign({ data, onUpdate }: StepDesignProps) {
         </div>
 
         {/* Current Colors */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-4 flex-wrap items-start">
           {data.colors.map((color, index) => (
-            <div key={index} className="relative group">
-              <div
-                className="w-16 h-16 rounded-lg border-2 border-border shadow-sm"
-                style={{ backgroundColor: color }}
+            <div key={index} className="relative group space-y-2">
+              <div className="relative">
+                <Input
+                  type="color"
+                  value={color}
+                  onChange={(e) => updateColor(index, e.target.value)}
+                  className="w-24 h-24 cursor-pointer border-2 border-border rounded-lg p-1"
+                />
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removeColor(index)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <Input
+                type="text"
+                value={color}
+                onChange={(e) => updateColor(index, e.target.value)}
+                className="w-24 text-xs text-center"
+                placeholder="#000000"
               />
-              <Button
-                size="sm"
-                variant="destructive"
-                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => removeColor(index)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
             </div>
           ))}
           {data.colors.length < 3 && (
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
-                className="w-16 h-16 cursor-pointer"
-              />
-              <Button
-                variant="outline"
-                onClick={addColor}
-                className="h-16"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              onClick={addColor}
+              className="w-24 h-24 flex flex-col items-center justify-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              <span className="text-xs">Ajouter</span>
+            </Button>
           )}
         </div>
       </div>
@@ -162,22 +169,6 @@ export function StepDesign({ data, onUpdate }: StepDesignProps) {
         </div>
       </div>
 
-      {/* Preview */}
-      <Card className="p-6" style={{
-        background: `linear-gradient(135deg, ${data.colors[0] || '#d97706'}20, ${data.colors[1] || '#f59e0b'}10)`
-      }}>
-        <div className="space-y-3">
-          <h4
-            style={{ fontFamily: data.fonts.heading, color: data.colors[0] || '#d97706' }}
-            className="text-2xl font-bold"
-          >
-            Aperçu du Design
-          </h4>
-          <p style={{ fontFamily: data.fonts.body }} className="text-muted-foreground">
-            Voici comment votre landing page utilisera ces couleurs et polices
-          </p>
-        </div>
-      </Card>
     </div>
   );
 }
