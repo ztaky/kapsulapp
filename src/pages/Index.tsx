@@ -115,7 +115,8 @@ const Index = () => {
                   <div className="col-span-3 space-y-4">
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF512F] to-[#DD2476]"></div>
-                      <span className="font-semibold text-foreground text-sm">Mon École</span>
+                      <span className="font-semibold text-foreground text-sm">Mon Académie
+                    </span>
                     </div>
                     <div className="space-y-2">
                       {["Dashboard", "Formations", "Élèves", "Emails"].map((item, i) => <div key={item} className={`px-3 py-2 rounded-lg text-sm ${i === 0 ? "bg-muted text-foreground font-medium" : "text-muted-foreground"}`}>
@@ -292,7 +293,7 @@ const Index = () => {
                     <Tv className="w-6 h-6 text-muted-foreground" strokeWidth={1.5} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-foreground mb-1">Espace Netflix-style</h3>
+                    <h3 className="font-bold text-foreground mb-1">Espace Interactif</h3>
                     <p className="text-muted-foreground">
                       Interface immersive qui donne envie de consommer le contenu.
                     </p>
@@ -419,24 +420,16 @@ const Index = () => {
                     <p className="text-white/50 mb-6">Paiement unique. Accès à vie.</p>
 
                     {/* Guarantee badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 text-sm font-medium mb-6 text-primary bg-primary-foreground">
                       <Shield className="w-4 h-4" />
                       Garantie 30 Jours Satisfait ou Remboursé
                     </div>
 
                     <ul className="space-y-3 mb-8">
-                      {[
-                        "Plateforme complète illimitée",
-                        "5 000 crédits IA/mois inclus",
-                        "Support priorité fondateurs",
-                        "Toutes les futures mises à jour",
-                        "Badge \"Fondateur\" dans ton académie"
-                      ].map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3">
+                      {["Plateforme complète illimitée", "5 000 crédits IA/mois inclus", "Support priorité fondateurs", "Toutes les futures mises à jour", "Badge \"Fondateur\" dans ton académie"].map((feature, i) => <li key={i} className="flex items-center gap-3">
                           <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
                           <span className="text-white/90">{feature}</span>
-                        </li>
-                      ))}
+                        </li>)}
                     </ul>
 
                     <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/50 hover:shadow-2xl hover:shadow-[#DD2476]/60 transition-all" onClick={() => navigate("/start")}>
@@ -764,7 +757,7 @@ const ComparisonTable = () => {
       case "warn":
         return <AlertTriangle className="w-5 h-5 text-yellow-500 mx-auto" />;
       case "netflix":
-        return <span className="text-xs font-bold gradient-text">✅ Netflix</span>;
+        return <span className="text-xs font-bold gradient-text">✅ Interactif</span>;
       case "toi":
         return <span className="text-xs">😤 Toi</span>;
       case "eux":
@@ -777,8 +770,7 @@ const ComparisonTable = () => {
   };
   return <section id="comparison" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
-          Kapsul vs le <span className="gradient-text">patchwork habituel</span>
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">Kapsul vs les outils habituel<span className="gradient-text">outils habituel</span>
         </h2>
 
         <div className="overflow-x-auto">
@@ -858,8 +850,7 @@ const QualificationSection = () => {
 
 // DEMO VIDEO SECTION COMPONENT
 const DemoVideoSection = () => {
-  return (
-    <section id="demo" className="py-24 px-6 bg-muted/30">
+  return <section id="demo" className="py-24 px-6 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Voyez Kapsul <span className="gradient-text">en action.</span>
@@ -882,7 +873,7 @@ const DemoVideoSection = () => {
             <div className="absolute top-6 left-6 flex items-center gap-2 text-white/40">
               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
                 </svg>
               </div>
               <span className="text-sm font-medium">Démo Vidéo</span>
@@ -907,8 +898,7 @@ const DemoVideoSection = () => {
           Vidéo de présentation complète — Sans son, avec sous-titres
         </p>
       </div>
-    </section>
-  );
+    </section>;
 };
 
 // GUARANTEE SECTION COMPONENT
