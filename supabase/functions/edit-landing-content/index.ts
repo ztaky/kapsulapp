@@ -88,28 +88,28 @@ RÈGLES IMPORTANTES:
 4. Sois concis et percutant
 5. Adapte le style au public cible (coaches/formateurs)
 
-FORMAT DE RÉPONSE:
-Tu dois répondre en JSON avec cette structure exacte:
-{
-  "message": "Ta réponse conversationnelle expliquant ce que tu proposes",
-  "suggestion": {
-    "section": "nom_de_la_section",
-    "newValue": {le nouveau contenu pour cette section}
-  }
-}
+FORMAT DE RÉPONSE OBLIGATOIRE:
+Tu DOIS répondre UNIQUEMENT avec un objet JSON valide, sans AUCUN texte avant ou après.
+Pas de markdown, pas de \`\`\`json, pas d'explication en dehors du JSON.
 
-Si tu ne peux pas proposer de modification concrète, omets le champ "suggestion" et donne juste un "message" explicatif.
+Structure exacte à utiliser:
+{"message": "Ta réponse conversationnelle expliquant ce que tu proposes", "suggestion": {"section": "nom_de_la_section", "newValue": {"clé": "valeur"}}}
+
+Si tu ne peux pas proposer de modification concrète:
+{"message": "Ton explication ici"}
 
 EXEMPLES DE SECTIONS ET LEUR STRUCTURE:
-- hero: { badge, headline, subheadline, cta_text, cta_subtext }
+- hero: { badge, headline, subheadline, cta_text, cta_subtext, hero_image }
 - problem: { title, agitation_text, pain_points: [], risks: [] }
-- method: { title, description, pillars: [{ title, description }] }
+- method: { title, description, pillars: [{ title, description, icon_url }] }
 - transformation: { title, left_card: { title, description }, right_card: { title, description } }
 - program: { title, modules: [{ title, description, lessons_count }] }
 - trainer: { tagline, title, bio_highlight, credentials: [], quote }
-- testimonials: [{ name, role, text, rating }]
+- testimonials: [{ name, role, text, rating, avatar }]
 - faq: [{ question, answer }]
-- final_cta: { urgency_badge, title, subtitle, cta_text, guarantee }`;
+- final_cta: { urgency_badge, title, subtitle, cta_text, guarantee }
+
+RAPPEL: Réponds UNIQUEMENT en JSON, rien d'autre.`;
 
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
@@ -151,20 +151,42 @@ EXEMPLES DE SECTIONS ET LEUR STRUCTURE:
       
       console.log('AI raw response:', aiResponse);
 
-      // Try to parse JSON response
+      // Try to parse JSON response with robust extraction
       let parsedResponse;
       try {
-        // Extract JSON from potential markdown code blocks
-        const jsonMatch = aiResponse.match(/```json\n?([\s\S]*?)\n?```/) || 
-                          aiResponse.match(/```\n?([\s\S]*?)\n?```/) ||
-                          [null, aiResponse];
-        const jsonStr = jsonMatch[1] || aiResponse;
-        parsedResponse = JSON.parse(jsonStr.trim());
+        let jsonStr = aiResponse.trim();
+        
+        // 1. Try to extract from markdown code blocks
+        const jsonCodeBlockMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        const genericCodeBlockMatch = aiResponse.match(/```\s*([\s\S]*?)\s*```/);
+        
+        if (jsonCodeBlockMatch) {
+          jsonStr = jsonCodeBlockMatch[1].trim();
+        } else if (genericCodeBlockMatch) {
+          jsonStr = genericCodeBlockMatch[1].trim();
+        } else {
+          // 2. Try to find a JSON object in the text (looking for {"message":...)
+          const jsonObjectMatch = aiResponse.match(/\{[\s\S]*"message"[\s\S]*\}/);
+          if (jsonObjectMatch) {
+            jsonStr = jsonObjectMatch[0];
+          }
+        }
+        
+        parsedResponse = JSON.parse(jsonStr);
+        console.log('Successfully parsed JSON response');
       } catch (parseError) {
         console.error('JSON parse error:', parseError);
-        // Return plain text response
+        console.log('Raw AI response:', aiResponse);
+        
+        // Fallback: clean up the response and return as message
+        const cleanedMessage = aiResponse
+          .replace(/```json[\s\S]*?```/g, '')
+          .replace(/```[\s\S]*?```/g, '')
+          .replace(/^\s*\{[\s\S]*\}\s*$/g, '')
+          .trim();
+        
         parsedResponse = {
-          message: aiResponse,
+          message: cleanedMessage || "Je n'ai pas pu traiter votre demande correctement. Pouvez-vous reformuler ?",
           suggestion: null
         };
       }
