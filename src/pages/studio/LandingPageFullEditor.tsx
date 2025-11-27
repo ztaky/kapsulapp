@@ -26,7 +26,6 @@ import {
 import { toast } from "sonner";
 import { SectionEditor } from "@/components/landing/SectionEditor";
 import { LandingPageAIChat } from "@/components/landing/LandingPageAIChat";
-import LandingPageView from "@/pages/LandingPageView";
 
 const SECTIONS = [
   { id: 'hero', label: 'Hero', icon: LayoutTemplate },
@@ -49,6 +48,7 @@ export default function LandingPageFullEditor() {
   const [activeTab, setActiveTab] = useState<'edit' | 'ai'>('edit');
   const [localContent, setLocalContent] = useState<any>(null);
   const [localTrainerInfo, setLocalTrainerInfo] = useState<any>(null);
+  const [localDesignConfig, setLocalDesignConfig] = useState<any>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Fetch landing page data
@@ -75,6 +75,7 @@ export default function LandingPageFullEditor() {
     if (landingPage) {
       setLocalContent(landingPage.content || {});
       setLocalTrainerInfo(landingPage.trainer_info || {});
+      setLocalDesignConfig(landingPage.design_config || {});
     }
   }, [landingPage]);
 
@@ -86,6 +87,7 @@ export default function LandingPageFullEditor() {
         .update({
           content: localContent,
           trainer_info: localTrainerInfo,
+          design_config: localDesignConfig,
           updated_at: new Date().toISOString(),
         })
         .eq('id', pageId);
@@ -155,6 +157,29 @@ export default function LandingPageFullEditor() {
     setHasChanges(true);
   };
 
+  // Handle design changes from AI
+  const handleDesignChange = (designKey: string, newValue: any) => {
+    setLocalDesignConfig((prev: any) => {
+      const updated = { ...prev };
+      
+      // Handle nested keys like "palette.primary" or "fonts.heading"
+      const keys = designKey.split('.');
+      if (keys.length === 2) {
+        const [parent, child] = keys;
+        updated[parent] = {
+          ...(updated[parent] || {}),
+          [child]: newValue,
+        };
+      } else {
+        // Direct key like "theme"
+        updated[designKey] = newValue;
+      }
+      
+      return updated;
+    });
+    setHasChanges(true);
+  };
+
   if (isLoading || !localContent) {
     return (
       <div className="flex h-screen">
@@ -168,6 +193,9 @@ export default function LandingPageFullEditor() {
       </div>
     );
   }
+
+  // Build preview URL with cache buster for design changes
+  const previewUrl = `/lp/${landingPage?.slug}?preview=true&t=${Date.now()}`;
 
   return (
     <div className="flex h-screen bg-background">
@@ -245,7 +273,8 @@ export default function LandingPageFullEditor() {
         <div className="flex-1 overflow-auto bg-muted/30 p-4">
           <div className="bg-background rounded-lg shadow-lg overflow-hidden max-w-5xl mx-auto">
             <iframe
-              src={`/lp/${landingPage?.slug}?preview=true`}
+              key={JSON.stringify(localDesignConfig)} // Force re-render on design changes
+              src={previewUrl}
               className="w-full h-[800px] border-0"
               title="Landing Page Preview"
             />
@@ -311,8 +340,9 @@ export default function LandingPageFullEditor() {
               <LandingPageAIChat
                 content={localContent}
                 trainerInfo={localTrainerInfo}
-                designConfig={landingPage?.design_config}
+                designConfig={localDesignConfig}
                 onApplySuggestion={handleAISuggestion}
+                onApplyDesignChange={handleDesignChange}
                 currentSection={activeSection}
               />
             </div>

@@ -4,19 +4,23 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, Sparkles, Check, X, RefreshCw } from "lucide-react";
+import { Send, Loader2, Sparkles, Check, X, Palette, Type } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+interface Suggestion {
+  type: "content" | "design";
+  section?: string;
+  designKey?: string;
+  field?: string;
+  newValue: any;
+  oldValue?: any;
+}
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  suggestion?: {
-    section: string;
-    field?: string;
-    newValue: any;
-    oldValue?: any;
-  };
+  suggestion?: Suggestion;
   applied?: boolean;
 }
 
@@ -25,15 +29,19 @@ interface LandingPageAIChatProps {
   trainerInfo: any;
   designConfig: any;
   onApplySuggestion: (section: string, data: any) => void;
+  onApplyDesignChange?: (designKey: string, newValue: any) => void;
   currentSection?: string;
 }
 
 const QUICK_ACTIONS = [
-  { label: "Améliorer le titre", prompt: "Améliore le titre principal pour le rendre plus accrocheur" },
-  { label: "Raccourcir", prompt: "Raccourcis les textes de la section actuelle pour être plus concis" },
-  { label: "Plus émotionnel", prompt: "Rends le contenu plus émotionnel et engageant" },
-  { label: "Ajouter urgence", prompt: "Ajoute un sentiment d'urgence à la page" },
-  { label: "Améliorer CTA", prompt: "Propose des améliorations pour les boutons d'action" },
+  // Copywriting
+  { label: "✍️ Améliorer titre", prompt: "Améliore le titre principal pour le rendre plus accrocheur" },
+  { label: "✍️ Plus émotionnel", prompt: "Rends le contenu plus émotionnel et engageant" },
+  { label: "✍️ Améliorer CTA", prompt: "Propose des améliorations pour les boutons d'action" },
+  // Design
+  { label: "🎨 Mode sombre", prompt: "Passe la page en mode sombre (dark theme)" },
+  { label: "🎨 Couleurs vives", prompt: "Propose des couleurs plus vives et énergiques pour la palette" },
+  { label: "🎨 Police moderne", prompt: "Suggère une combinaison de polices plus moderne" },
 ];
 
 export function LandingPageAIChat({
@@ -41,12 +49,13 @@ export function LandingPageAIChat({
   trainerInfo,
   designConfig,
   onApplySuggestion,
+  onApplyDesignChange,
   currentSection,
 }: LandingPageAIChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Bonjour ! Je suis votre assistant pour améliorer votre page de vente. Comment puis-je vous aider ? Vous pouvez me demander de modifier du texte, ajouter des éléments ou améliorer le copywriting.",
+      content: "Bonjour ! Je suis votre assistant pour améliorer votre page de vente. Je peux vous aider avec :\n\n✍️ **Copywriting** : textes, titres, CTA, témoignages...\n🎨 **Design** : couleurs, polices, thème...\n\nComment puis-je vous aider ?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -109,19 +118,67 @@ export function LandingPageAIChat({
     const message = messages[messageIndex];
     if (!message.suggestion) return;
 
-    const { section, newValue } = message.suggestion;
-    onApplySuggestion(section, newValue);
+    const { type, section, designKey, newValue } = message.suggestion;
+
+    if (type === "design" && designKey && onApplyDesignChange) {
+      onApplyDesignChange(designKey, newValue);
+      toast.success("Design mis à jour !");
+    } else if (type === "content" && section) {
+      onApplySuggestion(section, newValue);
+      toast.success("Contenu mis à jour !");
+    } else if (section) {
+      // Fallback for old format without type
+      onApplySuggestion(section, newValue);
+      toast.success("Modification appliquée !");
+    }
 
     // Mark as applied
     setMessages((prev) =>
       prev.map((msg, i) => (i === messageIndex ? { ...msg, applied: true } : msg))
     );
-
-    toast.success("Modification appliquée !");
   };
 
   const handleQuickAction = (prompt: string) => {
     sendMessage(prompt);
+  };
+
+  const renderSuggestionPreview = (suggestion: Suggestion) => {
+    if (suggestion.type === "design") {
+      const isColor = suggestion.designKey?.includes("palette");
+      const isTheme = suggestion.designKey === "theme";
+      
+      return (
+        <div className="flex items-center gap-3">
+          {isColor && (
+            <div 
+              className="w-8 h-8 rounded-full border-2 border-border shadow-sm"
+              style={{ backgroundColor: suggestion.newValue }}
+            />
+          )}
+          <div>
+            <span className="text-sm font-medium">{suggestion.designKey}</span>
+            <p className="text-xs text-muted-foreground">
+              {isTheme ? `Thème ${suggestion.newValue}` : suggestion.newValue}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Content suggestion
+    if (typeof suggestion.newValue === 'string') {
+      return (
+        <p className="text-sm text-muted-foreground line-clamp-3">
+          "{suggestion.newValue}"
+        </p>
+      );
+    }
+    
+    return (
+      <p className="text-sm text-muted-foreground">
+        {JSON.stringify(suggestion.newValue).slice(0, 100)}...
+      </p>
+    );
   };
 
   return (
@@ -147,19 +204,19 @@ export function LandingPageAIChat({
                 {message.suggestion && !message.applied && (
                   <Card className="mt-3 p-3 bg-background/80">
                     <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-medium">Suggestion pour: {message.suggestion.section}</span>
+                      {message.suggestion.type === "design" ? (
+                        <Palette className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      )}
+                      <span className="text-xs font-medium">
+                        {message.suggestion.type === "design" 
+                          ? `Design: ${message.suggestion.designKey}` 
+                          : `Contenu: ${message.suggestion.section}`}
+                      </span>
                     </div>
                     
-                    {typeof message.suggestion.newValue === 'string' ? (
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        "{message.suggestion.newValue}"
-                      </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        {JSON.stringify(message.suggestion.newValue).slice(0, 100)}...
-                      </p>
-                    )}
+                    {renderSuggestionPreview(message.suggestion)}
 
                     <div className="flex gap-2 mt-3">
                       <Button
@@ -231,7 +288,7 @@ export function LandingPageAIChat({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
-          placeholder="Demandez une modification..."
+          placeholder="Demandez une modification (texte ou design)..."
           disabled={isLoading}
           className="flex-1"
         />
