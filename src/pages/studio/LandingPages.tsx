@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, ExternalLink, Edit, Trash2, Eye, Copy } from "lucide-react";
+import { Plus, ExternalLink, Edit, Trash2, Eye, Copy, Globe, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { LandingPageWizard } from "@/components/landing/LandingPageWizard";
 import { useUserOrganizations } from "@/hooks/useUserRole";
@@ -79,6 +79,28 @@ export default function LandingPages() {
       refetch();
     } catch (error) {
       toast.error("Erreur lors de la duplication");
+    }
+  };
+
+  const handleTogglePublish = async (id: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === "published" ? "draft" : "published";
+      
+      const { error } = await supabase
+        .from("landing_pages")
+        .update({ status: newStatus })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      toast.success(
+        newStatus === "published" 
+          ? "Landing page publiée" 
+          : "Landing page dépubliée"
+      );
+      refetch();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
     }
   };
 
@@ -173,13 +195,30 @@ export default function LandingPages() {
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
                   <Button
-                    variant="outline"
+                    variant={lp.status === "published" ? "default" : "outline"}
                     size="sm"
                     className="flex-1"
-                    onClick={() => window.open(`/lp/${lp.slug}`, "_blank")}
+                    onClick={() => handleTogglePublish(lp.id, lp.status)}
                   >
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    Voir
+                    {lp.status === "published" ? (
+                      <>
+                        <EyeOff className="h-4 w-4 mr-1" />
+                        Dépublier
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="h-4 w-4 mr-1" />
+                        Publier
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(`/lp/${lp.slug}`, "_blank")}
+                    disabled={lp.status !== "published"}
+                  >
+                    <ExternalLink className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
