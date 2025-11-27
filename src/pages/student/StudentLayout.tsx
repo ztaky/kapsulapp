@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
+import { SupportChatWidget } from "@/components/support/SupportChatWidget";
 import { Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -47,6 +48,7 @@ export default function StudentLayout() {
             <Outlet />
           </div>
         </main>
+        <SupportChatWidget />
       </div>
     </SidebarProvider>
   );

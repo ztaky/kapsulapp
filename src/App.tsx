@@ -18,6 +18,7 @@ import StudioBranding from "./pages/studio/Branding";
 import AIAssistant from "./pages/studio/AIAssistant";
 import LandingPages from "./pages/studio/LandingPages";
 import LandingPageFullEditor from "./pages/studio/LandingPageFullEditor";
+import StudioSupport from "./pages/studio/Support";
 import LearningSpace from "./pages/learning/LearningSpace";
 import StudentLayout from "./pages/student/StudentLayout";
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -25,6 +26,7 @@ import StudentProfile from "./pages/student/StudentProfile";
 import StudentInvoices from "./pages/student/StudentInvoices";
 import StudentCertificates from "./pages/student/StudentCertificates";
 import StudentAssistant from "./pages/student/StudentAssistant";
+import StudentSupport from "./pages/student/StudentSupport";
 import LandingPageView from "./pages/LandingPageView";
 import CourseSalesPage from "./pages/CourseSalesPage";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -36,6 +38,7 @@ import AdminStudents from "./pages/admin/AdminStudents";
 import AdminRevenue from "./pages/admin/AdminRevenue";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminLogs from "./pages/admin/AdminLogs";
+import AdminSupport from "./pages/admin/AdminSupport";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
@@ -65,6 +68,7 @@ const App = () => (
             <Route path="revenue" element={<AdminRevenue />} />
             <Route path="courses" element={<AdminCourses />} />
             <Route path="logs" element={<AdminLogs />} />
+            <Route path="support/*" element={<AdminSupport />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
@@ -75,6 +79,7 @@ const App = () => (
             <Route path="invoices" element={<StudentInvoices />} />
             <Route path="certificates" element={<StudentCertificates />} />
             <Route path="assistant" element={<StudentAssistant />} />
+            <Route path="support/*" element={<StudentSupport />} />
           </Route>
           
           {/* Studio Routes */}
@@ -87,6 +92,7 @@ const App = () => (
             <Route path="landing-pages" element={<LandingPages />} />
             <Route path="landing-pages/:pageId/edit" element={<LandingPageFullEditor />} />
             <Route path="branding" element={<StudioBranding />} />
+            <Route path="support/*" element={<StudioSupport />} />
           </Route>
           <Route path="/school/:slug/studio/lessons/:lessonId" element={<LessonEditor />} />
           
