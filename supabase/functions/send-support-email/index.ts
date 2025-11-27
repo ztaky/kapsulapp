@@ -155,7 +155,7 @@ serve(async (req) => {
     const emailContent = getEmailContent(data);
 
     const emailResponse = await resend.emails.send({
-      from: "Kapsul Support <onboarding@resend.dev>",
+      from: "Kapsul Support <lea@support.kapsulapp.io>",
       to: [data.recipientEmail],
       subject: emailContent.subject,
       html: emailContent.html,
