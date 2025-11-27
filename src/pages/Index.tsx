@@ -1,48 +1,24 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  Puzzle, 
-  Wand2, 
-  Infinity, 
-  Mail, 
-  CreditCard, 
-  Webhook,
-  Tv,
-  PartyPopper,
-  Bot,
-  Check,
-  X,
-  AlertTriangle,
-  Shield,
-  Gift,
-  ChevronLeft,
-  ChevronRight,
-  BarChart3,
-  GripVertical,
-  Smartphone,
-  Sparkles,
-  Settings
-} from "lucide-react";
+import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import CountdownTimer from "@/components/landing/CountdownTimer";
 import kapsulLogo from "@/assets/kapsul-logo.png";
-
 const Index = () => {
   const navigate = useNavigate();
-  
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      element.scrollIntoView({
+        behavior: "smooth"
+      });
     }
   };
 
   // Target date: December 31, 2025
   const targetDate = new Date("2025-12-31T23:59:59");
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -55,40 +31,23 @@ const Index = () => {
 
             {/* Navigation Links */}
             <div className="hidden md:flex items-center gap-8">
-              <button
-                onClick={() => scrollToSection("features")}
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
-              >
+              <button onClick={() => scrollToSection("features")} className="text-muted-foreground hover:text-foreground transition-colors font-medium">
                 Fonctionnalités
               </button>
-              <button
-                onClick={() => scrollToSection("comparison")}
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
-              >
+              <button onClick={() => scrollToSection("comparison")} className="text-muted-foreground hover:text-foreground transition-colors font-medium">
                 Comparatif
               </button>
-              <button
-                onClick={() => scrollToSection("pricing")}
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
-              >
+              <button onClick={() => scrollToSection("pricing")} className="text-muted-foreground hover:text-foreground transition-colors font-medium">
                 Pricing
               </button>
             </div>
 
             {/* CTAs */}
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/auth")}
-                className="text-muted-foreground hover:text-foreground"
-              >
+              <Button variant="ghost" onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground">
                 Connexion
               </Button>
-              <Button
-                variant="gradient"
-                onClick={() => navigate("/coach-signup")}
-                className="shadow-lg shadow-[#DD2476]/25"
-              >
+              <Button variant="gradient" onClick={() => navigate("/coach-signup")} className="shadow-lg shadow-[#DD2476]/25">
                 Essayer Kapsul
               </Button>
             </div>
@@ -122,19 +81,10 @@ const Index = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button
-              size="lg"
-              variant="gradient"
-              onClick={() => navigate("/coach-signup")}
-              className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all"
-            >
-              Créer mon école (Essai Gratuit)
+            <Button size="lg" variant="gradient" onClick={() => navigate("/coach-signup")} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
+              Créer mon Académie (Essai Gratuit)
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-lg px-8 py-6"
-            >
+            <Button size="lg" variant="outline" className="text-lg px-8 py-6">
               Voir la démo
             </Button>
           </div>
@@ -166,16 +116,9 @@ const Index = () => {
                       <span className="font-semibold text-foreground text-sm">Mon École</span>
                     </div>
                     <div className="space-y-2">
-                      {["Dashboard", "Formations", "Élèves", "Emails"].map((item, i) => (
-                        <div
-                          key={item}
-                          className={`px-3 py-2 rounded-lg text-sm ${
-                            i === 0 ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
-                          }`}
-                        >
+                      {["Dashboard", "Formations", "Élèves", "Emails"].map((item, i) => <div key={item} className={`px-3 py-2 rounded-lg text-sm ${i === 0 ? "bg-muted text-foreground font-medium" : "text-muted-foreground"}`}>
                           {item}
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
                   </div>
 
@@ -198,13 +141,9 @@ const Index = () => {
                     </div>
                     {/* Chart placeholder */}
                     <div className="bg-muted/20 rounded-xl p-4 h-32 flex items-end justify-between gap-2">
-                      {[40, 65, 45, 80, 60, 90, 75, 95, 85, 100, 88, 110].map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t-sm opacity-80"
-                          style={{ height: `${h}%` }}
-                        ></div>
-                      ))}
+                      {[40, 65, 45, 80, 60, 90, 75, 95, 85, 100, 88, 110].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t-sm opacity-80" style={{
+                      height: `${h}%`
+                    }}></div>)}
                     </div>
                   </div>
                 </div>
@@ -460,27 +399,13 @@ const Index = () => {
                 <p className="text-muted-foreground mb-6">Paiement unique. Accès à vie.</p>
 
                 <ul className="space-y-3 mb-8">
-                  {[
-                    "Plateforme complète illimitée",
-                    "10 000 tokens IA/mois",
-                    "Support priorité fondateurs",
-                    "Toutes les futures mises à jour",
-                    "Badge \"Fondateur\" dans ton académie",
-                    "Garantie 14 jours remboursé",
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3">
+                  {["Plateforme complète illimitée", "10 000 tokens IA/mois", "Support priorité fondateurs", "Toutes les futures mises à jour", "Badge \"Fondateur\" dans ton académie", "Garantie 14 jours remboursé"].map((feature, i) => <li key={i} className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
                       <span className="text-foreground">{feature}</span>
-                    </li>
-                  ))}
+                    </li>)}
                 </ul>
 
-                <Button
-                  size="lg"
-                  variant="gradient"
-                  className="w-full text-lg shadow-xl shadow-[#DD2476]/30"
-                  onClick={() => navigate("/coach-signup")}
-                >
+                <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/coach-signup")}>
                   Devenir fondateur - 297€
                 </Button>
 
@@ -509,26 +434,13 @@ const Index = () => {
               <p className="text-muted-foreground mb-6">7 jours gratuits sans CB</p>
 
               <ul className="space-y-3 mb-8">
-                {[
-                  "Plateforme complète",
-                  "5 000 tokens IA/mois",
-                  "Tokens supplémentaires à l'unité",
-                  "Support standard",
-                  "Sans engagement",
-                ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
+                {["Plateforme complète", "5 000 tokens IA/mois", "Tokens supplémentaires à l'unité", "Support standard", "Sans engagement"].map((feature, i) => <li key={i} className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
                     <span className="text-foreground">{feature}</span>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
 
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full text-lg"
-                onClick={() => navigate("/coach-signup")}
-              >
+              <Button size="lg" variant="outline" className="w-full text-lg" onClick={() => navigate("/coach-signup")}>
                 Essayer 7 jours gratuit
               </Button>
             </div>
@@ -573,12 +485,7 @@ const Index = () => {
           </div>
 
           <div>
-            <Button
-              size="lg"
-              variant="gradient"
-              className="text-lg px-10 shadow-xl shadow-[#DD2476]/30"
-              onClick={() => navigate("/coach-signup")}
-            >
+            <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/coach-signup")}>
               Je deviens fondateur maintenant
             </Button>
           </div>
@@ -604,21 +511,20 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
 
 // SCREENSHOT CAROUSEL COMPONENT
 const ScreenshotCarousel = () => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "center"
+  });
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const screenshots = [
-    {
-      title: "Dashboard Analytics",
-      caption: "Suivez vos ventes en temps réel",
-      content: (
-        <div className="p-4 space-y-3">
+  const screenshots = [{
+    title: "Dashboard Analytics",
+    caption: "Suivez vos ventes en temps réel",
+    content: <div className="p-4 space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground">Revenus</p>
@@ -634,33 +540,25 @@ const ScreenshotCarousel = () => {
             </div>
           </div>
           <div className="h-20 flex items-end gap-1">
-            {[40, 55, 45, 70, 60, 85, 75, 90].map((h, i) => (
-              <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t" style={{ height: `${h}%` }} />
-            ))}
+            {[40, 55, 45, 70, 60, 85, 75, 90].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t" style={{
+          height: `${h}%`
+        }} />)}
           </div>
         </div>
-      ),
-    },
-    {
-      title: "Éditeur Formation",
-      caption: "Créez vos modules en drag & drop",
-      content: (
-        <div className="p-4 space-y-2">
-          {["Module 1 : Introduction", "Module 2 : Les bases", "Module 3 : Avancé"].map((m, i) => (
-            <div key={i} className="bg-muted/50 rounded-lg p-3 flex items-center gap-3">
+  }, {
+    title: "Éditeur Formation",
+    caption: "Créez vos modules en drag & drop",
+    content: <div className="p-4 space-y-2">
+          {["Module 1 : Introduction", "Module 2 : Les bases", "Module 3 : Avancé"].map((m, i) => <div key={i} className="bg-muted/50 rounded-lg p-3 flex items-center gap-3">
               <GripVertical className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium">{m}</span>
               <span className="ml-auto text-xs text-muted-foreground">{3 + i} leçons</span>
-            </div>
-          ))}
+            </div>)}
         </div>
-      ),
-    },
-    {
-      title: "Espace Élève Mobile",
-      caption: "Expérience mobile parfaite",
-      content: (
-        <div className="p-4 flex justify-center">
+  }, {
+    title: "Espace Élève Mobile",
+    caption: "Expérience mobile parfaite",
+    content: <div className="p-4 flex justify-center">
           <div className="w-32 h-56 bg-foreground rounded-2xl p-1.5">
             <div className="w-full h-full bg-background rounded-xl overflow-hidden">
               <div className="bg-muted/50 h-6 flex items-center justify-center">
@@ -674,13 +572,10 @@ const ScreenshotCarousel = () => {
             </div>
           </div>
         </div>
-      ),
-    },
-    {
-      title: "Interface Email",
-      caption: "Emails automatiques brandés",
-      content: (
-        <div className="p-4">
+  }, {
+    title: "Interface Email",
+    caption: "Emails automatiques brandés",
+    content: <div className="p-4">
           <div className="bg-muted/50 rounded-lg p-3 space-y-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476]" />
@@ -692,13 +587,10 @@ const ScreenshotCarousel = () => {
             <p className="text-xs text-muted-foreground">Salut [Prénom], tu as fait le premier pas...</p>
           </div>
         </div>
-      ),
-    },
-    {
-      title: "Page de Vente",
-      caption: "Pages générées par l'IA",
-      content: (
-        <div className="p-4 space-y-2">
+  }, {
+    title: "Page de Vente",
+    caption: "Pages générées par l'IA",
+    content: <div className="p-4 space-y-2">
           <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-lg h-12 flex items-center justify-center">
             <span className="text-white text-xs font-bold">Ma Formation</span>
           </div>
@@ -708,13 +600,10 @@ const ScreenshotCarousel = () => {
             <span className="text-white text-xs">Acheter maintenant</span>
           </div>
         </div>
-      ),
-    },
-    {
-      title: "Paramètres IA",
-      caption: "Votre assistant IA personnel",
-      content: (
-        <div className="p-4 space-y-2">
+  }, {
+    title: "Paramètres IA",
+    caption: "Votre assistant IA personnel",
+    content: <div className="p-4 space-y-2">
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
             <Bot className="w-4 h-4 text-[#DD2476]" />
             <span className="text-xs">Assistant activé</span>
@@ -727,22 +616,18 @@ const ScreenshotCarousel = () => {
             </div>
           </div>
         </div>
-      ),
-    },
-  ];
-
+  }];
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-
   useEffect(() => {
     if (!emblaApi) return;
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
     emblaApi.on("select", onSelect);
-    return () => { emblaApi.off("select", onSelect); };
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
   }, [emblaApi]);
-
-  return (
-    <section className="py-24 px-6 bg-muted/30">
+  return <section className="py-24 px-6 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Une interface pensée pour les <span className="gradient-text">créateurs</span>
@@ -752,8 +637,7 @@ const ScreenshotCarousel = () => {
         <div className="relative">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {screenshots.map((screen, index) => (
-                <div key={index} className="flex-[0_0_80%] md:flex-[0_0_45%] min-w-0 px-4">
+              {screenshots.map((screen, index) => <div key={index} className="flex-[0_0_80%] md:flex-[0_0_45%] min-w-0 px-4">
                   <div className={`bg-card rounded-2xl border border-border shadow-card overflow-hidden transition-all duration-300 ${selectedIndex === index ? "scale-100 opacity-100" : "scale-95 opacity-60"}`}>
                     {/* Browser header */}
                     <div className="bg-muted/50 px-3 py-2 flex items-center gap-2 border-b border-border">
@@ -772,8 +656,7 @@ const ScreenshotCarousel = () => {
                     </div>
                   </div>
                   <p className="text-center text-sm text-muted-foreground mt-4">{screen.caption}</p>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
 
@@ -788,43 +671,92 @@ const ScreenshotCarousel = () => {
 
         {/* Dots */}
         <div className="flex justify-center gap-2 mt-6">
-          {screenshots.map((_, i) => (
-            <button key={i} className={`w-2 h-2 rounded-full transition-all ${selectedIndex === i ? "w-6 bg-gradient-to-r from-[#FF512F] to-[#DD2476]" : "bg-muted-foreground/30"}`} />
-          ))}
+          {screenshots.map((_, i) => <button key={i} className={`w-2 h-2 rounded-full transition-all ${selectedIndex === i ? "w-6 bg-gradient-to-r from-[#FF512F] to-[#DD2476]" : "bg-muted-foreground/30"}`} />)}
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
 
 // COMPARISON TABLE COMPONENT
 const ComparisonTable = () => {
-  const features = [
-    { name: "Hébergement formations", wp: "warn", kajabi: "yes", systeme: "yes", thrive: "no", kapsul: "yes" },
-    { name: "Pages de vente", wp: "warn", kajabi: "yes", systeme: "yes", thrive: "yes", kapsul: "yes" },
-    { name: "Email marketing", wp: "no", kajabi: "yes", systeme: "yes", thrive: "no", kapsul: "yes" },
-    { name: "Paiements", wp: "no", kajabi: "yes", systeme: "yes", thrive: "yes", kapsul: "yes" },
-    { name: "Espace élève premium", wp: "warn", kajabi: "yes", systeme: "warn", thrive: "no", kapsul: "netflix" },
-    { name: "IA intégrée", wp: "no", kajabi: "no", systeme: "no", thrive: "no", kapsul: "yes" },
-    { name: "Mise à jour technique", wp: "toi", kajabi: "eux", systeme: "eux", thrive: "eux", kapsul: "auto" },
-    { name: "Prix/mois", wp: "50-200€", kajabi: "149€+", systeme: "27€+", thrive: "95€+", kapsul: "29,90€" },
-  ];
-
+  const features = [{
+    name: "Hébergement formations",
+    wp: "warn",
+    kajabi: "yes",
+    systeme: "yes",
+    thrive: "no",
+    kapsul: "yes"
+  }, {
+    name: "Pages de vente",
+    wp: "warn",
+    kajabi: "yes",
+    systeme: "yes",
+    thrive: "yes",
+    kapsul: "yes"
+  }, {
+    name: "Email marketing",
+    wp: "no",
+    kajabi: "yes",
+    systeme: "yes",
+    thrive: "no",
+    kapsul: "yes"
+  }, {
+    name: "Paiements",
+    wp: "no",
+    kajabi: "yes",
+    systeme: "yes",
+    thrive: "yes",
+    kapsul: "yes"
+  }, {
+    name: "Espace élève premium",
+    wp: "warn",
+    kajabi: "yes",
+    systeme: "warn",
+    thrive: "no",
+    kapsul: "netflix"
+  }, {
+    name: "IA intégrée",
+    wp: "no",
+    kajabi: "no",
+    systeme: "no",
+    thrive: "no",
+    kapsul: "yes"
+  }, {
+    name: "Mise à jour technique",
+    wp: "toi",
+    kajabi: "eux",
+    systeme: "eux",
+    thrive: "eux",
+    kapsul: "auto"
+  }, {
+    name: "Prix/mois",
+    wp: "50-200€",
+    kajabi: "149€+",
+    systeme: "27€+",
+    thrive: "95€+",
+    kapsul: "29,90€"
+  }];
   const renderCell = (value: string) => {
     switch (value) {
-      case "yes": return <Check className="w-5 h-5 text-green-500 mx-auto" />;
-      case "no": return <X className="w-5 h-5 text-red-500 mx-auto" />;
-      case "warn": return <AlertTriangle className="w-5 h-5 text-yellow-500 mx-auto" />;
-      case "netflix": return <span className="text-xs font-bold gradient-text">✅ Netflix</span>;
-      case "toi": return <span className="text-xs">😤 Toi</span>;
-      case "eux": return <span className="text-xs">🤷 Eux</span>;
-      case "auto": return <span className="text-xs font-bold gradient-text">🎯 Auto</span>;
-      default: return <span className={`text-xs ${value === "29,90€" ? "font-bold gradient-text" : ""}`}>{value}</span>;
+      case "yes":
+        return <Check className="w-5 h-5 text-green-500 mx-auto" />;
+      case "no":
+        return <X className="w-5 h-5 text-red-500 mx-auto" />;
+      case "warn":
+        return <AlertTriangle className="w-5 h-5 text-yellow-500 mx-auto" />;
+      case "netflix":
+        return <span className="text-xs font-bold gradient-text">✅ Netflix</span>;
+      case "toi":
+        return <span className="text-xs">😤 Toi</span>;
+      case "eux":
+        return <span className="text-xs">🤷 Eux</span>;
+      case "auto":
+        return <span className="text-xs font-bold gradient-text">🎯 Auto</span>;
+      default:
+        return <span className={`text-xs ${value === "29,90€" ? "font-bold gradient-text" : ""}`}>{value}</span>;
     }
   };
-
-  return (
-    <section id="comparison" className="py-24 px-6">
+  return <section id="comparison" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
           Kapsul vs le <span className="gradient-text">patchwork habituel</span>
@@ -843,16 +775,14 @@ const ComparisonTable = () => {
               </tr>
             </thead>
             <tbody>
-              {features.map((feature, i) => (
-                <tr key={i} className={`border-b border-border/50 ${i === features.length - 1 ? "font-bold" : ""}`}>
+              {features.map((feature, i) => <tr key={i} className={`border-b border-border/50 ${i === features.length - 1 ? "font-bold" : ""}`}>
                   <td className="py-4 px-4 text-foreground">{feature.name}</td>
                   <td className="py-4 px-4 text-center">{renderCell(feature.wp)}</td>
                   <td className="py-4 px-4 text-center">{renderCell(feature.kajabi)}</td>
                   <td className="py-4 px-4 text-center">{renderCell(feature.systeme)}</td>
                   <td className="py-4 px-4 text-center">{renderCell(feature.thrive)}</td>
                   <td className="py-4 px-4 text-center bg-gradient-to-b from-[#FF512F]/10 to-[#DD2476]/10">{renderCell(feature.kapsul)}</td>
-                </tr>
-              ))}
+                </tr>)}
             </tbody>
           </table>
         </div>
@@ -861,28 +791,14 @@ const ComparisonTable = () => {
           <span className="font-semibold text-foreground">Lifetime à 297€ = 10 mois d'abonnement.</span> Après, c'est gratuit. À vie.
         </p>
       </div>
-    </section>
-  );
+    </section>;
 };
 
 // QUALIFICATION SECTION COMPONENT
 const QualificationSection = () => {
-  const notFor = [
-    "Tu cherches une plateforme gratuite",
-    "Tu veux 100% personnaliser le code",
-    "Tu as déjà une stack technique qui fonctionne parfaitement",
-    "Tu n'as pas encore d'expertise à partager",
-  ];
-
-  const forYou = [
-    "Tu veux lancer ton académie cette semaine, pas dans 6 mois",
-    "Tu en as marre de jongler entre 5 outils",
-    "Tu veux une expérience élève premium sans être dev",
-    "Tu veux l'IA comme co-pilote, pas comme corvée",
-  ];
-
-  return (
-    <section className="py-24 px-6 bg-muted/30">
+  const notFor = ["Tu cherches une plateforme gratuite", "Tu veux 100% personnaliser le code", "Tu as déjà une stack technique qui fonctionne parfaitement", "Tu n'as pas encore d'expertise à partager"];
+  const forYou = ["Tu veux lancer ton académie cette semaine, pas dans 6 mois", "Tu en as marre de jongler entre 5 outils", "Tu veux une expérience élève premium sans être dev", "Tu veux l'IA comme co-pilote, pas comme corvée"];
+  return <section className="py-24 px-6 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
           Kapsul n'est <span className="gradient-text">PAS</span> pour tout le monde
@@ -896,12 +812,10 @@ const QualificationSection = () => {
               Ce n'est PAS pour toi si :
             </h3>
             <ul className="space-y-4">
-              {notFor.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
+              {notFor.map((item, i) => <li key={i} className="flex items-start gap-3">
                   <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                   <span className="text-muted-foreground">{item}</span>
-                </li>
-              ))}
+                </li>)}
             </ul>
           </div>
 
@@ -912,24 +826,20 @@ const QualificationSection = () => {
               C'est POUR toi si :
             </h3>
             <ul className="space-y-4">
-              {forYou.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
+              {forYou.map((item, i) => <li key={i} className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                   <span className="text-foreground">{item}</span>
-                </li>
-              ))}
+                </li>)}
             </ul>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
 
 // GUARANTEE SECTION COMPONENT
 const GuaranteeSection = () => {
-  return (
-    <section className="py-24 px-6">
+  return <section className="py-24 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
           Notre promesse <span className="gradient-text">simple</span>
@@ -965,8 +875,6 @@ const GuaranteeSection = () => {
           On prend le risque. <span className="gradient-text">Pas toi.</span>
         </p>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Index;
