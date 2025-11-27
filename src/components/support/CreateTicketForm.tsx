@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendSupportEmail, getAdminEmails } from "@/lib/support-email";
 
 const ticketSchema = z.object({
   subject: z.string().min(5, "Le sujet doit contenir au moins 5 caractères"),
@@ -69,7 +70,14 @@ export function CreateTicketForm({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Non authentifié");
 
-      const { error } = await supabase.from("support_tickets").insert({
+      // Get user profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .single();
+
+      const { data: ticketData, error } = await supabase.from("support_tickets").insert({
         user_id: user.id,
         organization_id: organizationId || null,
         subject: data.subject,
@@ -77,9 +85,30 @@ export function CreateTicketForm({
         category: data.category || null,
         priority: data.priority,
         ai_conversation: aiConversation as any,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Send email to user
+      sendSupportEmail({
+        type: "ticket_created",
+        ticketId: ticketData.id,
+        recipientEmail: profile?.email || user.email || "",
+        recipientName: profile?.full_name || undefined,
+        ticketSubject: data.subject,
+      });
+
+      // Send email to all admins
+      const admins = await getAdminEmails();
+      admins.forEach(admin => {
+        sendSupportEmail({
+          type: "ticket_created",
+          ticketId: ticketData.id,
+          recipientEmail: admin.email,
+          recipientName: admin.name || "Admin",
+          ticketSubject: data.subject,
+        });
+      });
 
       toast.success("Ticket créé avec succès", {
         description: "Notre équipe va traiter votre demande rapidement.",

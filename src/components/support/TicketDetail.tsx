@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendSupportEmail, getAdminEmails } from "@/lib/support-email";
 
 interface Message {
   id: string;
@@ -165,6 +166,34 @@ export function TicketDetail({ isAdmin = false, backPath }: TicketDetailProps) {
           .eq("id", ticket.id);
       }
 
+      // Send email notification
+      if (isAdmin) {
+        // Admin replied - notify user
+        sendSupportEmail({
+          type: "ticket_reply",
+          ticketId: ticket.id,
+          recipientEmail: ticket.profiles?.email || "",
+          recipientName: ticket.profiles?.full_name || undefined,
+          ticketSubject: ticket.subject,
+          replyContent: newMessage.trim().slice(0, 500),
+          fromAdmin: true,
+        });
+      } else {
+        // User replied - notify admins
+        const admins = await getAdminEmails();
+        admins.forEach(admin => {
+          sendSupportEmail({
+            type: "ticket_reply",
+            ticketId: ticket.id,
+            recipientEmail: admin.email,
+            recipientName: admin.name || "Admin",
+            ticketSubject: ticket.subject,
+            replyContent: newMessage.trim().slice(0, 500),
+            fromAdmin: false,
+          });
+        });
+      }
+
       setNewMessage("");
       toast.success("Message envoyé");
     } catch (error) {
@@ -191,6 +220,17 @@ export function TicketDetail({ isAdmin = false, backPath }: TicketDetailProps) {
         .eq("id", ticket.id);
 
       if (error) throw error;
+
+      // Send email notification to user about status change
+      sendSupportEmail({
+        type: "ticket_status_changed",
+        ticketId: ticket.id,
+        recipientEmail: ticket.profiles?.email || "",
+        recipientName: ticket.profiles?.full_name || undefined,
+        ticketSubject: ticket.subject,
+        ticketStatus: statusLabels[newStatus] || newStatus,
+      });
+
       toast.success("Statut mis à jour");
     } catch (error) {
       console.error("Error updating status:", error);
