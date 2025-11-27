@@ -97,29 +97,70 @@ function adjustLightness(hex: string, targetLightness: number): string {
 }
 
 /**
- * Generate a complete dynamic color palette from 3 base colors
+ * Theme-aware text colors
  */
-export function generateDynamicPalette(colors: string[]) {
-  const [primary, secondary, tertiary] = colors;
+export interface ThemeColors {
+  bodyText: string;
+  subtitleText: string;
+  mutedText: string;
+  background: string;
+  cardBackground: string;
+  cardBackgroundAlt: string;
+}
+
+export function getThemeColors(theme: 'light' | 'dark'): ThemeColors {
+  if (theme === 'dark') {
+    return {
+      bodyText: '#f5f5f5',      // White text for dark mode
+      subtitleText: '#d1d5db',   // Gray-300 for subtitles
+      mutedText: '#9ca3af',      // Gray-400 for muted
+      background: '#0f0f1a',     // Very dark background
+      cardBackground: 'rgba(255, 255, 255, 0.05)',
+      cardBackgroundAlt: 'rgba(255, 255, 255, 0.08)',
+    };
+  }
+  return {
+    bodyText: '#1a1a1a',         // Dark text for light mode
+    subtitleText: '#4b5563',     // Gray-600 for subtitles
+    mutedText: '#6b7280',        // Gray-500 for muted
+    background: '#ffffff',       // White background
+    cardBackground: 'rgba(255, 255, 255, 0.95)',
+    cardBackgroundAlt: '#f9fafb',
+  };
+}
+
+/**
+ * Generate a complete dynamic color palette from 2 base colors + theme
+ */
+export function generateDynamicPalette(colors: string[], theme: 'light' | 'dark' = 'light') {
+  const [primary, secondary] = colors;
+  const tertiary = secondary || primary; // Fallback for tertiary
+  const themeColors = getThemeColors(theme);
   
   return {
+    // Main brand colors
     primary,
-    secondary,
+    secondary: secondary || primary,
     tertiary,
-    // Very light background derived from primary (for Hero, Method sections)
-    lightBg: adjustLightness(primary, 97),
-    // Very dark background derived from secondary (for Problem section)
-    darkBg: adjustLightness(secondary, 10),
-    // Medium dark background derived from secondary (for Expert section)
-    mediumDarkBg: adjustLightness(secondary, 18),
-    // Light accent color derived from tertiary (for badges, highlights)
-    accentLight: adjustLightness(tertiary, 92),
-    // Very light versions for cards
-    primaryLight: adjustLightness(primary, 94),
-    secondaryLight: adjustLightness(secondary, 94),
-    // Slightly darker versions for hover states
-    primaryDark: adjustLightness(primary, 35),
-    secondaryDark: adjustLightness(secondary, 35),
+    
+    // Theme-aware text colors
+    ...themeColors,
+    
+    // Backgrounds based on theme
+    lightBg: theme === 'dark' ? '#0f0f1a' : adjustLightness(primary, 97),
+    darkBg: theme === 'dark' ? '#0a0a12' : adjustLightness(secondary || primary, 10),
+    mediumDarkBg: theme === 'dark' ? '#151524' : adjustLightness(secondary || primary, 18),
+    
+    // Accent colors
+    accentLight: adjustLightness(tertiary, theme === 'dark' ? 25 : 92),
+    
+    // Card backgrounds
+    primaryLight: adjustLightness(primary, theme === 'dark' ? 15 : 94),
+    secondaryLight: adjustLightness(secondary || primary, theme === 'dark' ? 15 : 94),
+    
+    // Darker variants for hover states
+    primaryDark: adjustLightness(primary, theme === 'dark' ? 65 : 35),
+    secondaryDark: adjustLightness(secondary || primary, theme === 'dark' ? 65 : 35),
   };
 }
 
@@ -133,10 +174,12 @@ export function generateGradient(color1: string, color2: string): string {
 /**
  * Glass effect utility for modern card designs
  */
-export function getGlassStyle(opacity: number = 0.95) {
+export function getGlassStyle(opacity: number = 0.95, theme: 'light' | 'dark' = 'light') {
   return {
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
-    backgroundColor: `rgba(255, 255, 255, ${opacity})`,
+    backgroundColor: theme === 'dark' 
+      ? `rgba(255, 255, 255, ${opacity * 0.05})` 
+      : `rgba(255, 255, 255, ${opacity})`,
   };
 }

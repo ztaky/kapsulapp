@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, ExternalLink, Edit, Trash2, Eye, Copy, Globe, EyeOff } from "lucide-react";
+import { Plus, ExternalLink, Pencil, Trash2, Eye, Copy, Globe, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LandingPageWizard } from "@/components/landing/LandingPageWizard";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 
 export default function LandingPages() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { currentOrg } = useUserOrganizations();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
 
@@ -195,21 +197,23 @@ export default function LandingPages() {
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
                   <Button
-                    variant={lp.status === "published" ? "default" : "outline"}
+                    variant="default"
                     size="sm"
                     className="flex-1"
+                    onClick={() => navigate(`/school/${slug}/studio/landing-pages/${lp.id}/edit`)}
+                  >
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Éditer
+                  </Button>
+                  <Button
+                    variant={lp.status === "published" ? "secondary" : "outline"}
+                    size="sm"
                     onClick={() => handleTogglePublish(lp.id, lp.status)}
                   >
                     {lp.status === "published" ? (
-                      <>
-                        <EyeOff className="h-4 w-4 mr-1" />
-                        Dépublier
-                      </>
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <>
-                        <Globe className="h-4 w-4 mr-1" />
-                        Publier
-                      </>
+                      <Globe className="h-4 w-4" />
                     )}
                   </Button>
                   <Button
@@ -228,7 +232,7 @@ export default function LandingPages() {
                     <Copy className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(lp.id)}
                   >
