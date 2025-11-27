@@ -24,6 +24,7 @@ export interface WizardData {
   colors: string[];
   fonts: { heading: string; body: string };
   ctaStyle: 'solid' | 'gradient';
+  theme: 'light' | 'dark';
   targetAudience: string;
   trainerName: string;
   trainerBio: string;
@@ -47,9 +48,10 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
   const [currentStep, setCurrentStep] = useState(1);
   const [wizardData, setWizardData] = useState<WizardData>({
     courseId: "",
-    colors: ["#d97706", "#f59e0b", "#fbbf24"],
+    colors: ["#d97706", "#f59e0b"],
     fonts: { heading: "Inter", body: "Inter" },
     ctaStyle: "gradient",
+    theme: "light",
     targetAudience: "",
     trainerName: "",
     trainerBio: "",
@@ -81,7 +83,7 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
       case 1:
         return wizardData.courseId !== "";
       case 2:
-        return wizardData.colors.length > 0 && wizardData.fonts.heading && wizardData.fonts.body;
+        return wizardData.colors.length >= 2 && wizardData.fonts.heading && wizardData.fonts.body && wizardData.theme;
       case 3:
         return wizardData.targetAudience.length > 0;
       case 4:
@@ -101,7 +103,7 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            Créer une Landing Page
+            Créer une Page de Vente
           </DialogTitle>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm text-muted-foreground">

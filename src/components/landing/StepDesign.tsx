@@ -2,7 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, X, Palette } from "lucide-react";
+import { Plus, X, Sun, Moon } from "lucide-react";
 import { WizardData } from "./LandingPageWizard";
 
 interface StepDesignProps {
@@ -10,12 +10,22 @@ interface StepDesignProps {
   onUpdate: (data: Partial<WizardData>) => void;
 }
 
-const SUGGESTED_PALETTES = [
-  { name: "Ambré Premium", colors: ["#d97706", "#f59e0b", "#fbbf24"] },
-  { name: "Océan Profond", colors: ["#0891b2", "#06b6d4", "#22d3ee"] },
-  { name: "Violet Royal", colors: ["#7c3aed", "#8b5cf6", "#a78bfa"] },
-  { name: "Rose Élégant", colors: ["#db2777", "#ec4899", "#f472b6"] },
-  { name: "Vert Naturel", colors: ["#059669", "#10b981", "#34d399"] },
+const SUGGESTED_PALETTES_LIGHT = [
+  { name: "Ambré Premium", colors: ["#d97706", "#f59e0b"] },
+  { name: "Océan Profond", colors: ["#0891b2", "#06b6d4"] },
+  { name: "Violet Royal", colors: ["#7c3aed", "#8b5cf6"] },
+  { name: "Rose Élégant", colors: ["#db2777", "#ec4899"] },
+  { name: "Vert Naturel", colors: ["#059669", "#10b981"] },
+  { name: "Bleu Confiance", colors: ["#2563eb", "#3b82f6"] },
+];
+
+const SUGGESTED_PALETTES_DARK = [
+  { name: "Or Premium", colors: ["#fbbf24", "#f59e0b"] },
+  { name: "Cyan Néon", colors: ["#22d3ee", "#06b6d4"] },
+  { name: "Lavande Néon", colors: ["#a78bfa", "#8b5cf6"] },
+  { name: "Rose Néon", colors: ["#f472b6", "#ec4899"] },
+  { name: "Émeraude", colors: ["#34d399", "#10b981"] },
+  { name: "Bleu Électrique", colors: ["#60a5fa", "#3b82f6"] },
 ];
 
 const FONT_OPTIONS = [
@@ -29,42 +39,93 @@ const FONT_OPTIONS = [
 ];
 
 export function StepDesign({ data, onUpdate }: StepDesignProps) {
-  const addColor = () => {
-    if (data.colors.length < 3) {
-      onUpdate({ colors: [...data.colors, "#d97706"] });
-    }
-  };
-
-  const removeColor = (index: number) => {
-    onUpdate({ colors: data.colors.filter((_, i) => i !== index) });
-  };
+  const theme = data.theme || 'light';
+  const suggestedPalettes = theme === 'dark' ? SUGGESTED_PALETTES_DARK : SUGGESTED_PALETTES_LIGHT;
 
   const updateColor = (index: number, color: string) => {
     const newColors = [...data.colors];
     newColors[index] = color;
-    onUpdate({ colors: newColors });
+    onUpdate({ colors: newColors.slice(0, 2) });
   };
 
   const applyPalette = (colors: string[]) => {
-    onUpdate({ colors });
+    onUpdate({ colors: colors.slice(0, 2) });
   };
+
+  const toggleTheme = () => {
+    onUpdate({ theme: theme === 'light' ? 'dark' : 'light' });
+  };
+
+  // Initialize with 2 colors if more exist
+  if (data.colors.length > 2) {
+    onUpdate({ colors: data.colors.slice(0, 2) });
+  }
+  if (data.colors.length < 2) {
+    onUpdate({ colors: [...data.colors, "#f59e0b"].slice(0, 2) });
+  }
 
   return (
     <div className="space-y-8">
       <div>
         <h3 className="text-lg font-semibold mb-2">Design & Identité Visuelle</h3>
         <p className="text-muted-foreground">
-          Choisissez les couleurs et polices pour votre landing page (max 3 couleurs, 2 polices)
+          Choisissez le thème et 2 couleurs principales (H1 et H2)
         </p>
       </div>
 
-      {/* Color Selection */}
+      {/* Theme Selection */}
       <div className="space-y-4">
-        <Label className="text-base">Couleurs ({data.colors.length}/3)</Label>
+        <Label className="text-base">Thème de la page</Label>
+        
+        <div className="grid grid-cols-2 gap-4">
+          {/* Light Theme */}
+          <Card
+            className={`p-6 cursor-pointer transition-all hover:border-primary ${
+              theme === 'light' ? 'border-primary ring-2 ring-primary' : ''
+            }`}
+            onClick={() => onUpdate({ theme: 'light' })}
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-full h-24 rounded-xl bg-gradient-to-b from-gray-50 to-white border flex items-center justify-center">
+                <Sun className="h-10 w-10 text-amber-500" />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold">Mode Clair</p>
+                <p className="text-sm text-muted-foreground">Fond blanc, texte noir</p>
+              </div>
+            </div>
+          </Card>
+          
+          {/* Dark Theme */}
+          <Card
+            className={`p-6 cursor-pointer transition-all hover:border-primary ${
+              theme === 'dark' ? 'border-primary ring-2 ring-primary' : ''
+            }`}
+            onClick={() => onUpdate({ theme: 'dark' })}
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-full h-24 rounded-xl bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center">
+                <Moon className="h-10 w-10 text-blue-400" />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold">Mode Sombre</p>
+                <p className="text-sm text-muted-foreground">Fond sombre, texte blanc</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Color Selection - 2 colors only */}
+      <div className="space-y-4">
+        <Label className="text-base">Couleurs principales (2 max)</Label>
+        <p className="text-sm text-muted-foreground">
+          <strong>Couleur 1</strong> → Titres H1 • <strong>Couleur 2</strong> → Titres H2
+        </p>
         
         {/* Suggested Palettes */}
         <div className="grid grid-cols-2 gap-3">
-          {SUGGESTED_PALETTES.map((palette) => (
+          {suggestedPalettes.map((palette) => (
             <Card
               key={palette.name}
               className="p-4 cursor-pointer hover:border-primary transition-all"
@@ -87,45 +148,79 @@ export function StepDesign({ data, onUpdate }: StepDesignProps) {
         </div>
 
         {/* Current Colors */}
-        <div className="flex gap-4 flex-wrap items-start">
-          {data.colors.map((color, index) => (
-            <div key={index} className="relative group space-y-2">
-              <div className="relative">
-                <Input
-                  type="color"
-                  value={color}
-                  onChange={(e) => updateColor(index, e.target.value)}
-                  className="w-24 h-24 cursor-pointer border-2 border-border rounded-lg p-1"
-                />
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => removeColor(index)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
+        <div className="flex gap-6 items-start pt-4">
+          {/* Color 1 - H1 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Couleur 1 (H1)</Label>
+            <div className="relative group">
               <Input
-                type="text"
-                value={color}
-                onChange={(e) => updateColor(index, e.target.value)}
-                className="w-24 text-xs text-center"
-                placeholder="#000000"
+                type="color"
+                value={data.colors[0] || "#d97706"}
+                onChange={(e) => updateColor(0, e.target.value)}
+                className="w-20 h-20 cursor-pointer border-2 border-border rounded-lg p-1"
               />
             </div>
-          ))}
-          {data.colors.length < 3 && (
-            <Button
-              variant="outline"
-              onClick={addColor}
-              className="w-24 h-24 flex flex-col items-center justify-center gap-2"
-            >
-              <Plus className="h-5 w-5" />
-              <span className="text-xs">Ajouter</span>
-            </Button>
-          )}
+            <Input
+              type="text"
+              value={data.colors[0] || "#d97706"}
+              onChange={(e) => updateColor(0, e.target.value)}
+              className="w-20 text-xs text-center"
+              placeholder="#000000"
+            />
+          </div>
+
+          {/* Color 2 - H2 */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Couleur 2 (H2)</Label>
+            <div className="relative group">
+              <Input
+                type="color"
+                value={data.colors[1] || "#f59e0b"}
+                onChange={(e) => updateColor(1, e.target.value)}
+                className="w-20 h-20 cursor-pointer border-2 border-border rounded-lg p-1"
+              />
+            </div>
+            <Input
+              type="text"
+              value={data.colors[1] || "#f59e0b"}
+              onChange={(e) => updateColor(1, e.target.value)}
+              className="w-20 text-xs text-center"
+              placeholder="#000000"
+            />
+          </div>
         </div>
+      </div>
+
+      {/* Preview */}
+      <div className="space-y-4">
+        <Label className="text-base">Aperçu</Label>
+        <Card 
+          className="p-6 rounded-xl"
+          style={{ 
+            backgroundColor: theme === 'dark' ? '#1a1a2e' : '#fafafa',
+          }}
+        >
+          <div className="space-y-3">
+            <h1 
+              className="text-2xl font-bold"
+              style={{ color: data.colors[0] || "#d97706" }}
+            >
+              Titre Principal (H1)
+            </h1>
+            <h2 
+              className="text-xl font-semibold"
+              style={{ color: data.colors[1] || "#f59e0b" }}
+            >
+              Sous-titre (H2)
+            </h2>
+            <p style={{ color: theme === 'dark' ? '#f5f5f5' : '#1a1a1a' }}>
+              Corps de texte standard avec une couleur neutre adaptée au thème.
+            </p>
+            <p style={{ color: theme === 'dark' ? '#d1d5db' : '#4b5563' }}>
+              Sous-texte plus léger pour les descriptions secondaires.
+            </p>
+          </div>
+        </Card>
       </div>
 
       {/* CTA Style Selection */}
@@ -213,7 +308,6 @@ export function StepDesign({ data, onUpdate }: StepDesignProps) {
           </div>
         </div>
       </div>
-
     </div>
   );
 }

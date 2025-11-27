@@ -84,9 +84,10 @@ export default function LandingPageView() {
 
   const { design_config, content, trainer_info, courses } = landingPage;
   
-  // Generate dynamic color palette
-  const baseColors = design_config?.colors || ["#ea580c", "#db2777", "#f59e0b"];
-  const palette = generateDynamicPalette(baseColors);
+  // Generate dynamic color palette with theme support
+  const baseColors = design_config?.colors || ["#ea580c", "#f59e0b"];
+  const theme = design_config?.theme || 'light';
+  const palette = generateDynamicPalette(baseColors, theme);
   const ctaStyle = design_config?.ctaStyle || 'gradient';
   const headingFont = design_config?.fonts?.heading || "Inter";
   const bodyFont = design_config?.fonts?.body || "Inter";
@@ -97,7 +98,7 @@ export default function LandingPageView() {
     : { backgroundColor: palette.primary };
 
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: bodyFont }}>
+    <div className="min-h-screen" style={{ fontFamily: bodyFont, backgroundColor: palette.background, color: palette.bodyText }}>
       
       {/* SECTION A: HERO - Fond clair épuré */}
       <section
@@ -137,7 +138,7 @@ export default function LandingPageView() {
             {content?.hero?.headline || courses?.title}
           </h1>
           
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed" style={{ color: palette.subtitleText }}>
             {content?.hero?.subheadline || courses?.description}
           </p>
           
@@ -150,7 +151,7 @@ export default function LandingPageView() {
               {content?.hero?.cta_text || "S'inscrire maintenant"} - {courses?.price}€
             </Button>
             {content?.hero?.cta_subtext && (
-              <p className="text-sm text-gray-600 italic">
+              <p className="text-sm italic" style={{ color: palette.mutedText }}>
                 ✓ {content.hero.cta_subtext}
               </p>
             )}
@@ -242,7 +243,7 @@ export default function LandingPageView() {
             </h2>
             
             {content.method.description && (
-              <p className="text-lg sm:text-xl text-gray-700 text-center mb-12 sm:mb-16 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-center mb-12 sm:mb-16 max-w-3xl mx-auto leading-relaxed" style={{ color: palette.subtitleText }}>
                 {content.method.description}
               </p>
             )}
@@ -269,7 +270,7 @@ export default function LandingPageView() {
                     >
                       {pillar.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed text-base sm:text-lg">
+                    <p className="leading-relaxed text-base sm:text-lg" style={{ color: palette.subtitleText }}>
                       {pillar.description}
                     </p>
                   </div>
@@ -304,7 +305,7 @@ export default function LandingPageView() {
                   >
                     {content.transformation.left_card.title}
                   </h3>
-                  <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
+                  <p className="leading-relaxed text-base sm:text-lg" style={{ color: palette.subtitleText }}>
                     {content.transformation.left_card.description}
                   </p>
                 </Card>
@@ -322,7 +323,7 @@ export default function LandingPageView() {
                   >
                     {content.transformation.right_card.title}
                   </h3>
-                  <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
+                  <p className="leading-relaxed text-base sm:text-lg" style={{ color: palette.subtitleText }}>
                     {content.transformation.right_card.description}
                   </p>
                 </Card>
@@ -389,7 +390,7 @@ export default function LandingPageView() {
                       >
                         {module.title}
                       </h3>
-                      <p className="text-gray-600 mb-4 leading-relaxed text-base sm:text-lg">
+                      <p className="mb-4 leading-relaxed text-base sm:text-lg" style={{ color: palette.subtitleText }}>
                         {module.description}
                       </p>
                       {module.lessons_count && (
@@ -526,7 +527,7 @@ export default function LandingPageView() {
                         />
                       ))}
                     </div>
-                    <p className="text-gray-700 mb-5 sm:mb-6 italic text-base sm:text-lg leading-relaxed">
+                <p className="mb-5 sm:mb-6 italic text-base sm:text-lg leading-relaxed" style={{ color: palette.subtitleText }}>
                       "{testimonial.text}"
                     </p>
                     <div className="flex items-center gap-3">
@@ -541,7 +542,7 @@ export default function LandingPageView() {
                         <p className="font-bold text-base sm:text-lg" style={{ color: palette.primary }}>
                           {testimonial.name}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-600">{testimonial.role}</p>
+                        <p className="text-xs sm:text-sm" style={{ color: palette.mutedText }}>{testimonial.role}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -578,7 +579,7 @@ export default function LandingPageView() {
                       {item.question}
                     </span>
                   </AccordionTrigger>
-                  <AccordionContent className="text-gray-600 pb-5 sm:pb-6 text-sm sm:text-base leading-relaxed">
+                  <AccordionContent className="pb-5 sm:pb-6 text-sm sm:text-base leading-relaxed" style={{ color: palette.subtitleText }}>
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>
