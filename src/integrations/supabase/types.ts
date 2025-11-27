@@ -453,6 +453,8 @@ export type Database = {
           slug: string
           stripe_account_id: string | null
           updated_at: string
+          webhook_events: string[] | null
+          webhook_url: string | null
         }
         Insert: {
           brand_color?: string | null
@@ -466,6 +468,8 @@ export type Database = {
           slug: string
           stripe_account_id?: string | null
           updated_at?: string
+          webhook_events?: string[] | null
+          webhook_url?: string | null
         }
         Update: {
           brand_color?: string | null
@@ -479,6 +483,8 @@ export type Database = {
           slug?: string
           stripe_account_id?: string | null
           updated_at?: string
+          webhook_events?: string[] | null
+          webhook_url?: string | null
         }
         Relationships: []
       }

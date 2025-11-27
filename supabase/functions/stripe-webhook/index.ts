@@ -8,6 +8,36 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
+// Helper function to send outgoing webhooks
+async function sendOutgoingWebhook(
+  webhookUrl: string,
+  event: string,
+  data: Record<string, any>
+) {
+  if (!webhookUrl) return;
+
+  try {
+    console.log(`Sending outgoing webhook: ${event} to ${webhookUrl}`);
+    
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event,
+        timestamp: new Date().toISOString(),
+        data,
+      }),
+    });
+
+    console.log(`Webhook response status: ${response.status}`);
+  } catch (error) {
+    console.error(`Error sending webhook ${event}:`, error);
+    // Don't throw - we don't want webhook failures to affect the main flow
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -121,7 +151,7 @@ serve(async (req) => {
 
       console.log("Purchase recorded successfully:", purchase.id);
 
-      // Fetch course and organization info for emails
+      // Fetch course and organization info for emails and webhooks
       const { data: course, error: courseError } = await supabaseAdmin
         .from("courses")
         .select("title, organization_id")
@@ -132,6 +162,23 @@ serve(async (req) => {
         console.error("Error fetching course:", courseError);
         // Continue anyway, purchase is recorded
       } else if (course.organization_id) {
+        // Fetch organization including webhook settings
+        const { data: org, error: orgError } = await supabaseAdmin
+          .from("organizations")
+          .select("slug, name, webhook_url, webhook_events")
+          .eq("id", course.organization_id)
+          .single();
+
+        // Check if user is already a member
+        const { data: existingMember } = await supabaseAdmin
+          .from("organization_members")
+          .select("id")
+          .eq("organization_id", course.organization_id)
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        const isNewStudent = !existingMember;
+
         // Add student to organization if not already a member
         const { error: memberError } = await supabaseAdmin
           .from("organization_members")
@@ -150,7 +197,7 @@ serve(async (req) => {
           console.log("Student added to organization successfully");
         }
 
-        // Fetch user info for emails
+        // Fetch user info for emails and webhooks
         const { data: user, error: userError } = await supabaseAdmin
           .from("profiles")
           .select("email, full_name")
@@ -160,18 +207,42 @@ serve(async (req) => {
         if (userError || !user) {
           console.error("Error fetching user:", userError);
         } else {
-          // Fetch organization for courseUrl
-          const { data: org } = await supabaseAdmin
-            .from("organizations")
-            .select("slug")
-            .eq("id", course.organization_id)
-            .single();
-
           const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-          const baseUrl = supabaseUrl.replace(".supabase.co", "");
           const courseUrl = org 
             ? `https://lovable.dev/school/${org.slug}/learning/${courseId}`
             : undefined;
+
+          // Send outgoing webhooks if configured
+          if (org?.webhook_url) {
+            const webhookEvents = org.webhook_events || ["new_student", "new_purchase"];
+
+            // Send new_student webhook if it's a new student and event is enabled
+            if (isNewStudent && webhookEvents.includes("new_student")) {
+              await sendOutgoingWebhook(org.webhook_url, "new_student", {
+                student_email: user.email,
+                student_name: user.full_name || null,
+                academy_name: org.name,
+                academy_slug: org.slug,
+                joined_at: new Date().toISOString(),
+              });
+            }
+
+            // Send new_purchase webhook if event is enabled
+            if (webhookEvents.includes("new_purchase")) {
+              await sendOutgoingWebhook(org.webhook_url, "new_purchase", {
+                student_email: user.email,
+                student_name: user.full_name || null,
+                course_name: course.title,
+                course_id: courseId,
+                amount: amountTotal,
+                currency: "EUR",
+                payment_id: session.payment_intent as string,
+                academy_name: org.name,
+                academy_slug: org.slug,
+                purchased_at: new Date().toISOString(),
+              });
+            }
+          }
 
           // Send welcome email
           try {
