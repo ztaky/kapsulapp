@@ -1,4 +1,4 @@
-import { LayoutDashboard, GraduationCap, Users, Palette, Bot, Wand2, LogOut } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Palette, Bot, Wand2, LogOut, Sparkles } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +51,11 @@ const navItems = [
     title: "Pages de vente",
     url: "/sales-pages",
     icon: Wand2,
+  },
+  {
+    title: "Landing Pages",
+    url: "/landing-pages",
+    icon: Sparkles,
   },
   {
     title: "Branding",

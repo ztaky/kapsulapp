@@ -17,6 +17,7 @@ import StudioStudents from "./pages/studio/Students";
 import StudioBranding from "./pages/studio/Branding";
 import AIAssistant from "./pages/studio/AIAssistant";
 import SalesPageBuilder from "./pages/studio/SalesPageBuilder";
+import LandingPages from "./pages/studio/LandingPages";
 import LearningSpace from "./pages/learning/LearningSpace";
 import StudentLayout from "./pages/student/StudentLayout";
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="assistant" element={<AIAssistant />} />
             <Route path="sales-pages" element={<SalesPageBuilder />} />
             <Route path="sales-pages/:courseId" element={<SalesPageBuilder />} />
+            <Route path="landing-pages" element={<LandingPages />} />
             <Route path="branding" element={<StudioBranding />} />
           </Route>
           <Route path="/school/:slug/studio/lessons/:lessonId" element={<LessonEditor />} />
