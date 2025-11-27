@@ -11,7 +11,17 @@ interface Message {
   content: string;
 }
 
-export function AIAssistantChat() {
+interface AIAssistantChatProps {
+  apiEndpoint?: string;
+  context?: Record<string, any>;
+  placeholder?: string;
+}
+
+export function AIAssistantChat({ 
+  apiEndpoint, 
+  context, 
+  placeholder = "Posez votre question..." 
+}: AIAssistantChatProps = {}) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -21,7 +31,7 @@ export function AIAssistantChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
+  const CHAT_URL = apiEndpoint || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -42,7 +52,7 @@ export function AIAssistantChat() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: allMessages }),
+        body: JSON.stringify({ messages: allMessages, ...context }),
       });
 
       if (!response.ok) {
@@ -171,7 +181,7 @@ export function AIAssistantChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            placeholder="Posez votre question..."
+            placeholder={placeholder}
             disabled={isLoading}
             className="rounded-xl border-slate-200"
           />

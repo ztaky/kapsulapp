@@ -43,8 +43,12 @@ export function ContentRenderer({ lesson }: ContentRendererProps) {
         </div>
       );
 
-    case "interactive_tool":
-      return <InteractiveToolContainer lessonId={lesson.id} />;
+      case "interactive_tool":
+        return <InteractiveToolContainer 
+          lessonId={lesson.id} 
+          toolId={(lesson as any).tool_id}
+          toolConfig={(lesson as any).tool_config}
+        />;
 
     default:
       return (
