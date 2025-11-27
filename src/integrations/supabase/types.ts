@@ -152,6 +152,45 @@ export type Database = {
           },
         ]
       }
+      faq_entries: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          is_published: boolean | null
+          question: string
+          source_ticket_ids: string[] | null
+          updated_at: string
+          views_count: number | null
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          question: string
+          source_ticket_ids?: string[] | null
+          updated_at?: string
+          views_count?: number | null
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          question?: string
+          source_ticket_ids?: string[] | null
+          updated_at?: string
+          views_count?: number | null
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           clone_source_url: string | null
@@ -728,6 +767,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_faq_helpful: { Args: { faq_id: string }; Returns: undefined }
+      increment_faq_views: { Args: { faq_id: string }; Returns: undefined }
       increment_landing_page_views: {
         Args: { page_slug: string }
         Returns: undefined

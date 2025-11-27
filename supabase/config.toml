@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-support-email]
 verify_jwt = false
+
+[functions.generate-faq]
+verify_jwt = false
