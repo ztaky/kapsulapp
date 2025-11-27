@@ -56,6 +56,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
             designConfig: {
               colors: data.colors,
               fonts: data.fonts,
+              ctaStyle: data.ctaStyle,
             },
             targetAudience: data.targetAudience,
             trainerInfo: {
@@ -89,6 +90,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         design_config: {
           colors: data.colors,
           fonts: data.fonts,
+          ctaStyle: data.ctaStyle,
           layout: "modern",
         },
         content: result.content,

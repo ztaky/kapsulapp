@@ -23,6 +23,7 @@ export interface WizardData {
   courseContent?: any;
   colors: string[];
   fonts: { heading: string; body: string };
+  ctaStyle: 'solid' | 'gradient';
   targetAudience: string;
   trainerName: string;
   trainerBio: string;
@@ -48,6 +49,7 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
     courseId: "",
     colors: ["#d97706", "#f59e0b", "#fbbf24"],
     fonts: { heading: "Inter", body: "Inter" },
+    ctaStyle: "gradient",
     targetAudience: "",
     trainerName: "",
     trainerBio: "",
