@@ -47,7 +47,7 @@ const Index = () => {
               <Button variant="ghost" onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground">
                 Connexion
               </Button>
-              <Button variant="gradient" onClick={() => navigate("/coach-signup")} className="shadow-lg shadow-[#DD2476]/25">
+              <Button variant="gradient" onClick={() => navigate("/start")} className="shadow-lg shadow-[#DD2476]/25">
                 Essayer Kapsul
               </Button>
             </div>
@@ -82,7 +82,7 @@ const Index = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" variant="gradient" onClick={() => navigate("/coach-signup")} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
+            <Button size="lg" variant="gradient" onClick={() => navigate("/start")} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
               Créer mon Académie (Essai Gratuit)
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6">
@@ -406,7 +406,7 @@ const Index = () => {
                     </li>)}
                 </ul>
 
-                <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/coach-signup")}>
+                <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/start")}>
                   Devenir fondateur - 297€
                 </Button>
 
@@ -441,7 +441,7 @@ const Index = () => {
                   </li>)}
               </ul>
 
-              <Button size="lg" variant="outline" className="w-full text-lg" onClick={() => navigate("/coach-signup")}>
+              <Button size="lg" variant="outline" className="w-full text-lg" onClick={() => navigate("/start")}>
                 Essayer 7 jours gratuit
               </Button>
             </div>
@@ -486,7 +486,7 @@ const Index = () => {
           </div>
 
           <div>
-            <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/coach-signup")}>
+            <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/start")}>
               Je deviens fondateur maintenant
             </Button>
           </div>
