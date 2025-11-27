@@ -75,8 +75,9 @@ const Index = () => {
 
           {/* Subtitle */}
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed">
-            Kapsul remplace WordPress, Kajabi et Mailchimp. Hébergez vos formations, 
-            envoyez vos emails et encaissez vos ventes dans une seule interface magnifique.
+            Kapsul remplace WordPress, Kajabi et Mailchimp.
+            <br />
+            Hébergez vos formations, envoyez vos emails et encaissez vos ventes dans une seule interface magnifique.
           </p>
 
           {/* CTAs */}
