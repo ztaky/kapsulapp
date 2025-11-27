@@ -41,13 +41,35 @@ const SuperAdmin = () => {
   const fetchData = async () => {
     setLoading(true);
 
-    // Fetch organizations
-    const { data: orgsData } = await supabase
+    // Fetch organizations with owner details
+    const { data: orgsData, error: orgsError } = await supabase
       .from("organizations")
-      .select("*")
+      .select(`
+        *,
+        organization_members!inner(
+          user_id,
+          role,
+          created_at,
+          profiles(email, full_name)
+        ),
+        courses(id)
+      `)
+      .eq("organization_members.role", "coach")
       .order("created_at", { ascending: false });
 
-    setOrganizations(orgsData || []);
+    if (orgsError) {
+      console.error("Error fetching organizations:", orgsError);
+    }
+
+    // Process organizations to get the first coach as owner
+    const processedOrgs = orgsData?.map((org: any) => ({
+      ...org,
+      owner_email: org.organization_members[0]?.profiles?.email || "N/A",
+      owner_name: org.organization_members[0]?.profiles?.full_name || "N/A",
+      courses_count: org.courses?.length || 0,
+    })) || [];
+
+    setOrganizations(processedOrgs);
 
     // Fetch stats
     const { data: purchases } = await supabase
@@ -216,65 +238,89 @@ const SuperAdmin = () => {
           <>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
               <StatCard
-                title="Organisations"
+                title="Académies"
                 value={stats.totalOrgs}
                 icon={Building2}
-                description="Total d'écoles"
+                description="Académies créées sur Kapsul"
               />
               <StatCard
-                title="Revenus Globaux"
-                value={`€${stats.totalRevenue.toFixed(2)}`}
+                title="Revenus"
+                value={`${stats.totalRevenue.toFixed(2)}€`}
                 icon={DollarSign}
-                description="Toutes écoles confondues"
+                description="Total des ventes"
               />
               <StatCard
                 title="Étudiants"
                 value={stats.totalStudents}
                 icon={GraduationCap}
-                description="Total inscrits"
+                description="Apprenants inscrits"
               />
               <StatCard
                 title="Formations"
                 value={stats.totalCourses}
                 icon={TrendingUp}
-                description="Total de cours"
+                description="Cours publiés"
               />
             </div>
 
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle>Liste des Organisations</CardTitle>
-                <CardDescription>Gérez toutes les écoles de la plateforme</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Académies Kapsul
+                </CardTitle>
+                <CardDescription>
+                  Toutes les académies créées sur la plateforme
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {organizations.map((org) => (
-                    <div
-                      key={org.id}
-                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        {org.logo_url ? (
-                          <img src={org.logo_url} alt={org.name} className="h-10 w-10 rounded" />
-                        ) : (
-                          <div className="h-10 w-10 rounded bg-primary/10 flex items-center justify-center">
-                            <Building2 className="h-5 w-5 text-primary" />
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="font-semibold">{org.name}</h3>
-                          <p className="text-sm text-muted-foreground">/{org.slug}</p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/school/${org.slug}/admin`)}
-                      >
-                        Voir l'école
-                      </Button>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b text-left text-sm text-gray-500">
+                        <th className="pb-3 font-medium">Académie</th>
+                        <th className="pb-3 font-medium">Propriétaire</th>
+                        <th className="pb-3 font-medium">Créée le</th>
+                        <th className="pb-3 font-medium">Formations</th>
+                        <th className="pb-3 font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {organizations.map((org: any) => (
+                        <tr key={org.id} className="border-b hover:bg-gray-50 transition-colors">
+                          <td className="py-4">
+                            <div>
+                              <p className="font-semibold">{org.name}</p>
+                              <p className="text-sm text-gray-500">/{org.slug}</p>
+                            </div>
+                          </td>
+                          <td className="py-4">
+                            <div>
+                              <p className="text-sm font-medium">{org.owner_name}</p>
+                              <p className="text-xs text-gray-500">{org.owner_email}</p>
+                            </div>
+                          </td>
+                          <td className="py-4 text-sm">
+                            {new Date(org.created_at).toLocaleDateString("fr-FR")}
+                          </td>
+                          <td className="py-4">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {org.courses_count} cours
+                            </span>
+                          </td>
+                          <td className="py-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/school/${org.slug}/studio`)}
+                            >
+                              Voir
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>

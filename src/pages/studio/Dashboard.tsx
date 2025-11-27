@@ -218,10 +218,10 @@ export default function StudioDashboard() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
         <div className="relative z-10">
           <h1 className="text-3xl font-bold mb-2 text-[#1e293b] tracking-tight">
-            Vue d'ensemble
+            Tableau de bord
           </h1>
           <p className="text-base text-slate-600 leading-relaxed">
-            Tableau de bord de votre école <span className="font-semibold text-orange-600">{currentOrg?.name}</span>
+            Vue d'ensemble de votre académie <span className="font-semibold text-orange-600">{currentOrg?.name}</span>
           </p>
         </div>
       </div>

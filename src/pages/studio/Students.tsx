@@ -47,7 +47,7 @@ export default function StudioStudents() {
             Communauté
           </h1>
           <p className="text-base text-slate-600 leading-relaxed">
-            Gérez les étudiants de votre école
+            Gérez les apprenants de votre académie
           </p>
         </div>
       </div>
