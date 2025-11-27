@@ -2,11 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
 import CoachSignup from "./pages/CoachSignup";
 import StudioLayout from "./pages/studio/StudioLayout";
@@ -28,6 +27,15 @@ import StudentCertificates from "./pages/student/StudentCertificates";
 import StudentAssistant from "./pages/student/StudentAssistant";
 import LandingPageView from "./pages/LandingPageView";
 import CourseSalesPage from "./pages/CourseSalesPage";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminAcademies from "./pages/admin/AdminAcademies";
+import AdminSuperAdmins from "./pages/admin/AdminSuperAdmins";
+import AdminCoaches from "./pages/admin/AdminCoaches";
+import AdminStudents from "./pages/admin/AdminStudents";
+import AdminRevenue from "./pages/admin/AdminRevenue";
+import AdminCourses from "./pages/admin/AdminCourses";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -42,7 +50,21 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/start" element={<CoachSignup />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/super-admin" element={<SuperAdmin />} />
+          
+          {/* Legacy redirect */}
+          <Route path="/super-admin" element={<Navigate to="/admin" replace />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="academies" element={<AdminAcademies />} />
+            <Route path="super-admins" element={<AdminSuperAdmins />} />
+            <Route path="coaches" element={<AdminCoaches />} />
+            <Route path="students" element={<AdminStudents />} />
+            <Route path="revenue" element={<AdminRevenue />} />
+            <Route path="courses" element={<AdminCourses />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
           
           {/* Student Routes */}
           <Route path="/student" element={<StudentLayout />}>

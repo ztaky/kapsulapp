@@ -116,9 +116,9 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 )}
                 {isSuperAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/super-admin")} className="mx-1 rounded-lg hover:bg-orange-50 cursor-pointer">
+                  <DropdownMenuItem onClick={() => navigate("/admin")} className="mx-1 rounded-lg hover:bg-orange-50 cursor-pointer">
                     <Settings className="mr-2 h-4 w-4 text-orange-600" />
-                    <span className="text-sm font-medium">Super Admin</span>
+                    <span className="text-sm font-medium">Administration</span>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator className="bg-slate-100" />

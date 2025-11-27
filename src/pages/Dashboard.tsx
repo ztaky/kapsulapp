@@ -22,7 +22,7 @@ const Dashboard = () => {
     if (roleLoading || orgsLoading) return;
 
     if (isSuperAdmin) {
-      navigate("/super-admin");
+      navigate("/admin");
       return;
     }
 
