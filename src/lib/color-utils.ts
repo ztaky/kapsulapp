@@ -129,3 +129,14 @@ export function generateDynamicPalette(colors: string[]) {
 export function generateGradient(color1: string, color2: string): string {
   return `linear-gradient(135deg, ${color1}, ${color2})`;
 }
+
+/**
+ * Glass effect utility for modern card designs
+ */
+export function getGlassStyle(opacity: number = 0.95) {
+  return {
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    backgroundColor: `rgba(255, 255, 255, ${opacity})`,
+  };
+}
