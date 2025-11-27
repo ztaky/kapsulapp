@@ -65,6 +65,7 @@ export type Database = {
           description: string | null
           id: string
           is_published: boolean
+          marketing_content: Json | null
           organization_id: string | null
           payment_link_url: string | null
           price: number
@@ -77,6 +78,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          marketing_content?: Json | null
           organization_id?: string | null
           payment_link_url?: string | null
           price?: number
@@ -89,6 +91,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          marketing_content?: Json | null
           organization_id?: string | null
           payment_link_url?: string | null
           price?: number

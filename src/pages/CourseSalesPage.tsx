@@ -2,14 +2,31 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CheckCircle2, Lock } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Loader2, CheckCircle, Lock, XCircle, Play, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function CourseSalesPage() {
-  const { slug, courseId } = useParams<{ slug: string; courseId: string }>();
+  const { slug, courseId } = useParams();
   const navigate = useNavigate();
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
+  // Handle sticky bar on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyBar(window.scrollY > 500);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Fetch user session
   const { data: session } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
@@ -18,14 +35,18 @@ export default function CourseSalesPage() {
     },
   });
 
-  const { data: course, isLoading } = useQuery({
-    queryKey: ["course-sales", courseId],
+  // Fetch course details
+  const { data: course, isLoading: courseLoading } = useQuery({
+    queryKey: ["course", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
         .select(`
           *,
-          organizations(name, slug, brand_color, logo_url)
+          organizations (
+            name,
+            logo_url
+          )
         `)
         .eq("id", courseId)
         .single();
@@ -35,14 +56,15 @@ export default function CourseSalesPage() {
     },
   });
 
+  // Fetch modules and lessons
   const { data: modules } = useQuery({
-    queryKey: ["course-modules-preview", courseId],
+    queryKey: ["course-modules", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("modules")
         .select(`
           *,
-          lessons(id, title, type)
+          lessons (*)
         `)
         .eq("course_id", courseId)
         .order("position", { ascending: true });
@@ -53,8 +75,9 @@ export default function CourseSalesPage() {
     enabled: !!courseId,
   });
 
+  // Check if user has purchased
   const { data: hasPurchased } = useQuery({
-    queryKey: ["has-purchased", courseId, session?.user?.id],
+    queryKey: ["purchase-check", session?.user?.id, courseId],
     queryFn: async () => {
       if (!session?.user?.id) return false;
 
@@ -63,8 +86,7 @@ export default function CourseSalesPage() {
         .select("id")
         .eq("user_id", session.user.id)
         .eq("course_id", courseId)
-        .eq("status", "completed")
-        .maybeSingle();
+        .single();
 
       return !!data;
     },
@@ -73,37 +95,30 @@ export default function CourseSalesPage() {
 
   const handleBuyClick = () => {
     if (!course?.payment_link_url) {
-      toast({
-        title: "Paiement non configuré",
-        description: "Ce cours n'a pas encore de lien de paiement configuré",
-        variant: "destructive",
-      });
+      toast.error("Lien de paiement non configuré");
       return;
     }
 
-    // Si l'utilisateur n'est pas connecté, rediriger vers /auth
-    if (!session?.user) {
-      localStorage.setItem("redirect_after_auth", window.location.pathname);
+    if (!session) {
+      localStorage.setItem("redirectAfterAuth", window.location.pathname);
       navigate("/auth");
       return;
     }
 
-    // Construire l'URL avec client_reference_id
     const paymentUrl = new URL(course.payment_link_url);
     paymentUrl.searchParams.set("client_reference_id", session.user.id);
     paymentUrl.searchParams.set("prefilled_email", session.user.email || "");
 
-    // Rediriger vers Stripe
     window.location.href = paymentUrl.toString();
   };
 
   const handleAccessCourse = () => {
-    navigate(`/school/${slug}/learn/${courseId}`);
+    navigate(`/school/${slug}/course/${courseId}/learn`);
   };
 
-  if (isLoading) {
+  if (courseLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -111,153 +126,255 @@ export default function CourseSalesPage() {
 
   if (!course) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-lg text-slate-600">Cours introuvable</p>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-2xl font-bold mb-4">Cours introuvable</h1>
       </div>
     );
   }
 
+  const marketing = (course.marketing_content as any) || {};
+  const organization = course.organizations;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50/30 to-orange-50/20">
+    <div className="min-h-screen bg-cream font-jakarta">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {course.organizations?.logo_url && (
-              <img
-                src={course.organizations.logo_url}
-                alt={course.organizations.name}
-                className="h-10 w-10 rounded-lg object-cover"
-              />
+      <header className="bg-white/80 backdrop-blur-lg border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {organization?.logo_url && (
+                <img
+                  src={organization.logo_url}
+                  alt={organization.name}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              )}
+              <span className="font-bold text-slate-900">{organization?.name}</span>
+            </div>
+            {hasPurchased ? (
+              <Button onClick={handleAccessCourse} variant="default">
+                Accéder au cours
+              </Button>
+            ) : (
+              <Button onClick={handleBuyClick} className="bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90">
+                Acheter - {course.price}€
+              </Button>
             )}
-            <h2 className="text-xl font-bold text-slate-900">
-              {course.organizations?.name}
-            </h2>
           </div>
-          {hasPurchased ? (
-            <Button onClick={handleAccessCourse} variant="gradient">
-              Accéder au cours
-            </Button>
-          ) : (
-            <Button onClick={handleBuyClick} variant="gradient" size="lg">
-              Acheter maintenant - {course.price}€
-            </Button>
-          )}
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            {hasPurchased && (
-              <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
-                <CheckCircle2 className="h-4 w-4" />
-                Vous avez accès à ce cours
+      <section className="bg-cream py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <h1 className="text-4xl lg:text-6xl font-bold text-slate-900 leading-tight font-jakarta">
+                {marketing.headline || course.title}
+              </h1>
+              <p className="text-xl text-slate-600 leading-relaxed">
+                {marketing.subheadline || course.description}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                {!hasPurchased ? (
+                  <Button
+                    size="lg"
+                    onClick={handleBuyClick}
+                    className="text-lg px-8 py-6 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Commencer maintenant
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                ) : (
+                  <Button size="lg" onClick={handleAccessCourse} className="text-lg px-8 py-6 rounded-full">
+                    Accéder au cours
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                )}
+                <div className="flex items-center gap-2 text-slate-600">
+                  <span className="text-3xl font-bold text-orange-600">{course.price}€</span>
+                </div>
               </div>
-            )}
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-orange-900 bg-clip-text text-transparent tracking-tight leading-tight">
-              {course.title}
-            </h1>
-            <p className="text-xl text-slate-600 leading-relaxed">
-              {course.description}
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="text-4xl font-bold text-slate-900">{course.price}€</div>
-              {!hasPurchased && (
-                <Button onClick={handleBuyClick} variant="gradient" size="lg" className="shadow-xl">
-                  Acheter ce cours
-                </Button>
-              )}
-              {hasPurchased && (
-                <Button onClick={handleAccessCourse} variant="gradient" size="lg">
-                  Commencer maintenant
-                </Button>
+            </div>
+            <div className="rounded-3xl overflow-hidden shadow-2xl">
+              {marketing.video_url ? (
+                <div className="relative aspect-video bg-slate-900">
+                  <iframe
+                    src={marketing.video_url}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : course.cover_image ? (
+                <img src={course.cover_image} alt={course.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="aspect-video bg-gradient-to-br from-orange-100 to-pink-100 flex items-center justify-center">
+                  <Play className="h-20 w-20 text-orange-600" />
+                </div>
               )}
             </div>
           </div>
-
-          {course.cover_image && (
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src={course.cover_image}
-                alt={course.title}
-                className="w-full h-[400px] object-cover"
-              />
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Programme */}
-      {modules && modules.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 py-16">
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Programme du cours</h2>
-              <p className="text-lg text-slate-600">
-                {modules.length} module{modules.length > 1 ? "s" : ""} •{" "}
-                {modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)} leçon
-                {modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) > 1 ? "s" : ""}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {modules.map((module, idx) => (
-                <Card key={module.id} className="border-slate-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold">
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-900 mb-3">
-                          {module.title}
-                        </h3>
-                        {module.lessons && module.lessons.length > 0 && (
-                          <ul className="space-y-2">
-                            {module.lessons.map((lesson: any) => (
-                              <li
-                                key={lesson.id}
-                                className="flex items-center gap-2 text-slate-600"
-                              >
-                                {hasPurchased ? (
-                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                ) : (
-                                  <Lock className="h-4 w-4 text-slate-400" />
-                                )}
-                                <span>{lesson.title}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+      {/* Pain Points Section */}
+      {marketing.pain_points && marketing.pain_points.length > 0 && (
+        <section className="bg-slate-900 py-16 lg:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-5xl font-bold text-white text-center mb-12 font-jakarta">
+              Vous rencontrez ces difficultés ?
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {marketing.pain_points.map((pain: string, index: number) => (
+                <div
+                  key={index}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 hover:bg-white/10 transition-all"
+                >
+                  <XCircle className="h-8 w-8 text-red-400 mb-4" />
+                  <p className="text-white text-lg">{pain}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* CTA Final */}
-      {!hasPurchased && (
-        <section className="max-w-7xl mx-auto px-6 py-16">
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200">
-            <CardContent className="p-12 text-center space-y-6">
-              <h2 className="text-3xl font-bold text-slate-900">
-                Prêt à commencer votre apprentissage ?
-              </h2>
-              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-                Rejoignez dès maintenant et accédez immédiatement à tout le contenu du cours
-              </p>
-              <Button onClick={handleBuyClick} variant="gradient" size="lg" className="shadow-xl">
-                Acheter maintenant - {course.price}€
-              </Button>
-            </CardContent>
-          </Card>
+      {/* Benefits Section */}
+      {marketing.benefits && marketing.benefits.length > 0 && (
+        <section className="bg-cream py-16 lg:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 text-center mb-12 font-jakarta">
+              Ce que vous allez obtenir
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {marketing.benefits.map((benefit: any, index: number) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-3xl p-8 shadow-card hover:shadow-elevated hover:-translate-y-1 transition-all"
+                >
+                  <div className="text-4xl mb-4">{benefit.icon || "✨"}</div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{benefit.title}</h3>
+                  <p className="text-slate-600">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
+      )}
+
+      {/* Program Section */}
+      <section className="bg-white py-16 lg:py-24">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 text-center mb-12 font-jakarta">
+            Programme de la formation
+          </h2>
+          <div className="space-y-8">
+            {modules?.map((module: any, moduleIndex: number) => (
+              <div key={module.id} className="bg-cream rounded-3xl p-8 shadow-soft">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg">
+                      {moduleIndex + 1}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-4">{module.title}</h3>
+                    <div className="space-y-3">
+                      {module.lessons?.map((lesson: any) => (
+                        <div key={lesson.id} className="flex items-center gap-3 text-slate-600">
+                          {hasPurchased ? (
+                            <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <Lock className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                          )}
+                          <span>{lesson.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Author Bio Section */}
+      {marketing.author_bio && (
+        <section className="bg-slate-800 py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-5xl font-bold text-white text-center mb-12 font-jakarta">
+              Votre formateur
+            </h2>
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 lg:p-12">
+              <p className="text-white text-lg leading-relaxed whitespace-pre-line">
+                {marketing.author_bio}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FAQ Section */}
+      {marketing.faq && marketing.faq.length > 0 && (
+        <section className="bg-white py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 text-center mb-12 font-jakarta">
+              Questions fréquentes
+            </h2>
+            <Accordion type="single" collapsible className="space-y-4">
+              {marketing.faq.map((item: any, index: number) => (
+                <AccordionItem
+                  key={index}
+                  value={`item-${index}`}
+                  className="bg-cream rounded-3xl px-6 border-none"
+                >
+                  <AccordionTrigger className="text-lg font-semibold text-slate-900 hover:no-underline py-6">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-slate-600 pb-6">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      )}
+
+      {/* Final CTA Section */}
+      {!hasPurchased && (
+        <section className="bg-gradient-to-r from-orange-100 to-pink-100 py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6 font-jakarta">
+              Prêt à commencer ?
+            </h2>
+            <p className="text-xl text-slate-600 mb-8">
+              Rejoignez la formation dès aujourd'hui et transformez vos compétences
+            </p>
+            <Button
+              size="lg"
+              onClick={handleBuyClick}
+              className="text-xl px-12 py-8 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-2xl hover:shadow-3xl transition-all"
+            >
+              Acheter maintenant - {course.price}€
+              <ArrowRight className="ml-2 h-6 w-6" />
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Sticky Mobile Bar */}
+      {showStickyBar && !hasPurchased && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white/95 backdrop-blur-lg border-t border-slate-200 shadow-2xl lg:hidden">
+          <Button
+            onClick={handleBuyClick}
+            className="w-full text-lg py-6 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-lg"
+          >
+            Acheter maintenant - {course.price}€
+          </Button>
+        </div>
       )}
     </div>
   );
