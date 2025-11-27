@@ -275,23 +275,23 @@ export default function LandingPageFullEditor() {
         <div className="flex-1 overflow-hidden flex flex-col">
           {activeTab === 'edit' ? (
             <>
-              {/* Section Tabs */}
-              <ScrollArea className="border-b">
-                <div className="flex gap-1 p-2">
+            {/* Section Tabs - Grid wrap pour afficher toutes les sections */}
+              <div className="border-b p-3">
+                <div className="grid grid-cols-3 gap-2">
                   {SECTIONS.map((section) => (
                     <Button
                       key={section.id}
                       variant={activeSection === section.id ? "default" : "ghost"}
                       size="sm"
-                      className="whitespace-nowrap text-xs"
+                      className="text-xs justify-start"
                       onClick={() => setActiveSection(section.id)}
                     >
-                      <section.icon className="h-3 w-3 mr-1" />
-                      {section.label}
+                      <section.icon className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{section.label}</span>
                     </Button>
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
 
               {/* Section Editor */}
               <ScrollArea className="flex-1 p-4">

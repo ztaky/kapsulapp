@@ -22,9 +22,38 @@ export default function LandingPageView() {
     }
   }, [slug]);
 
+  // Dynamically load Google Fonts based on design_config
+  useEffect(() => {
+    if (landingPage?.design_config?.fonts) {
+      const fonts = landingPage.design_config.fonts;
+      const fontsToLoad = new Set<string>();
+      
+      if (fonts.heading && fonts.heading !== 'system-ui') {
+        fontsToLoad.add(fonts.heading);
+      }
+      if (fonts.body && fonts.body !== 'system-ui') {
+        fontsToLoad.add(fonts.body);
+      }
+      
+      fontsToLoad.forEach(fontName => {
+        // Check if font already loaded
+        const existingLink = document.querySelector(`link[href*="${fontName.replace(/\s+/g, '+')}"]`);
+        if (!existingLink) {
+          const link = document.createElement('link');
+          link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/\s+/g, '+')}:wght@400;500;600;700;800;900&display=swap`;
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+        }
+      });
+    }
+  }, [landingPage?.design_config?.fonts]);
+
   const fetchLandingPage = async () => {
     try {
-      const { data, error } = await supabase
+      // Check for preview mode (allows viewing unpublished pages in editor)
+      const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+      
+      let query = supabase
         .from("landing_pages")
         .select(`
           *,
@@ -36,9 +65,14 @@ export default function LandingPageView() {
             price
           )
         `)
-        .eq("slug", slug)
-        .eq("status", "published")
-        .single();
+        .eq("slug", slug);
+      
+      // Only filter by published status if not in preview mode
+      if (!isPreview) {
+        query = query.eq("status", "published");
+      }
+      
+      const { data, error } = await query.single();
 
       if (error) throw error;
       setLandingPage(data);
@@ -50,6 +84,10 @@ export default function LandingPageView() {
   };
 
   const incrementViewCount = async () => {
+    // Don't increment views in preview mode
+    const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+    if (isPreview) return;
+    
     try {
       await supabase.rpc("increment_landing_page_views", { page_slug: slug });
     } catch (error) {
@@ -100,11 +138,19 @@ export default function LandingPageView() {
   return (
     <div className="min-h-screen" style={{ fontFamily: bodyFont, backgroundColor: palette.background, color: palette.bodyText }}>
       
-      {/* SECTION A: HERO - Fond clair épuré */}
+      {/* SECTION A: HERO - Fond clair épuré avec image optionnelle */}
       <section
         className="relative py-16 sm:py-20 lg:py-28 px-5 sm:px-8 lg:px-12 overflow-hidden"
         style={{ backgroundColor: palette.lightBg }}
       >
+        {/* Hero background image if set */}
+        {content?.hero?.hero_image && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center opacity-10"
+            style={{ backgroundImage: `url(${content.hero.hero_image})` }}
+          />
+        )}
+        
         {/* Grid pattern overlay très subtil */}
         <div 
           className="absolute inset-0 opacity-[0.02]"
@@ -263,7 +309,16 @@ export default function LandingPageView() {
                   </div>
                   
                   <div className="mt-6">
-                    <CheckCircle2 className="h-9 w-9 sm:h-10 sm:w-10 mb-5 sm:mb-6" style={{ color: palette.primary }} />
+                    {/* Icon/Image for pillar */}
+                    {pillar.icon_url ? (
+                      <img 
+                        src={pillar.icon_url} 
+                        alt={pillar.title}
+                        className="w-16 h-16 object-contain mb-5 sm:mb-6 rounded-lg"
+                      />
+                    ) : (
+                      <CheckCircle2 className="h-9 w-9 sm:h-10 sm:w-10 mb-5 sm:mb-6" style={{ color: palette.primary }} />
+                    )}
                     <h3 
                       className="font-bold text-xl sm:text-2xl mb-3 sm:mb-4" 
                       style={{ fontFamily: headingFont, color: palette.primary }}
@@ -531,13 +586,21 @@ export default function LandingPageView() {
                       "{testimonial.text}"
                     </p>
                     <div className="flex items-center gap-3">
-                      {/* Avatar placeholder */}
-                      <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                        style={{ backgroundColor: palette.primary }}
-                      >
-                        {testimonial.name.charAt(0)}
-                      </div>
+                      {/* Avatar - image or fallback */}
+                      {testimonial.avatar ? (
+                        <img 
+                          src={testimonial.avatar}
+                          alt={testimonial.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div 
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                          style={{ backgroundColor: palette.primary }}
+                        >
+                          {testimonial.name?.charAt(0) || '?'}
+                        </div>
+                      )}
                       <div>
                         <p className="font-bold text-base sm:text-lg" style={{ color: palette.primary }}>
                           {testimonial.name}

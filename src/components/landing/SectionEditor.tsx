@@ -76,6 +76,13 @@ export function SectionEditor({
               rows={3}
             />
           </div>
+          <ImageUploader
+            label="Image Hero (optionnel)"
+            value={content?.hero?.hero_image || ""}
+            onChange={(url) => updateField('hero_image', url)}
+            organizationId={organizationId}
+            placeholder="Image d'arrière-plan pour la section hero"
+          />
           <div className="space-y-2">
             <Label>Texte du CTA</Label>
             <Input
@@ -174,7 +181,7 @@ export function SectionEditor({
           <div className="space-y-3">
             <Label>Piliers</Label>
             {(content?.method?.pillars || []).map((pillar: any, index: number) => (
-              <Card key={index} className="p-4 space-y-2">
+              <Card key={index} className="p-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <Label className="text-sm">Pilier {index + 1}</Label>
                   <Button variant="ghost" size="sm" onClick={() => removeArrayItem('pillars', index)}>
@@ -192,9 +199,16 @@ export function SectionEditor({
                   placeholder="Description"
                   rows={2}
                 />
+                <ImageUploader
+                  label="Icône/Image (optionnel)"
+                  value={pillar.icon_url || ""}
+                  onChange={(url) => updateArrayField('pillars', index, { ...pillar, icon_url: url })}
+                  organizationId={organizationId}
+                  placeholder="Icône ou image pour ce pilier"
+                />
               </Card>
             ))}
-            <Button variant="outline" size="sm" onClick={() => addArrayItem('pillars', { title: '', description: '' })}>
+            <Button variant="outline" size="sm" onClick={() => addArrayItem('pillars', { title: '', description: '', icon_url: '' })}>
               <Plus className="h-4 w-4 mr-2" /> Ajouter un pilier
             </Button>
           </div>
@@ -369,7 +383,7 @@ export function SectionEditor({
         <div className="space-y-4">
           <Label>Témoignages</Label>
           {(content?.testimonials || []).map((testimonial: any, index: number) => (
-            <Card key={index} className="p-4 space-y-2">
+            <Card key={index} className="p-4 space-y-3">
               <div className="flex justify-between items-center">
                 <Label className="text-sm">Témoignage {index + 1}</Label>
                 <Button variant="ghost" size="sm" onClick={() => {
@@ -380,6 +394,17 @@ export function SectionEditor({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+              <ImageUploader
+                label="Photo (optionnel)"
+                value={testimonial.avatar || ""}
+                onChange={(url) => {
+                  const newTestimonials = [...(content?.testimonials || [])];
+                  newTestimonials[index] = { ...testimonial, avatar: url };
+                  onChange('testimonials', newTestimonials);
+                }}
+                organizationId={organizationId}
+                placeholder="Photo du témoin"
+              />
               <Input
                 value={testimonial.name || ""}
                 onChange={(e) => {
@@ -423,7 +448,7 @@ export function SectionEditor({
             </Card>
           ))}
           <Button variant="outline" size="sm" onClick={() => {
-            const newTestimonials = [...(content?.testimonials || []), { name: '', role: '', text: '', rating: 5 }];
+            const newTestimonials = [...(content?.testimonials || []), { name: '', role: '', text: '', rating: 5, avatar: '' }];
             onChange('testimonials', newTestimonials);
           }}>
             <Plus className="h-4 w-4 mr-2" /> Ajouter un témoignage
