@@ -8,7 +8,8 @@ import {
   BookOpen, 
   Settings, 
   LogOut,
-  ScrollText
+  ScrollText,
+  MessageCircleQuestion
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -69,6 +70,11 @@ const navItems = [
     title: "Logs d'activité",
     url: "/logs",
     icon: ScrollText,
+  },
+  {
+    title: "Tickets Support",
+    url: "/support",
+    icon: MessageCircleQuestion,
   },
   {
     title: "Paramètres",

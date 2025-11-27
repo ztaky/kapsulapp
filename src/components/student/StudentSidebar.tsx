@@ -1,4 +1,4 @@
-import { BookOpen, User, Receipt, Award, Bot, LogOut } from "lucide-react";
+import { BookOpen, User, Receipt, Award, Bot, LogOut, MessageCircleQuestion } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,11 @@ const navItems = [
     title: "Assistant IA",
     url: "/student/assistant",
     icon: Bot,
+  },
+  {
+    title: "Support",
+    url: "/student/support",
+    icon: MessageCircleQuestion,
   },
 ];
 

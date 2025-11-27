@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useParams } from "react-router-dom";
 import { useOrganizationRole, useUserOrganizations } from "@/hooks/useUserRole";
 import { StudioSidebar } from "@/components/studio/StudioSidebar";
+import { SupportChatWidget } from "@/components/support/SupportChatWidget";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -66,6 +67,7 @@ export default function StudioLayout() {
             <Outlet />
           </div>
         </main>
+        <SupportChatWidget organizationId={currentOrg.id} />
       </div>
     </SidebarProvider>
   );
