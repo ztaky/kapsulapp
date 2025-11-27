@@ -118,5 +118,7 @@ export const useUserOrganizations = () => {
     setLoading(false);
   };
 
-  return { organizations, loading, refetch: fetchOrganizations };
+  const currentOrg = organizations.length > 0 ? organizations[0] : null;
+
+  return { organizations, currentOrg, loading, refetch: fetchOrganizations };
 };

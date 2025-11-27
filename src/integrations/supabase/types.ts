@@ -58,6 +58,81 @@ export type Database = {
           },
         ]
       }
+      landing_pages: {
+        Row: {
+          clone_source_url: string | null
+          content: Json
+          conversions_count: number
+          course_id: string
+          created_at: string
+          design_config: Json
+          id: string
+          name: string
+          organization_id: string
+          reference_screenshots: string[] | null
+          slug: string
+          status: Database["public"]["Enums"]["landing_page_status"]
+          stripe_product_id: string | null
+          target_audience: string | null
+          trainer_info: Json | null
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          clone_source_url?: string | null
+          content?: Json
+          conversions_count?: number
+          course_id: string
+          created_at?: string
+          design_config?: Json
+          id?: string
+          name: string
+          organization_id: string
+          reference_screenshots?: string[] | null
+          slug: string
+          status?: Database["public"]["Enums"]["landing_page_status"]
+          stripe_product_id?: string | null
+          target_audience?: string | null
+          trainer_info?: Json | null
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          clone_source_url?: string | null
+          content?: Json
+          conversions_count?: number
+          course_id?: string
+          created_at?: string
+          design_config?: Json
+          id?: string
+          name?: string
+          organization_id?: string
+          reference_screenshots?: string[] | null
+          slug?: string
+          status?: Database["public"]["Enums"]["landing_page_status"]
+          stripe_product_id?: string | null
+          target_audience?: string | null
+          trainer_info?: Json | null
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_pages_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "landing_pages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           content_text: string | null
@@ -189,7 +264,10 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          payment_methods_enabled: string[] | null
+          paypal_merchant_id: string | null
           slug: string
+          stripe_account_id: string | null
           updated_at: string
         }
         Insert: {
@@ -198,7 +276,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          payment_methods_enabled?: string[] | null
+          paypal_merchant_id?: string | null
           slug: string
+          stripe_account_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -207,7 +288,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          payment_methods_enabled?: string[] | null
+          paypal_merchant_id?: string | null
           slug?: string
+          stripe_account_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -374,6 +458,7 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "user"
+      landing_page_status: "draft" | "published"
       lesson_type: "video" | "interactive_tool"
       org_role: "coach" | "student"
     }
@@ -504,6 +589,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "user"],
+      landing_page_status: ["draft", "published"],
       lesson_type: ["video", "interactive_tool"],
       org_role: ["coach", "student"],
     },
