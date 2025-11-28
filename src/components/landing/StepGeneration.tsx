@@ -53,13 +53,30 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         
         if (error) throw error;
         
-        // Parse la réponse JSON de Gemini
+        // Log de debug
+        console.log("Réponse brute de Gemini:", responseData.content);
+        
+        // Nettoyer la réponse
+        let cleaned = responseData.content;
+        
+        // Enlever les markdown code blocks
+        cleaned = cleaned.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+        
+        // Enlever les espaces/retours à la ligne au début et fin
+        cleaned = cleaned.trim();
+        
+        // Enlever les virgules avant les accolades fermantes (erreur fréquente de Gemini)
+        cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+        
+        console.log("JSON nettoyé:", cleaned);
+        
+        // Parser
         try {
-          return JSON.parse(responseData.content);
-        } catch (e) {
-          // Si Gemini retourne avec markdown, on nettoie
-          const cleaned = responseData.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           return JSON.parse(cleaned);
+        } catch (e) {
+          console.error("Erreur parsing JSON:", e);
+          console.error("JSON problématique:", cleaned);
+          throw new Error(`Gemini a retourné un JSON invalide: ${(e as Error).message}`);
         }
       };
 
