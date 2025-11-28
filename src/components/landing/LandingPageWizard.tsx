@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -58,6 +58,13 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
     trainerSocials: [],
     referenceScreenshots: [],
   });
+
+  // Reset wizard to step 1 when dialog opens
+  useEffect(() => {
+    if (open) {
+      setCurrentStep(1);
+    }
+  }, [open]);
 
   const CurrentStepComponent = STEPS[currentStep - 1].component;
   const progress = (currentStep / STEPS.length) * 100;
