@@ -29,45 +29,75 @@ IMPORTANT : Retourne UNIQUEMENT un objet JSON valide, sans markdown, sans commen
 
 // PROMPT SECTION HERO
 export function getHeroPrompt(wizardData: WizardData): string {
-  const globalContext = buildGlobalContext(wizardData);
+  const context = buildGlobalContext(wizardData);
   
-  return `${globalContext}
+  return `${context}
 
-Génère le contenu de la section HERO pour cette landing page.
+MISSION : Génère UNIQUEMENT le Hero (section 1) de la landing page.
 
-OBJECTIF : Capturer l'attention immédiate + clarifier la promesse.
+RÈGLES ABSOLUES :
+1. Réponds UNIQUEMENT avec du JSON pur
+2. AUCUN texte avant ou après le JSON
+3. AUCUN markdown, AUCUN backticks
+4. Utilise UNIQUEMENT des guillemets doubles (")
+5. Échappe les guillemets dans le texte avec \\"
+6. Pas de virgule avant les accolades fermantes
 
-STRUCTURE JSON ATTENDUE :
+STRUCTURE JSON EXACTE (copie cette structure) :
 {
-  "preHeadline": "Une phrase d'accroche qui qualifie l'audience (Pour les X qui Y)",
+  "preHeadline": "Texte court qualifiant l'audience",
   "headline": {
-    "line1": "Timeframe précis (14 jours, 30 jours...)",
-    "line2": "Résultat transformation concret (sera en gradient visuel)",
-    "line3": "Bénéfice chiffré ou amplification (multiplier X par Y)"
+    "line1": "Première ligne du titre",
+    "line2": "Deuxième ligne avec élément clé",
+    "line3": "Troisième ligne avec promesse"
   },
-  "subheadline": "Méthode unique. Différenciateur. Garantie ou preuve.",
+  "subheadline": "Description en 1 phrase. Max 20 mots.",
   "benefits": [
-    "Bénéfice 1 avec chiffre ou timeframe (15-20h/semaine)",
-    "Bénéfice 2 amplification impact (décupler, transformer)",
-    "Bénéfice 3 social proof ou résultat (testé par X entrepreneurs)"
+    "Bénéfice 1. Max 15 mots.",
+    "Bénéfice 2. Max 15 mots.",
+    "Bénéfice 3. Max 15 mots."
   ],
   "cta": {
-    "text": "Action + Résultat + Timeframe (Je crée mon X en Y jours)",
+    "text": "Action immédiate. Max 6 mots.",
     "price": "497€"
   },
   "testimonialSnippet": {
     "stars": 5,
-    "text": "Citation courte impact (10-15 mots max)",
-    "author": "Prénom, secteur activité"
+    "text": "Citation courte et percutante. Max 20 mots.",
+    "author": "Prénom, Métier"
   }
 }
 
-EXEMPLES :
-PreHeadline: "Pour les dirigeants débordés qui veulent se mettre à l'IA mais ne savent pas par où commencer"
-Headline line2: "Assistant IA & Co-Créateur IA"
-Benefit: "Un assistant IA opérationnel qui te libère 15-20h/semaine dès le jour 8"
+EXEMPLE DE RÉPONSE VALIDE :
+{
+  "preHeadline": "Pour les formateurs débordés qui veulent scaler",
+  "headline": {
+    "line1": "14 jours pour créer ton",
+    "line2": "Assistant IA Personnel",
+    "line3": "et multiplier ta productivité x5"
+  },
+  "subheadline": "Formation pratique. Zéro théorie. Résultats garantis.",
+  "benefits": [
+    "Un système qui génère 20h de contenu par semaine",
+    "Une académie qui tourne 24/7 sans toi",
+    "Méthode testée par 300+ formateurs"
+  ],
+  "cta": {
+    "text": "Je crée mon système maintenant",
+    "price": "497€"
+  },
+  "testimonialSnippet": {
+    "stars": 5,
+    "text": "J'ai gagné 20h par semaine dès la première semaine.",
+    "author": "Marie, Coach Business"
+  }
+}
 
-GÉNÈRE LE JSON MAINTENANT :`;
+TON : Direct, sans blabla, orienté ROI immédiat.
+LONGUEUR : Phrases courtes. Max 20 mots par phrase.
+
+COMMENCE TA RÉPONSE PAR { ET TERMINE PAR }
+NE METS RIEN D'AUTRE.`;
 }
 
 // PROMPT SECTION AGITATION
