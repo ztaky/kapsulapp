@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Star, Award, Clock, Quote } from "lucide-react";
 import { generateDynamicPalette } from "@/lib/color-utils";
+import { LandingPageTemplate } from "@/components/landing/templates/LandingPageTemplate";
+import { LandingPageConfig } from "@/config/landingPageSchema";
 
 export default function LandingPageView() {
   const { slug } = useParams();
@@ -120,6 +122,31 @@ export default function LandingPageView() {
     );
   }
 
+  // Check if content uses the new LandingPageConfig format
+  const hasNewFormat = landingPage?.content?.hero !== undefined && 
+                       typeof landingPage?.content?.hero?.headline === 'object';
+
+  if (hasNewFormat) {
+    const config: LandingPageConfig = {
+      theme: landingPage.content.theme || {
+        colors: {
+          primary: landingPage.design_config?.colors?.[0] || '#ea580c',
+          secondary: landingPage.design_config?.colors?.[1] || '#f59e0b',
+          accent: landingPage.design_config?.colors?.[2] || '#10b981',
+          background: '#ffffff',
+          text: '#1a1a1a',
+        },
+        fonts: {
+          heading: landingPage.design_config?.fonts?.heading || 'Inter',
+          body: landingPage.design_config?.fonts?.body || 'Inter',
+        }
+      },
+      content: landingPage.content
+    };
+    return <LandingPageTemplate config={config} />;
+  }
+
+  // Legacy format - keep old renderer for backwards compatibility
   const { design_config, content, trainer_info, courses } = landingPage;
   
   // Generate dynamic color palette with theme support
