@@ -42,6 +42,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFAQ from "./pages/admin/AdminFAQ";
 import FAQ from "./pages/FAQ";
+import TestLandingPage from "./pages/TestLandingPage";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +112,9 @@ const App = () => (
           
           {/* Public Course Sales Page */}
           <Route path="/school/:slug/course/:courseId" element={<CourseSalesPage />} />
+          
+          {/* Test Landing Page */}
+          <Route path="/test-landing" element={<TestLandingPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
