@@ -21,34 +21,35 @@ const Index = () => {
   return <div className="min-h-screen bg-background">
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <img src={kapsulLogo} alt="Kapsul" className="h-10 w-10" />
-              <span className="text-xl font-bold text-foreground">KAPSUL</span>
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <img src={kapsulLogo} alt="Kapsul" className="h-8 w-8 sm:h-10 sm:w-10" />
+              <span className="text-lg sm:text-xl font-bold text-foreground hidden sm:block">KAPSUL</span>
             </div>
 
             {/* Navigation Links */}
-            <div className="hidden md:flex items-center gap-8">
-              <button onClick={() => scrollToSection("features")} className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+              <button onClick={() => scrollToSection("features")} className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm">
                 Fonctionnalités
               </button>
-              <button onClick={() => scrollToSection("comparison")} className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+              <button onClick={() => scrollToSection("comparison")} className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm">
                 Comparatif
               </button>
-              <button onClick={() => scrollToSection("pricing")} className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+              <button onClick={() => scrollToSection("pricing")} className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm">
                 Pricing
               </button>
             </div>
 
             {/* CTAs */}
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground px-2 sm:px-4">
                 Connexion
               </Button>
-              <Button variant="gradient" onClick={() => navigate("/start")} className="shadow-lg shadow-[#DD2476]/25">
-                Profiter de l'offre Fondateur
+              <Button variant="gradient" size="sm" onClick={() => navigate("/start")} className="shadow-lg shadow-[#DD2476]/25 text-xs sm:text-sm px-3 sm:px-4 whitespace-nowrap">
+                <span className="hidden sm:inline">Profiter de l'offre Fondateur</span>
+                <span className="sm:hidden">Offre Fondateur</span>
               </Button>
             </div>
           </div>
