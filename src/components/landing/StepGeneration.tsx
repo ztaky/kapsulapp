@@ -99,6 +99,14 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       // Sauvegarder dans la DB
       const slug = `${data.courseName?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
       
+      // === DEBUG ===
+      console.log("=== DEBUG SAUVEGARDE ===");
+      console.log("Hero content:", heroContent);
+      console.log("Config complète:", landingPageConfig);
+      console.log("Type de headline:", typeof landingPageConfig.content.hero.headline);
+      console.log("Headline est objet ?", landingPageConfig.content.hero.headline && typeof landingPageConfig.content.hero.headline === 'object');
+      // === FIN DEBUG ===
+      
       const { error: insertError } = await supabase.from("landing_pages").insert([{
         organization_id: currentOrg.id,
         course_id: data.courseId!,
