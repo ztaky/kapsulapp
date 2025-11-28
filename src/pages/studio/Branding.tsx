@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,16 +8,31 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Save, Mail, Send, Eye, Webhook, Zap, CheckCircle2 } from "lucide-react";
+import { Save, Mail, Send, Eye, Webhook, Zap, CheckCircle2, CreditCard, AlertCircle, ExternalLink, Loader2, Unlink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+
+interface StripeConnectStatus {
+  connected: boolean;
+  accountId: string | null;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  email?: string;
+}
 
 export default function StudioBranding() {
   const { slug } = useParams<{ slug: string }>();
-  const { organizations } = useUserOrganizations();
+  const [searchParams] = useSearchParams();
+  const { organizations, refetch: refetchOrgs } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
   const queryClient = useQueryClient();
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
+  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
+  const [isDisconnectingStripe, setIsDisconnectingStripe] = useState(false);
+  const [stripeStatus, setStripeStatus] = useState<StripeConnectStatus | null>(null);
+  const [isLoadingStripeStatus, setIsLoadingStripeStatus] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,6 +43,25 @@ export default function StudioBranding() {
     webhook_url: "",
     webhook_events: ["new_student", "new_purchase"] as string[],
   });
+
+  // Check Stripe Connect status
+  const checkStripeStatus = async () => {
+    if (!currentOrg?.id) return;
+    
+    setIsLoadingStripeStatus(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-status", {
+        body: { organizationId: currentOrg.id },
+      });
+
+      if (error) throw error;
+      setStripeStatus(data);
+    } catch (error) {
+      console.error("Error checking Stripe status:", error);
+    } finally {
+      setIsLoadingStripeStatus(false);
+    }
+  };
 
   useEffect(() => {
     if (currentOrg) {
@@ -41,8 +75,88 @@ export default function StudioBranding() {
         webhook_url: org.webhook_url || "",
         webhook_events: org.webhook_events || ["new_student", "new_purchase"],
       });
+      
+      // Check Stripe status when org loads
+      checkStripeStatus();
     }
-  }, [currentOrg]);
+  }, [currentOrg?.id]);
+
+  // Handle Stripe Connect callback
+  useEffect(() => {
+    const stripeConnected = searchParams.get("stripe_connected");
+    const stripeRefresh = searchParams.get("stripe_refresh");
+
+    if (stripeConnected === "true") {
+      toast({ title: "Stripe connecté !", description: "Votre compte Stripe a été connecté avec succès." });
+      checkStripeStatus();
+      refetchOrgs();
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (stripeRefresh === "true") {
+      toast({ 
+        title: "Session expirée", 
+        description: "Veuillez reconnecter votre compte Stripe.",
+        variant: "destructive" 
+      });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [searchParams]);
+
+  const connectStripe = async () => {
+    if (!currentOrg?.id) return;
+
+    setIsConnectingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-link", {
+        body: { organizationId: currentOrg.id },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Error connecting Stripe:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer le lien de connexion Stripe",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnectingStripe(false);
+    }
+  };
+
+  const disconnectStripe = async () => {
+    if (!currentOrg?.id) return;
+
+    if (!confirm("Êtes-vous sûr de vouloir déconnecter votre compte Stripe ? Les paiements ne fonctionneront plus.")) {
+      return;
+    }
+
+    setIsDisconnectingStripe(true);
+    try {
+      const { error } = await supabase.functions.invoke("stripe-connect-disconnect", {
+        body: { organizationId: currentOrg.id },
+      });
+
+      if (error) throw error;
+
+      setStripeStatus({ connected: false, accountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false });
+      toast({ title: "Stripe déconnecté", description: "Votre compte Stripe a été déconnecté." });
+      refetchOrgs();
+    } catch (error) {
+      console.error("Error disconnecting Stripe:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de déconnecter Stripe",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDisconnectingStripe(false);
+    }
+  };
 
   const updateOrgMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -336,6 +450,233 @@ export default function StudioBranding() {
                 {isSendingTest ? "Envoi en cours..." : "Envoyer un email test"}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Stripe Connect Card */}
+        <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100">
+                <CreditCard className="h-5 w-5 text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-xl font-bold text-[#1e293b] tracking-tight">
+                    Stripe Connect
+                  </CardTitle>
+                  {stripeStatus?.connected && (
+                    <Badge 
+                      variant={stripeStatus.chargesEnabled ? "default" : "secondary"}
+                      className={stripeStatus.chargesEnabled ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}
+                    >
+                      {stripeStatus.chargesEnabled ? "Actif" : "Configuration requise"}
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription>
+                  Connectez votre compte Stripe pour recevoir les paiements directement
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {isLoadingStripeStatus ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+              </div>
+            ) : stripeStatus?.connected ? (
+              <div className="space-y-6">
+                {/* Status Info */}
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      {stripeStatus.chargesEnabled ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-amber-500" />
+                      )}
+                      <span className="text-sm font-medium text-slate-900">Paiements</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {stripeStatus.chargesEnabled ? "Activés" : "Non activés"}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      {stripeStatus.payoutsEnabled ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-amber-500" />
+                      )}
+                      <span className="text-sm font-medium text-slate-900">Virements</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {stripeStatus.payoutsEnabled ? "Activés" : "Non activés"}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      {stripeStatus.detailsSubmitted ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-amber-500" />
+                      )}
+                      <span className="text-sm font-medium text-slate-900">Profil</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {stripeStatus.detailsSubmitted ? "Complet" : "Incomplet"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Account Info */}
+                <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-semibold text-slate-900 text-sm mb-1">
+                        Compte connecté
+                      </h4>
+                      <p className="text-xs text-slate-600">
+                        ID: {stripeStatus.accountId}
+                      </p>
+                      {stripeStatus.email && (
+                        <p className="text-xs text-slate-600">
+                          Email: {stripeStatus.email}
+                        </p>
+                      )}
+                    </div>
+                    <a 
+                      href="https://dashboard.stripe.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                    >
+                      Dashboard Stripe
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Warning if not fully configured */}
+                {!stripeStatus.chargesEnabled && (
+                  <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-amber-800 text-sm mb-1">
+                          Configuration incomplète
+                        </h4>
+                        <p className="text-xs text-amber-700 mb-3">
+                          Votre compte Stripe n'est pas entièrement configuré. Cliquez sur "Compléter la configuration" pour finaliser.
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={connectStripe}
+                          disabled={isConnectingStripe}
+                          className="rounded-xl border-amber-300 text-amber-700 hover:bg-amber-100"
+                        >
+                          {isConnectingStripe ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Chargement...
+                            </>
+                          ) : (
+                            "Compléter la configuration"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={disconnectStripe}
+                    disabled={isDisconnectingStripe}
+                    className="rounded-xl text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    {isDisconnectingStripe ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Déconnexion...
+                      </>
+                    ) : (
+                      <>
+                        <Unlink className="mr-2 h-4 w-4" />
+                        Déconnecter Stripe
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+                  <div className="flex flex-col md:flex-row md:items-center gap-6">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-slate-900 text-base mb-2">
+                        Recevez vos paiements directement
+                      </h4>
+                      <p className="text-sm text-slate-600 mb-4">
+                        En connectant votre compte Stripe, vos clients peuvent payer directement et l'argent arrive sur votre compte bancaire. 
+                        Kapsul prélève une commission de 10% sur chaque vente.
+                      </p>
+                      <ul className="space-y-2 text-sm text-slate-600">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          Paiements par carte bancaire
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          Virements automatiques sur votre compte
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          Dashboard Stripe pour gérer vos revenus
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="shrink-0">
+                      <Button
+                        onClick={connectStripe}
+                        disabled={isConnectingStripe}
+                        variant="gradient"
+                        size="lg"
+                        className="shadow-lg rounded-xl"
+                      >
+                        {isConnectingStripe ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Connexion...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-2 h-5 w-5" />
+                            Connecter Stripe
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h4 className="font-semibold text-slate-900 text-sm mb-2">
+                    Comment ça marche ?
+                  </h4>
+                  <ol className="space-y-2 text-sm text-slate-600 list-decimal list-inside">
+                    <li>Cliquez sur "Connecter Stripe" ci-dessus</li>
+                    <li>Créez ou connectez votre compte Stripe</li>
+                    <li>Complétez les informations de votre entreprise</li>
+                    <li>Vos formations seront automatiquement payables par carte</li>
+                  </ol>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

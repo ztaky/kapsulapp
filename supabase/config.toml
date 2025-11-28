@@ -35,3 +35,15 @@ verify_jwt = false
 
 [functions.send-transactional-email]
 verify_jwt = false
+
+[functions.stripe-connect-link]
+verify_jwt = false
+
+[functions.stripe-connect-status]
+verify_jwt = false
+
+[functions.stripe-connect-disconnect]
+verify_jwt = false
+
+[functions.create-checkout-session]
+verify_jwt = false
