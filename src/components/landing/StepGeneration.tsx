@@ -8,6 +8,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { WizardData } from "./LandingPageWizard";
+import { 
+  getHeroPrompt, 
+  getAgitationPrompt,
+  getSolutionTimeframePrompt,
+  getPedagogyPrompt,
+  getProgramPrompt,
+  getTestimonialsPrompt,
+  getFAQPrompt,
+  getBonusPrompt,
+  getGuaranteePrompt,
+  getInstructorPrompt,
+  getPricingPrompt,
+  getFAQFinalPrompt,
+  getFooterPrompt
+} from '@/config/landingPagePrompts';
+import { createThemeFromWizard } from '@/config/landingPageSchema';
 
 interface StepGenerationProps {
   data: WizardData;
@@ -15,11 +31,21 @@ interface StepGenerationProps {
 }
 
 const GENERATION_STEPS = [
-  "Analyse du contenu de la formation...",
-  "Génération du copywriting expert...",
-  "Création de la structure visuelle...",
-  "Optimisation SEO...",
-  "Finalisation...",
+  "Préparation du contexte...",
+  "Génération Hero (1/13)...",
+  "Génération Agitation (2/13)...",
+  "Génération Solution (3/13)...",
+  "Génération Pédagogie (4/13)...",
+  "Génération Programme (5/13)...",
+  "Génération Témoignages (6/13)...",
+  "Génération FAQ (7/13)...",
+  "Génération Bonus (8/13)...",
+  "Génération Garantie (9/13)...",
+  "Génération Formateur (10/13)...",
+  "Génération Pricing (11/13)...",
+  "Génération FAQ Finale (12/13)...",
+  "Génération Footer (13/13)...",
+  "Finalisation et sauvegarde...",
 ];
 
 export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
@@ -37,63 +63,98 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
     setCurrentStep(0);
 
     try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setCurrentStep((prev) => {
-          if (prev < GENERATION_STEPS.length - 1) return prev + 1;
-          return prev;
-        });
-      }, 2000);
-
-      // Call edge function to generate landing page
-      const { data: result, error: functionError } = await supabase.functions.invoke(
-        "generate-landing-page-pro",
-        {
-          body: {
-            courseId: data.courseId,
-            courseName: data.courseName,
-            courseContent: data.courseContent,
-            designConfig: {
-              colors: data.colors,
-              fonts: data.fonts,
-              ctaStyle: data.ctaStyle,
-            },
-            targetAudience: data.targetAudience,
-            trainerInfo: {
-              name: data.trainerName,
-              bio: data.trainerBio,
-              photo: data.trainerPhoto,
-              socials: data.trainerSocials,
-            },
-            referenceScreenshots: data.referenceScreenshots,
-            cloneSourceUrl: data.cloneSourceUrl,
-          },
+      // Helper function pour appeler Gemini
+      const callGemini = async (prompt: string): Promise<any> => {
+        const { data: responseData, error } = await supabase.functions.invoke(
+          "generate-landing-page-pro",
+          {
+            body: { prompt, mode: "single-section" }
+          }
+        );
+        
+        if (error) throw error;
+        
+        // Parse la réponse JSON de Gemini
+        try {
+          return JSON.parse(responseData.content);
+        } catch (e) {
+          // Si Gemini retourne avec markdown, on nettoie
+          const cleaned = responseData.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          return JSON.parse(cleaned);
         }
-      );
+      };
 
-      clearInterval(progressInterval);
-      setCurrentStep(GENERATION_STEPS.length - 1);
+      // Créer le thème depuis les données du wizard
+      const theme = createThemeFromWizard(data);
 
-      if (functionError) throw functionError;
+      // Génération section par section
+      const content: any = {};
+      
+      setCurrentStep(1);
+      content.hero = await callGemini(getHeroPrompt(data));
+      
+      setCurrentStep(2);
+      content.agitation = await callGemini(getAgitationPrompt(data));
+      
+      setCurrentStep(3);
+      content.solutionTimeframe = await callGemini(getSolutionTimeframePrompt(data));
+      
+      setCurrentStep(4);
+      content.pedagogy = await callGemini(getPedagogyPrompt(data));
+      
+      setCurrentStep(5);
+      content.program = await callGemini(getProgramPrompt(data));
+      
+      setCurrentStep(6);
+      content.testimonials = await callGemini(getTestimonialsPrompt(data));
+      
+      setCurrentStep(7);
+      content.faq = await callGemini(getFAQPrompt(data));
+      
+      setCurrentStep(8);
+      content.bonus = await callGemini(getBonusPrompt(data));
+      
+      setCurrentStep(9);
+      content.guarantee = await callGemini(getGuaranteePrompt(data));
+      
+      setCurrentStep(10);
+      content.instructor = await callGemini(getInstructorPrompt(data));
+      
+      setCurrentStep(11);
+      content.pricing = await callGemini(getPricingPrompt(data));
+      
+      setCurrentStep(12);
+      content.faqFinal = await callGemini(getFAQFinalPrompt(data));
+      
+      setCurrentStep(13);
+      content.footer = await callGemini(getFooterPrompt(data));
+      
+      setCurrentStep(14);
 
-      setGeneratedContent(result.content);
+      // Assembler la config complète
+      const landingPageConfig = {
+        theme,
+        content
+      };
 
-      // Save to database
+      setGeneratedContent(landingPageConfig);
+
+      // Sauvegarder dans la DB
       const slug = `${data.courseName?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
       
-      const { error: insertError } = await supabase.from("landing_pages").insert({
+      const { error: insertError } = await supabase.from("landing_pages").insert([{
         organization_id: currentOrg.id,
-        course_id: data.courseId,
+        course_id: data.courseId!,
         name: data.courseName || "Ma Landing Page",
         slug,
-        status: "draft",
+        status: "draft" as const,
         design_config: {
           colors: data.colors,
           fonts: data.fonts,
           ctaStyle: data.ctaStyle,
           layout: "modern",
         },
-        content: result.content,
+        content: JSON.parse(JSON.stringify(landingPageConfig)),
         trainer_info: {
           name: data.trainerName,
           bio: data.trainerBio,
@@ -103,7 +164,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         target_audience: data.targetAudience,
         reference_screenshots: data.referenceScreenshots,
         clone_source_url: data.cloneSourceUrl,
-      });
+      }]);
 
       if (insertError) throw insertError;
 
@@ -209,7 +270,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           disabled={isGenerating}
         >
           <Wand2 className="mr-2 h-5 w-5" />
-          Générer avec Gemini 3
+          Générer avec Gemini 3 (Nouveau Système)
         </Button>
       )}
     </div>
