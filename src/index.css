@@ -166,3 +166,43 @@ All colors MUST be HSL.
     box-shadow: 0 2px 10px -3px rgba(6, 81, 237, 0.1);
   }
 }
+
+/* Landing Page Theme Variables */
+.landing-page-theme {
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.landing-page-theme h1,
+.landing-page-theme h2,
+.landing-page-theme h3,
+.landing-page-theme h4,
+.landing-page-theme h5,
+.landing-page-theme h6 {
+  font-weight: var(--font-heading-weight, 700);
+}
+
+.landing-page-theme p,
+.landing-page-theme span,
+.landing-page-theme li {
+  font-weight: var(--font-body-weight, 400);
+}
+
+/* Gradient text utility for landing pages */
+.landing-page-theme .gradient-text {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gradient button utility */
+.gradient-button {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-text-light);
+  transition: all 0.3s ease;
+}
+
+.gradient-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
