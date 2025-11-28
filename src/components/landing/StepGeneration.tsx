@@ -9,19 +9,7 @@ import { useUserOrganizations } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { WizardData } from "./LandingPageWizard";
 import { 
-  getHeroPrompt, 
-  getAgitationPrompt,
-  getSolutionTimeframePrompt,
-  getPedagogyPrompt,
-  getProgramPrompt,
-  getTestimonialsPrompt,
-  getFAQPrompt,
-  getBonusPrompt,
-  getGuaranteePrompt,
-  getInstructorPrompt,
-  getPricingPrompt,
-  getFAQFinalPrompt,
-  getFooterPrompt
+  getHeroPrompt
 } from '@/config/landingPagePrompts';
 import { createThemeFromWizard } from '@/config/landingPageSchema';
 
@@ -32,19 +20,7 @@ interface StepGenerationProps {
 
 const GENERATION_STEPS = [
   "Préparation du contexte...",
-  "Génération Hero (1/13)...",
-  "Génération Agitation (2/13)...",
-  "Génération Solution (3/13)...",
-  "Génération Pédagogie (4/13)...",
-  "Génération Programme (5/13)...",
-  "Génération Témoignages (6/13)...",
-  "Génération FAQ (7/13)...",
-  "Génération Bonus (8/13)...",
-  "Génération Garantie (9/13)...",
-  "Génération Formateur (10/13)...",
-  "Génération Pricing (11/13)...",
-  "Génération FAQ Finale (12/13)...",
-  "Génération Footer (13/13)...",
+  "Génération Hero...",
   "Finalisation et sauvegarde...",
 ];
 
@@ -63,12 +39,15 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
     setCurrentStep(0);
 
     try {
-      // Helper function pour appeler Gemini
+      // Helper function pour appeler Gemini via l'edge function
       const callGemini = async (prompt: string): Promise<any> => {
         const { data: responseData, error } = await supabase.functions.invoke(
           "generate-landing-page-pro",
           {
-            body: { prompt, mode: "single-section" }
+            body: { 
+              mode: "single-section",
+              prompt: prompt
+            }
           }
         );
         
@@ -87,57 +66,35 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       // Créer le thème depuis les données du wizard
       const theme = createThemeFromWizard(data);
 
-      // Génération section par section
-      const content: any = {};
-      
+      // TEST : Générer UNIQUEMENT le Hero pour valider
       setCurrentStep(1);
-      content.hero = await callGemini(getHeroPrompt(data));
+      const heroContent = await callGemini(getHeroPrompt(data));
       
-      setCurrentStep(2);
-      content.agitation = await callGemini(getAgitationPrompt(data));
-      
-      setCurrentStep(3);
-      content.solutionTimeframe = await callGemini(getSolutionTimeframePrompt(data));
-      
-      setCurrentStep(4);
-      content.pedagogy = await callGemini(getPedagogyPrompt(data));
-      
-      setCurrentStep(5);
-      content.program = await callGemini(getProgramPrompt(data));
-      
-      setCurrentStep(6);
-      content.testimonials = await callGemini(getTestimonialsPrompt(data));
-      
-      setCurrentStep(7);
-      content.faq = await callGemini(getFAQPrompt(data));
-      
-      setCurrentStep(8);
-      content.bonus = await callGemini(getBonusPrompt(data));
-      
-      setCurrentStep(9);
-      content.guarantee = await callGemini(getGuaranteePrompt(data));
-      
-      setCurrentStep(10);
-      content.instructor = await callGemini(getInstructorPrompt(data));
-      
-      setCurrentStep(11);
-      content.pricing = await callGemini(getPricingPrompt(data));
-      
-      setCurrentStep(12);
-      content.faqFinal = await callGemini(getFAQFinalPrompt(data));
-      
-      setCurrentStep(13);
-      content.footer = await callGemini(getFooterPrompt(data));
-      
-      setCurrentStep(14);
+      console.log("Hero généré:", heroContent);
 
-      // Assembler la config complète
+      // Assembler une config minimale pour tester
       const landingPageConfig = {
         theme,
-        content
+        content: {
+          hero: heroContent,
+          // Sections vides temporairement
+          agitation: { headline: "", subheadline: "", painPoints: [] },
+          solutionTimeframe: { headline: "", stats: [], socialProof: "", secretBox: { title: "", content: "" } },
+          pedagogy: { headline: "", subheadline: "", pillars: [], shockPhrase: "" },
+          program: { headline: "", subheadline: "", aiTypes: [], results: [], weeks: [], deliverables: [] },
+          testimonials: { headline: "", stars: 5, items: [], cta: "" },
+          faq: { headline: "", questions: [], cta: "" },
+          bonus: { headline: "", subheadline: "", items: [], cta: "" },
+          guarantee: { title: "", description: "", riskPhrase: "" },
+          instructor: { headline: "", name: "", photo: "", credentials: [], mission: "", difference: "" },
+          pricing: { headline: "", subheadline: "", offers: [] },
+          faqFinal: { questions: [] },
+          footer: { logo: "", copyright: "", links: [] }
+        }
       };
 
       setGeneratedContent(landingPageConfig);
+      setCurrentStep(2);
 
       // Sauvegarder dans la DB
       const slug = `${data.courseName?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
