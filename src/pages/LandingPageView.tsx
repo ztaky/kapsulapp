@@ -131,14 +131,18 @@ export default function LandingPageView() {
       theme: landingPage.content.theme || {
         colors: {
           primary: landingPage.design_config?.colors?.[0] || '#ea580c',
-          secondary: landingPage.design_config?.colors?.[1] || '#f59e0b',
-          accent: landingPage.design_config?.colors?.[2] || '#10b981',
-          background: '#ffffff',
-          text: '#1a1a1a',
+          primaryDark: landingPage.design_config?.colors?.[1] || '#f59e0b',
+          bgDark: '#0a0e27',
+          bgLight: '#fef8f3',
+          textDark: '#1a1a1a',
+          textLight: '#ffffff',
+          accentGreen: '#10b981',
+          accentRed: '#ef4444',
         },
         fonts: {
-          heading: landingPage.design_config?.fonts?.heading || 'Inter',
-          body: landingPage.design_config?.fonts?.body || 'Inter',
+          family: landingPage.design_config?.fonts?.heading || 'Inter',
+          heading: '700',
+          body: '400',
         }
       },
       content: landingPage.content
