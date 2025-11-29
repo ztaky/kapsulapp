@@ -136,7 +136,10 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           ctaStyle: data.ctaStyle,
           layout: "modern",
         },
-        content: JSON.parse(JSON.stringify(landingPageConfig)),
+        content: JSON.parse(JSON.stringify({
+          theme: landingPageConfig.theme,
+          ...landingPageConfig.content
+        })),
         trainer_info: {
           name: data.trainerName,
           bio: data.trainerBio,
