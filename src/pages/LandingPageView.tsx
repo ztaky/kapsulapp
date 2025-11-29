@@ -123,12 +123,24 @@ export default function LandingPageView() {
   }
 
   // Check if content uses the new LandingPageConfig format
-  const hasNewFormat = landingPage?.content?.hero !== undefined && 
-                       typeof landingPage?.content?.hero?.headline === 'object';
+  // Handle both flattened structure (new) and double-nested structure (legacy bug)
+  const heroData = landingPage?.content?.hero || landingPage?.content?.content?.hero;
+  const hasNewFormat = heroData !== undefined && 
+                       typeof heroData?.headline === 'object';
 
   if (hasNewFormat) {
+    // Determine content location: flattened (content.hero) vs double-nested (content.content.hero)
+    const isFlattened = landingPage.content.hero !== undefined;
+    const contentData = isFlattened 
+      ? landingPage.content  // New flattened format
+      : landingPage.content.content;  // Old double-nested format
+    
+    const themeData = isFlattened 
+      ? landingPage.content.theme 
+      : landingPage.content?.content?.theme;
+
     const config: LandingPageConfig = {
-      theme: landingPage.content.theme || {
+      theme: themeData || {
         colors: {
           primary: landingPage.design_config?.colors?.[0] || '#ea580c',
           primaryDark: landingPage.design_config?.colors?.[1] || '#f59e0b',
@@ -145,7 +157,7 @@ export default function LandingPageView() {
           body: '400',
         }
       },
-      content: landingPage.content
+      content: contentData
     };
     return <LandingPageTemplate config={config} />;
   }
