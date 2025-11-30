@@ -1,13 +1,18 @@
 import { InstructorContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, User } from 'lucide-react';
 
 interface InstructorProps {
   content: InstructorContent;
+  trainerPhoto?: string; // Photo from trainerInfo for backward compatibility
 }
 
-export function Instructor({ content }: InstructorProps) {
+export function Instructor({ content, trainerPhoto }: InstructorProps) {
   const { theme } = useTheme();
+  
+  // Use photo from content first, then fallback to trainerPhoto prop
+  const photoUrl = content.photo || trainerPhoto;
+  const hasPhoto = photoUrl && photoUrl.trim() !== '';
 
   return (
     <section 
@@ -25,22 +30,28 @@ export function Instructor({ content }: InstructorProps) {
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Photo */}
-          {content.photo && (
-            <div className="flex justify-center">
-              <div 
-                className="w-64 h-64 rounded-3xl overflow-hidden shadow-2xl"
-                style={{ 
-                  border: `4px solid ${theme.colors.primary}`
-                }}
-              >
+          <div className="flex justify-center">
+            <div 
+              className="w-64 h-64 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
+              style={{ 
+                border: `4px solid ${theme.colors.primary}`,
+                backgroundColor: hasPhoto ? 'transparent' : theme.colors.bgLight
+              }}
+            >
+              {hasPhoto ? (
                 <img 
-                  src={content.photo} 
+                  src={photoUrl} 
                   alt={content.name}
                   className="w-full h-full object-cover"
                 />
-              </div>
+              ) : (
+                <User 
+                  className="w-24 h-24"
+                  style={{ color: theme.colors.primary, opacity: 0.5 }}
+                />
+              )}
             </div>
-          )}
+          </div>
 
           {/* Content */}
           <div>

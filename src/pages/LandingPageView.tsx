@@ -159,7 +159,11 @@ export default function LandingPageView() {
       },
       content: contentData
     };
-    return <LandingPageTemplate config={config} />;
+    
+    // Pass trainer photo for backward compatibility
+    const trainerPhoto = (landingPage.trainer_info as any)?.photo;
+    
+    return <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} />;
   }
 
   // Legacy format - keep old renderer for backwards compatibility

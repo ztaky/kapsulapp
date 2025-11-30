@@ -30,6 +30,7 @@ export interface HeroContent {
     line3: string;
   };
   subheadline: string;
+  heroImage?: string;  // Image optionnelle pour le hero
   benefits: string[];
   cta: {
     text: string;
