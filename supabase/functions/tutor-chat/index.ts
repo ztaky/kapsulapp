@@ -73,13 +73,27 @@ serve(async (req) => {
       }
 
       // Increment usage
-      await supabase.rpc('increment_tutor_usage', {
+      const { data: newUsage } = await supabase.rpc('increment_tutor_usage', {
         _user_id: userId,
         _organization_id: organizationId,
         _month_year: currentMonth,
       });
 
-      console.log('Tutor usage incremented for user:', userId);
+      console.log('Tutor usage incremented for user:', userId, 'new count:', newUsage);
+
+      // Send notification when reaching 80% of quota (only once)
+      const threshold80 = Math.floor(quotaLimit * 0.8);
+      if (newUsage === threshold80) {
+        console.log('User reached 80% quota, sending notification');
+        await supabase.rpc('create_notification', {
+          _user_id: userId,
+          _title: '⚠️ Quota tuteur bientôt atteint',
+          _message: `Tu as utilisé ${newUsage} de tes ${quotaLimit} messages tuteur ce mois-ci. Il te reste ${quotaLimit - newUsage} messages avant la fin du mois.`,
+          _type: 'warning',
+          _link: null,
+          _metadata: { quota_percentage: 80, usage: newUsage, limit: quotaLimit }
+        });
+      }
     }
 
     // Build rich system prompt with full course context
