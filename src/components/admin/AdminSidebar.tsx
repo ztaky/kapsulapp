@@ -102,14 +102,14 @@ export function AdminSidebar() {
 
   return (
     <Sidebar 
-      className={`${open ? "w-64" : "w-14"} bg-slate-900 border-r border-slate-800`} 
+      className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-200/60`} 
       collapsible="icon"
     >
-      <SidebarTrigger className="m-3 self-end text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg" />
+      <SidebarTrigger className="m-3 self-end text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg" />
 
       <SidebarContent className="bg-transparent px-3">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
+          <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">
             Administration
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -120,8 +120,8 @@ export function AdminSidebar() {
                     <NavLink
                       to={`${baseUrl}${item.url}`}
                       end={item.url === ""}
-                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-all"
-                      activeClassName="bg-gradient-to-r from-orange-600 to-pink-600 text-white font-bold"
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-all"
+                      activeClassName="bg-primary/10 text-primary font-semibold"
                     >
                       <item.icon className="w-5 h-5 flex-shrink-0" />
                       {open && <span className="truncate">{item.title}</span>}
@@ -134,11 +134,11 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-slate-800">
+      <SidebarFooter className="p-3 border-t border-slate-100">
         <Button
           onClick={handleSignOut}
           variant="ghost"
-          className={`w-full justify-start gap-3 rounded-xl text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all ${!open ? 'px-2' : ''}`}
+          className={`w-full justify-start gap-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all ${!open ? 'px-2' : ''}`}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {open && <span className="text-sm font-medium">Déconnexion</span>}

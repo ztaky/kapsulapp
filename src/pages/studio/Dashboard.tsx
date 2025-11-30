@@ -2,27 +2,15 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, DollarSign, BookOpen, TrendingUp, LucideIcon } from "lucide-react";
+import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  description: string;
-  icon: LucideIcon;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
-  colorClass: string;
-  iconBgClass: string;
-}
+import { DashboardHeader } from "@/components/shared/DashboardHeader";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default function StudioDashboard() {
   const { slug } = useParams<{ slug: string }>();
@@ -167,77 +155,45 @@ export default function StudioDashboard() {
     }
   };
 
-  const StatCard = ({ title, value, description, icon: Icon, colorClass, iconBgClass }: StatCardProps & { iconBgClass: string }) => (
-    <Card className="relative overflow-hidden bg-white border border-slate-100 rounded-3xl shadow-premium hover:shadow-lg transition-all duration-300">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-medium text-slate-600 tracking-tight">
-          {title}
-        </CardTitle>
-        <div className={cn(
-          "rounded-2xl p-3 w-12 h-12 flex items-center justify-center",
-          iconBgClass
-        )}>
-          <Icon className="h-6 w-6" />
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-0">
-        <div className="text-4xl font-bold tracking-tight mb-1 text-slate-900">
-          {value}
-        </div>
-        <p className="text-sm text-slate-500 leading-relaxed">
-          {description}
-        </p>
-      </CardContent>
-    </Card>
-  );
-
   const statCards = [
     {
       title: "Formations",
       value: stats?.totalCourses || 0,
       icon: BookOpen,
       description: "Total de formations créées",
-      colorClass: "text-orange-600",
-      iconBgClass: "bg-orange-100 text-orange-600",
     },
     {
       title: "Étudiants",
       value: stats?.totalStudents || 0,
       icon: Users,
       description: "Membres de votre communauté",
-      colorClass: "text-blue-600",
-      iconBgClass: "bg-blue-100 text-blue-600",
     },
     {
       title: "Revenus",
       value: `${stats?.totalRevenue || 0} €`,
       icon: DollarSign,
       description: "Chiffre d'affaires total",
-      colorClass: "text-green-600",
-      iconBgClass: "bg-green-100 text-green-600",
+      isHighlighted: true,
     },
     {
       title: "Ventes",
       value: stats?.totalPurchases || 0,
       icon: TrendingUp,
       description: "Nombre total d'achats",
-      colorClass: "text-purple-600",
-      iconBgClass: "bg-purple-100 text-purple-600",
     },
   ];
 
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/30 p-10 border border-slate-100 shadow-sm">
           <Skeleton className="h-12 w-80 mb-3" />
           <Skeleton className="h-6 w-96" />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="bg-white border border-slate-100 rounded-3xl shadow-premium">
+            <Card key={i} className="bg-white border border-slate-100 rounded-3xl shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-12 w-12 rounded-2xl" />
@@ -264,17 +220,12 @@ export default function StudioDashboard() {
         onStepAction={handleStepAction}
       />
 
-      {/* Hero Header - Premium Style */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-2 text-[#1e293b] tracking-tight">
-            Tableau de bord
-          </h1>
-          <p className="text-base text-slate-600 leading-relaxed">
-            Vue d'ensemble de votre académie <span className="font-semibold text-orange-600">{currentOrg?.name}</span>
-          </p>
-        </div>
-      </div>
+      {/* Hero Header */}
+      <DashboardHeader
+        title="Tableau de bord"
+        subtitle="Vue d'ensemble de votre académie"
+        highlight={currentOrg?.name}
+      />
 
       {/* Onboarding Checklist - Show if not completed */}
       {!onboardingCompleted && (
@@ -297,41 +248,50 @@ export default function StudioDashboard() {
       </div>
 
       {/* Quick Actions Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-white p-8 border border-slate-100 shadow-premium">
+      <div className="relative overflow-hidden rounded-3xl bg-white p-8 border border-slate-100 shadow-sm">
         <div className="relative z-10">
-          <h3 className="text-xl font-bold mb-6 text-[#1e293b] tracking-tight">Actions rapides</h3>
+          <h3 className="text-xl font-bold mb-6 text-foreground tracking-tight">Actions rapides</h3>
           <div className="grid gap-4 md:grid-cols-3">
             <button 
               onClick={() => navigate(`/school/${slug}/studio/courses`)}
-              className="p-6 bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-2xl border border-orange-100 hover:shadow-lg transition-all text-left group"
+              className="p-6 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
             >
-              <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="rounded-2xl bg-slate-200 text-slate-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <BookOpen className="h-6 w-6" />
               </div>
-              <div className="font-bold text-slate-900 mb-2 tracking-tight">Créer une formation</div>
-              <div className="text-sm text-slate-500 leading-relaxed">Démarrez une nouvelle formation</div>
+              <div className="font-bold text-foreground mb-2 tracking-tight flex items-center gap-2">
+                Créer une formation
+                <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="text-sm text-muted-foreground leading-relaxed">Démarrez une nouvelle formation</div>
             </button>
             
             <button 
               onClick={() => navigate(`/school/${slug}/studio/students`)}
-              className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-2xl border border-blue-100 hover:shadow-lg transition-all text-left group"
+              className="p-6 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
             >
-              <div className="rounded-2xl bg-blue-100 text-blue-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="rounded-2xl bg-slate-200 text-slate-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <Users className="h-6 w-6" />
               </div>
-              <div className="font-bold text-slate-900 mb-2 tracking-tight">Inviter des étudiants</div>
-              <div className="text-sm text-slate-500 leading-relaxed">Agrandissez votre communauté</div>
+              <div className="font-bold text-foreground mb-2 tracking-tight flex items-center gap-2">
+                Inviter des étudiants
+                <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="text-sm text-muted-foreground leading-relaxed">Agrandissez votre communauté</div>
             </button>
             
             <button 
               onClick={() => navigate(`/school/${slug}/studio/landing-pages`)}
-              className="p-6 bg-gradient-to-br from-green-50 to-green-100/30 rounded-2xl border border-green-100 hover:shadow-lg transition-all text-left group"
+              className="p-6 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
             >
-              <div className="rounded-2xl bg-green-100 text-green-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="rounded-2xl bg-slate-200 text-slate-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <div className="font-bold text-slate-900 mb-2 tracking-tight">Voir les analyses</div>
-              <div className="text-sm text-slate-500 leading-relaxed">Suivez vos performances</div>
+              <div className="font-bold text-foreground mb-2 tracking-tight flex items-center gap-2">
+                Voir les analyses
+                <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="text-sm text-muted-foreground leading-relaxed">Suivez vos performances</div>
             </button>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { BookOpen, PlayCircle, CheckCircle2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { DashboardHeader } from "@/components/shared/DashboardHeader";
 
 interface Course {
   id: string;
@@ -118,36 +119,33 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
-          Mes Formations
-        </h2>
-        <p className="text-base text-slate-600 leading-relaxed">
-          Continuez votre apprentissage où vous l'avez laissé
-        </p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Hero Header */}
+      <DashboardHeader
+        title="Mes Formations"
+        subtitle="Continuez votre apprentissage où vous l'avez laissé"
+      />
 
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-muted rounded-t-3xl" />
+            <Card key={i} className="animate-pulse border-slate-100 shadow-sm">
+              <div className="h-48 bg-slate-100 rounded-t-3xl" />
               <CardHeader>
-                <div className="h-6 bg-muted rounded-xl w-3/4 mb-2" />
-                <div className="h-4 bg-muted rounded-xl w-full" />
+                <div className="h-6 bg-slate-100 rounded-xl w-3/4 mb-2" />
+                <div className="h-4 bg-slate-100 rounded-xl w-full" />
               </CardHeader>
             </Card>
           ))}
         </div>
       ) : courses.length === 0 ? (
-        <Card className="shadow-premium border-slate-100">
+        <Card className="shadow-sm border-slate-100">
           <CardHeader className="text-center py-12">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mb-4">
-              <BookOpen className="h-8 w-8 text-orange-600" />
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <BookOpen className="h-8 w-8 text-slate-600" />
             </div>
-            <CardTitle className="text-slate-900 tracking-tight">Aucune formation</CardTitle>
-            <CardDescription className="text-slate-600 leading-relaxed">
+            <CardTitle className="text-foreground tracking-tight">Aucune formation</CardTitle>
+            <CardDescription className="text-muted-foreground leading-relaxed">
               Vous n'avez pas encore de formations. Explorez notre catalogue pour commencer !
             </CardDescription>
             <Button 
@@ -162,7 +160,11 @@ const StudentDashboard = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <Card key={course.id} className="shadow-premium hover:shadow-elevated transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" onClick={() => navigate(`/school/${course.organization_slug}/learn/${course.id}`)}>
+            <Card 
+              key={course.id} 
+              className="shadow-sm hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" 
+              onClick={() => navigate(`/school/${course.organization_slug}/learn/${course.id}`)}
+            >
               <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-50 rounded-t-3xl overflow-hidden">
                 {course.cover_image ? (
                   <img
@@ -172,29 +174,29 @@ const StudentDashboard = () => {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center">
-                      <BookOpen className="h-8 w-8 text-orange-600" />
+                    <div className="w-16 h-16 rounded-2xl bg-slate-200 flex items-center justify-center">
+                      <BookOpen className="h-8 w-8 text-slate-600" />
                     </div>
                   </div>
                 )}
                 {course.progress === 100 && (
-                  <div className="absolute top-4 right-4 bg-gradient-to-br from-green-500 to-green-600 text-white p-2 rounded-full shadow-lg">
+                  <div className="absolute top-4 right-4 bg-gradient-to-br from-primary to-pink-500 text-white p-2 rounded-full shadow-lg">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                 )}
               </div>
               <CardHeader>
-                <CardTitle className="line-clamp-1 text-slate-900 tracking-tight">{course.title}</CardTitle>
-                <CardDescription className="line-clamp-2 text-slate-600 leading-relaxed">{course.description}</CardDescription>
+                <CardTitle className="line-clamp-1 text-foreground tracking-tight">{course.title}</CardTitle>
+                <CardDescription className="line-clamp-2 text-muted-foreground leading-relaxed">{course.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 font-medium">Progression</span>
-                    <span className="font-bold text-orange-600">{course.progress}%</span>
+                    <span className="text-muted-foreground font-medium">Progression</span>
+                    <span className="font-bold text-primary">{course.progress}%</span>
                   </div>
                   <Progress value={course.progress} className="h-2" />
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {course.completedLessons} / {course.totalLessons} leçons terminées
                   </p>
                 </div>
