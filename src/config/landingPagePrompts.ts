@@ -338,28 +338,35 @@ export function getFAQPrompt(wizardData: WizardData): string {
   
   return `${globalContext}
 
-Génère 8 questions FAQ.
+Génère 8 questions FAQ AVEC leurs réponses.
 
 STRUCTURE JSON ATTENDUE :
 {
   "headline": "Les Questions que tu te poses",
   "questions": [
-    "Question 1 du point de vue client",
-    "Question 2",
-    // ... 6 autres
+    {
+      "question": "Question formulée du point de vue client",
+      "answer": "Réponse rassurante et argumentée (2-3 phrases)"
+    }
   ],
   "cta": "Je suis prêt(e) à gagner 20h/semaine avec l'IA"
 }
 
-LES 8 QUESTIONS OBLIGATOIRES :
-1. "Je n'ai pas le temps de suivre une formation"
-2. "C'est trop technique pour moi"
-3. "C'est cher"
-4. "L'IA va remplacer mon expertise"
-5. "Et si j'ai déjà un business lancé ?"
-6. "Je peux apprendre gratuitement sur YouTube"
-7. "Il passe c'est trop tôt"
-8. "Je vais commencer plus tard"
+LES 8 THÈMES À TRAITER (formule comme objection client) :
+1. Manque de temps pour suivre une formation
+2. Trop technique / pas à l'aise avec la tech
+3. Prix trop élevé / ROI incertain
+4. Peur que l'IA remplace son expertise
+5. Business déjà lancé, est-ce adapté ?
+6. Contenu gratuit disponible sur YouTube
+7. Timing : est-ce le bon moment ?
+8. Procrastination : je verrai plus tard
+
+RÈGLES RÉPONSES :
+- Empathie d'abord ("Je comprends...")
+- Argument factuel ensuite
+- Bénéfice concret pour finir
+- Max 3 phrases par réponse
 
 GÉNÈRE LE JSON MAINTENANT :`;
 }

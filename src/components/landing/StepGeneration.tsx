@@ -13,7 +13,14 @@ import {
   getAgitationPrompt,
   getSolutionTimeframePrompt,
   getPedagogyPrompt,
-  getProgramPrompt
+  getProgramPrompt,
+  getTestimonialsPrompt,
+  getFAQPrompt,
+  getBonusPrompt,
+  getGuaranteePrompt,
+  getInstructorPrompt,
+  getPricingPrompt,
+  getFAQFinalPrompt
 } from '@/config/landingPagePrompts';
 import { createThemeFromWizard } from '@/config/landingPageSchema';
 
@@ -24,11 +31,18 @@ interface StepGenerationProps {
 
 const GENERATION_STEPS = [
   "Préparation du contexte...",
-  "Génération Hero (Gemini + GPT-5)...",
+  "Génération Hero...",
   "Génération Agitation...",
   "Génération Solution & Timeframe...",
   "Génération Pédagogie...",
   "Génération Programme...",
+  "Génération Témoignages...",
+  "Génération FAQ...",
+  "Génération Bonus...",
+  "Génération Garantie...",
+  "Génération Formateur...",
+  "Génération Pricing...",
+  "Génération FAQ Final...",
   "Finalisation et sauvegarde...",
 ];
 
@@ -47,7 +61,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
     setCurrentStep(0);
 
     try {
-      // Helper function pour appeler l'IA via l'edge function (mode single-section)
+      // Helper function pour appeler l'IA via l'edge function
       const callAI = async (prompt: string): Promise<any> => {
         const { data: responseData, error } = await supabase.functions.invoke(
           "generate-landing-page-pro",
@@ -113,8 +127,50 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       const programContent = await callAI(getProgramPrompt(data));
       console.log("Programme généré:", programContent);
 
-      // === ÉTAPE 6 : Assemblage final ===
+      // === ÉTAPE 6 : Témoignages ===
       setCurrentStep(6);
+      console.log("=== Génération Témoignages ===");
+      const testimonialsContent = await callAI(getTestimonialsPrompt(data));
+      console.log("Témoignages généré:", testimonialsContent);
+
+      // === ÉTAPE 7 : FAQ ===
+      setCurrentStep(7);
+      console.log("=== Génération FAQ ===");
+      const faqContent = await callAI(getFAQPrompt(data));
+      console.log("FAQ généré:", faqContent);
+
+      // === ÉTAPE 8 : Bonus ===
+      setCurrentStep(8);
+      console.log("=== Génération Bonus ===");
+      const bonusContent = await callAI(getBonusPrompt(data));
+      console.log("Bonus généré:", bonusContent);
+
+      // === ÉTAPE 9 : Garantie ===
+      setCurrentStep(9);
+      console.log("=== Génération Garantie ===");
+      const guaranteeContent = await callAI(getGuaranteePrompt(data));
+      console.log("Garantie généré:", guaranteeContent);
+
+      // === ÉTAPE 10 : Formateur ===
+      setCurrentStep(10);
+      console.log("=== Génération Formateur ===");
+      const instructorContent = await callAI(getInstructorPrompt(data));
+      console.log("Formateur généré:", instructorContent);
+
+      // === ÉTAPE 11 : Pricing ===
+      setCurrentStep(11);
+      console.log("=== Génération Pricing ===");
+      const pricingContent = await callAI(getPricingPrompt(data));
+      console.log("Pricing généré:", pricingContent);
+
+      // === ÉTAPE 12 : FAQ Final ===
+      setCurrentStep(12);
+      console.log("=== Génération FAQ Final ===");
+      const faqFinalContent = await callAI(getFAQFinalPrompt(data));
+      console.log("FAQ Final généré:", faqFinalContent);
+
+      // === ÉTAPE 13 : Assemblage final ===
+      setCurrentStep(13);
       
       const landingPageConfig = {
         theme,
@@ -124,22 +180,22 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           solutionTimeframe: solutionTimeframeContent,
           pedagogy: pedagogyContent,
           program: programContent,
-          // Sections à générer dans une future itération
-          testimonials: { headline: "Ils ont transformé leur business", stars: 5, items: [], cta: "" },
-          faq: { headline: "Questions fréquentes", questions: [], cta: "" },
-          bonus: { headline: "Bonus exclusifs", subheadline: "", items: [], cta: "" },
-          guarantee: { title: "Garantie 30 jours", description: "Satisfait ou remboursé", riskPhrase: "" },
-          instructor: { 
-            headline: "Votre formateur", 
-            name: data.trainerName || "", 
-            photo: data.trainerPhoto || "", 
-            credentials: [], 
-            mission: data.trainerBio || "", 
-            difference: "" 
-          },
-          pricing: { headline: "Tarifs", subheadline: "", offers: [] },
-          faqFinal: { questions: [] },
-          footer: { logo: "", copyright: "", links: [] }
+          testimonials: testimonialsContent,
+          faq: faqContent,
+          bonus: bonusContent,
+          guarantee: guaranteeContent,
+          instructor: instructorContent,
+          pricing: pricingContent,
+          faqFinal: faqFinalContent,
+          footer: {
+            logo: theme.logo || "",
+            copyright: `© ${new Date().getFullYear()} ${data.trainerName || ""}. Tous droits réservés.`,
+            links: [
+              { text: "CGV", url: "#cgv" },
+              { text: "Mentions légales", url: "#mentions" },
+              { text: "Contact", url: "#contact" }
+            ]
+          }
         }
       };
 
@@ -180,7 +236,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
 
       if (insertError) throw insertError;
 
-      toast.success("Landing page créée avec succès !");
+      toast.success("Landing page créée avec succès ! 13 sections générées.");
       setTimeout(() => {
         onSuccess();
       }, 1000);
@@ -198,7 +254,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       <div>
         <h3 className="text-lg font-semibold mb-2">Génération de la Landing Page</h3>
         <p className="text-muted-foreground">
-          Approche dual-model : Gemini pour la structure + GPT-5 pour le copywriting premium
+          13 sections générées par IA pour une landing page complète et optimisée.
         </p>
       </div>
 
@@ -254,8 +310,8 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           <Progress value={(currentStep / GENERATION_STEPS.length) * 100} />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {currentStep <= 1 && <Brain className="h-4 w-4 text-blue-500" />}
-            {currentStep > 1 && currentStep < 6 && <Sparkles className="h-4 w-4 text-amber-500" />}
-            {currentStep >= 6 && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+            {currentStep > 1 && currentStep < 13 && <Sparkles className="h-4 w-4 text-amber-500" />}
+            {currentStep >= 13 && <CheckCircle2 className="h-4 w-4 text-green-500" />}
             <span>{GENERATION_STEPS[currentStep]}</span>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -277,7 +333,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         <Alert className="border-green-200 bg-green-50 dark:bg-green-950">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-200">
-            Landing page générée avec succès ! 5 sections complètes créées.
+            Landing page générée avec succès ! 13 sections complètes créées.
           </AlertDescription>
         </Alert>
       )}
@@ -291,7 +347,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           disabled={isGenerating}
         >
           <Wand2 className="mr-2 h-5 w-5" />
-          Générer avec Gemini + GPT-5 (Dual-Model)
+          Générer la Landing Page (13 sections)
         </Button>
       )}
     </div>
