@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { 
   ArrowLeft, 
   Save, 
@@ -21,23 +22,28 @@ import {
   MessageSquare,
   HelpCircle,
   Rocket,
-  Bot
+  Bot,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { toast } from "sonner";
 import { SectionEditor } from "@/components/landing/SectionEditor";
 import { LandingPageAIChat } from "@/components/landing/LandingPageAIChat";
 
 const SECTIONS = [
-  { id: 'hero', label: 'Hero', icon: LayoutTemplate },
-  { id: 'problem', label: 'Problème', icon: AlertTriangle },
-  { id: 'method', label: 'Méthode', icon: Lightbulb },
-  { id: 'transformation', label: 'Transformation', icon: Repeat },
-  { id: 'program', label: 'Programme', icon: LayoutTemplate },
-  { id: 'trainer', label: 'Formateur', icon: Users },
-  { id: 'testimonials', label: 'Témoignages', icon: MessageSquare },
-  { id: 'faq', label: 'FAQ', icon: HelpCircle },
-  { id: 'final_cta', label: 'CTA Final', icon: Rocket },
+  { id: 'hero', label: 'Hero', icon: LayoutTemplate, required: true },
+  { id: 'problem', label: 'Problème', icon: AlertTriangle, required: false },
+  { id: 'method', label: 'Méthode', icon: Lightbulb, required: false },
+  { id: 'transformation', label: 'Transformation', icon: Repeat, required: false },
+  { id: 'program', label: 'Programme', icon: LayoutTemplate, required: false },
+  { id: 'trainer', label: 'Formateur', icon: Users, required: false },
+  { id: 'testimonials', label: 'Témoignages', icon: MessageSquare, required: false },
+  { id: 'faq', label: 'FAQ', icon: HelpCircle, required: false },
+  { id: 'final_cta', label: 'CTA Final', icon: Rocket, required: false },
 ];
+
+// All sections enabled by default
+const DEFAULT_ENABLED_SECTIONS = SECTIONS.map(s => s.id);
 
 export default function LandingPageFullEditor() {
   const { slug, pageId } = useParams();
@@ -75,9 +81,34 @@ export default function LandingPageFullEditor() {
     if (landingPage) {
       setLocalContent(landingPage.content || {});
       setLocalTrainerInfo(landingPage.trainer_info || {});
-      setLocalDesignConfig(landingPage.design_config || {});
+      // Ensure enabledSections is always an array
+      const designConfig = (landingPage.design_config as Record<string, any>) || {};
+      if (!designConfig.enabledSections) {
+        designConfig.enabledSections = DEFAULT_ENABLED_SECTIONS;
+      }
+      setLocalDesignConfig(designConfig);
     }
   }, [landingPage]);
+
+  // Toggle section visibility
+  const toggleSection = (sectionId: string) => {
+    const currentEnabled = localDesignConfig?.enabledSections || DEFAULT_ENABLED_SECTIONS;
+    const isEnabled = currentEnabled.includes(sectionId);
+    
+    const newEnabled = isEnabled
+      ? currentEnabled.filter((id: string) => id !== sectionId)
+      : [...currentEnabled, sectionId];
+    
+    setLocalDesignConfig((prev: any) => ({
+      ...prev,
+      enabledSections: newEnabled
+    }));
+    setHasChanges(true);
+  };
+
+  const isSectionEnabled = (sectionId: string) => {
+    return (localDesignConfig?.enabledSections || DEFAULT_ENABLED_SECTIONS).includes(sectionId);
+  };
 
   // Save mutation
   const saveMutation = useMutation({
@@ -304,26 +335,61 @@ export default function LandingPageFullEditor() {
         <div className="flex-1 overflow-hidden flex flex-col">
           {activeTab === 'edit' ? (
             <>
-            {/* Section Tabs - Grid wrap pour afficher toutes les sections */}
+            {/* Section Tabs with visibility toggles */}
               <div className="border-b p-3">
-                <div className="grid grid-cols-3 gap-2">
-                  {SECTIONS.map((section) => (
-                    <Button
-                      key={section.id}
-                      variant={activeSection === section.id ? "default" : "ghost"}
-                      size="sm"
-                      className="text-xs justify-start"
-                      onClick={() => setActiveSection(section.id)}
-                    >
-                      <section.icon className="h-3 w-3 mr-1 flex-shrink-0" />
-                      <span className="truncate">{section.label}</span>
-                    </Button>
-                  ))}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-muted-foreground">Sections</span>
+                  <span className="text-xs text-muted-foreground">Visible</span>
+                </div>
+                <div className="space-y-1">
+                  {SECTIONS.map((section) => {
+                    const isEnabled = isSectionEnabled(section.id);
+                    return (
+                      <div 
+                        key={section.id}
+                        className={`flex items-center gap-2 p-1.5 rounded-md transition-colors ${
+                          activeSection === section.id 
+                            ? 'bg-primary/10' 
+                            : 'hover:bg-muted/50'
+                        } ${!isEnabled ? 'opacity-50' : ''}`}
+                      >
+                        <Button
+                          variant={activeSection === section.id ? "default" : "ghost"}
+                          size="sm"
+                          className="flex-1 text-xs justify-start h-7"
+                          onClick={() => setActiveSection(section.id)}
+                        >
+                          <section.icon className="h-3 w-3 mr-1.5 flex-shrink-0" />
+                          <span className="truncate">{section.label}</span>
+                        </Button>
+                        {!section.required && (
+                          <Switch
+                            checked={isEnabled}
+                            onCheckedChange={() => toggleSection(section.id)}
+                            className="scale-75"
+                          />
+                        )}
+                        {section.required && (
+                          <div className="w-8 flex justify-center">
+                            <span className="text-[10px] text-muted-foreground">requis</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Section Editor */}
               <ScrollArea className="flex-1 p-4">
+                {!isSectionEnabled(activeSection) && !SECTIONS.find(s => s.id === activeSection)?.required && (
+                  <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="flex items-center gap-2 text-sm text-amber-600">
+                      <EyeOff className="h-4 w-4" />
+                      <span>Cette section est masquée sur la page</span>
+                    </div>
+                  </div>
+                )}
                 <SectionEditor
                   section={activeSection}
                   content={localContent}
