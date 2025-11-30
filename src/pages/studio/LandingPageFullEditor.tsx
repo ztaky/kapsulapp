@@ -24,11 +24,13 @@ import {
   Rocket,
   Bot,
   Eye,
-  EyeOff
+  EyeOff,
+  Palette
 } from "lucide-react";
 import { toast } from "sonner";
 import { SectionEditor } from "@/components/landing/SectionEditor";
 import { LandingPageAIChat } from "@/components/landing/LandingPageAIChat";
+import { DesignEditor } from "@/components/landing/DesignEditor";
 
 const SECTIONS = [
   { id: 'hero', label: 'Hero', icon: LayoutTemplate, required: true },
@@ -51,7 +53,7 @@ export default function LandingPageFullEditor() {
   const queryClient = useQueryClient();
   
   const [activeSection, setActiveSection] = useState('hero');
-  const [activeTab, setActiveTab] = useState<'edit' | 'ai'>('edit');
+  const [activeTab, setActiveTab] = useState<'edit' | 'design' | 'ai'>('edit');
   const [localContent, setLocalContent] = useState<any>(null);
   const [localTrainerInfo, setLocalTrainerInfo] = useState<any>(null);
   const [localDesignConfig, setLocalDesignConfig] = useState<any>(null);
@@ -317,15 +319,19 @@ export default function LandingPageFullEditor() {
       <div className="w-[400px] border-l flex flex-col bg-background">
         {/* Sidebar Header */}
         <div className="p-4 border-b">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'ai')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="edit" className="gap-2">
-                <LayoutTemplate className="h-4 w-4" />
-                Édition
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'design' | 'ai')}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="edit" className="gap-1.5 text-xs">
+                <LayoutTemplate className="h-3.5 w-3.5" />
+                Contenu
               </TabsTrigger>
-              <TabsTrigger value="ai" className="gap-2">
-                <Bot className="h-4 w-4" />
-                Assistant IA
+              <TabsTrigger value="design" className="gap-1.5 text-xs">
+                <Palette className="h-3.5 w-3.5" />
+                Design
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="gap-1.5 text-xs">
+                <Bot className="h-3.5 w-3.5" />
+                IA
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -333,7 +339,7 @@ export default function LandingPageFullEditor() {
 
         {/* Sidebar Content */}
         <div className="flex-1 overflow-hidden flex flex-col">
-          {activeTab === 'edit' ? (
+          {activeTab === 'edit' && (
             <>
             {/* Section Tabs with visibility toggles */}
               <div className="border-b p-3">
@@ -400,8 +406,18 @@ export default function LandingPageFullEditor() {
                 />
               </ScrollArea>
             </>
-          ) : (
-            /* AI Chat */
+          )}
+
+          {activeTab === 'design' && (
+            <div className="flex-1 p-4 overflow-hidden">
+              <DesignEditor
+                designConfig={localDesignConfig}
+                onChange={handleDesignChange}
+              />
+            </div>
+          )}
+
+          {activeTab === 'ai' && (
             <div className="flex-1 p-4 overflow-hidden">
               <LandingPageAIChat
                 content={localContent}
