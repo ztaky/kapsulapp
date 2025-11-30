@@ -16,9 +16,10 @@ import { Footer } from './sections/Footer';
 
 interface LandingPageTemplateProps {
   config: LandingPageConfig;
+  trainerPhoto?: string; // Photo from trainerInfo for backward compatibility
 }
 
-export function LandingPageTemplate({ config }: LandingPageTemplateProps) {
+export function LandingPageTemplate({ config, trainerPhoto }: LandingPageTemplateProps) {
   const { theme, content } = config;
 
   return (
@@ -52,7 +53,7 @@ export function LandingPageTemplate({ config }: LandingPageTemplateProps) {
         <Guarantee content={content.guarantee} />
 
         {/* Section 10 - Instructor */}
-        <Instructor content={content.instructor} />
+        <Instructor content={content.instructor} trainerPhoto={trainerPhoto} />
 
         {/* Section 11 - Upsell (optionnel) */}
         {content.upsell && (
