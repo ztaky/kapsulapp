@@ -63,7 +63,13 @@ INSTRUCTIONS IMPORTANTES:
 - Utilise des exemples concrets et applicables à sa situation
 - Propose des templates et structures quand c'est pertinent
 - Sois encourageant et positif
-- Maximum 300 mots sauf si une liste détaillée est demandée`,
+- Maximum 300 mots sauf si une liste détaillée est demandée
+
+CAPACITÉS D'ACTION:
+Tu peux générer du contenu concret que le coach peut ajouter directement à ses cours.
+Quand tu génères un quiz ou une structure de modules, utilise les tools disponibles.
+Pour un quiz, génère 3-5 questions pertinentes avec des réponses et explications.
+Pour des modules, suggère une structure logique avec 3-6 modules et des leçons pour chacun.`,
 
     support: `Tu es l'assistant support de Kapsul, une plateforme SaaS de création de formations en ligne.
 
@@ -90,6 +96,94 @@ Règles :
   return basePrompts[mode] || basePrompts.student;
 };
 
+const studioTools = [
+  {
+    type: "function",
+    function: {
+      name: "generate_quiz",
+      description: "Génère un quiz interactif avec questions et réponses pour tester les connaissances des étudiants",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { 
+            type: "string", 
+            description: "Titre du quiz" 
+          },
+          questions: {
+            type: "array",
+            description: "Liste des questions du quiz (3-5 questions)",
+            items: {
+              type: "object",
+              properties: {
+                question: { type: "string", description: "La question" },
+                answers: { 
+                  type: "array", 
+                  items: { type: "string" },
+                  description: "Liste de 4 réponses possibles"
+                },
+                correctIndex: { 
+                  type: "number", 
+                  description: "Index de la bonne réponse (0-3)" 
+                },
+                explanation: { 
+                  type: "string", 
+                  description: "Explication de la bonne réponse" 
+                }
+              },
+              required: ["question", "answers", "correctIndex"]
+            }
+          }
+        },
+        required: ["title", "questions"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "suggest_modules",
+      description: "Suggère une structure de modules et leçons pour un cours",
+      parameters: {
+        type: "object",
+        properties: {
+          course_topic: { 
+            type: "string", 
+            description: "Le sujet/thème du cours" 
+          },
+          modules: {
+            type: "array",
+            description: "Liste des modules suggérés (3-6 modules)",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string", description: "Titre du module" },
+                lessons: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string", description: "Titre de la leçon" },
+                      type: { 
+                        type: "string", 
+                        enum: ["video", "interactive_tool"],
+                        description: "Type de leçon" 
+                      }
+                    },
+                    required: ["title"]
+                  },
+                  description: "Liste des leçons du module (2-5 leçons)"
+                }
+              },
+              required: ["title", "lessons"]
+            }
+          }
+        },
+        required: ["course_topic", "modules"]
+      }
+    }
+  }
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -110,20 +204,29 @@ serve(async (req) => {
       console.log(`[unified-chat] Studio context length: ${context.studioContext.length} chars`);
     }
 
+    // Build request body
+    const requestBody: any = {
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages,
+      ],
+      stream: true,
+    };
+
+    // Add tools for studio mode
+    if (mode === 'studio') {
+      requestBody.tools = studioTools;
+      requestBody.tool_choice = "auto";
+    }
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
