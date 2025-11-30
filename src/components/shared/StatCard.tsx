@@ -1,43 +1,14 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ColorVariant = "orange" | "pink" | "green" | "purple" | "blue" | "slate";
-
 interface StatCardProps {
   title: string;
   value: string | number;
   description?: string;
   icon: LucideIcon;
-  colorVariant?: ColorVariant;
+  colorVariant?: "slate" | "amber";
   isHighlighted?: boolean;
 }
-
-const colorVariants: Record<ColorVariant, { bg: string; icon: string }> = {
-  orange: {
-    bg: "bg-orange-50",
-    icon: "text-orange-500",
-  },
-  pink: {
-    bg: "bg-pink-50",
-    icon: "text-pink-500",
-  },
-  green: {
-    bg: "bg-emerald-50",
-    icon: "text-emerald-500",
-  },
-  purple: {
-    bg: "bg-violet-50",
-    icon: "text-violet-500",
-  },
-  blue: {
-    bg: "bg-blue-50",
-    icon: "text-blue-500",
-  },
-  slate: {
-    bg: "bg-slate-100",
-    icon: "text-slate-500",
-  },
-};
 
 export function StatCard({ 
   title, 
@@ -47,15 +18,10 @@ export function StatCard({
   colorVariant = "slate",
   isHighlighted = false
 }: StatCardProps) {
-  const colors = colorVariants[colorVariant];
-
   return (
     <div className="flex items-start gap-4 p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
-      <div className={cn(
-        "rounded-xl p-3 flex items-center justify-center",
-        colors.bg
-      )}>
-        <Icon className={cn("h-5 w-5", colors.icon)} />
+      <div className="rounded-xl p-3 flex items-center justify-center bg-amber-50">
+        <Icon className="h-5 w-5 text-slate-600" />
       </div>
       
       <div className="flex flex-col">

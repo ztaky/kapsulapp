@@ -211,32 +211,32 @@ export default function StudioDashboard() {
         />
       )}
 
-      {/* Stats Grid - Colored cards like landing page */}
+      {/* Stats Grid - Neutral style */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Formations"
           value={stats?.totalCourses || 0}
           icon={BookOpen}
-          colorVariant="pink"
+          colorVariant="slate"
         />
         <StatCard
           title="Étudiants"
           value={stats?.totalStudents || 0}
           icon={Users}
-          colorVariant="orange"
+          colorVariant="slate"
         />
         <StatCard
           title="Revenus"
           value={`${stats?.totalRevenue || 0} €`}
           icon={TrendingUp}
-          colorVariant="purple"
+          colorVariant="slate"
           isHighlighted
         />
         <StatCard
           title="Ventes"
           value={stats?.totalPurchases || 0}
           icon={DollarSign}
-          colorVariant="green"
+          colorVariant="slate"
         />
       </div>
 
@@ -247,7 +247,7 @@ export default function StudioDashboard() {
           <div className="grid gap-4 md:grid-cols-3">
             <button 
               onClick={() => navigate(`/school/${slug}/studio/courses`)}
-              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
             >
               <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <BookOpen className="h-5 w-5" />
@@ -261,7 +261,7 @@ export default function StudioDashboard() {
             
             <button 
               onClick={() => navigate(`/school/${slug}/studio/students`)}
-              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
             >
               <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <Users className="h-5 w-5" />
@@ -275,7 +275,7 @@ export default function StudioDashboard() {
             
             <button 
               onClick={() => navigate(`/school/${slug}/studio/landing-pages`)}
-              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
             >
               <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <TrendingUp className="h-5 w-5" />
