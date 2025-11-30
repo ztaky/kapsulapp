@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { GripVertical, Plus, Edit, Trash2, Video, FileText } from "lucide-react";
+import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -33,15 +33,51 @@ interface ModuleAccordionProps {
   courseId: string;
 }
 
-function LessonItem({ lesson, moduleId }: { lesson: Lesson; moduleId: string }) {
+function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Lesson; moduleId: string; courseId: string; totalLessons: number }) {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: lesson.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const duplicateLessonMutation = useMutation({
+    mutationFn: async () => {
+      // Fetch full lesson data
+      const { data: fullLesson, error: fetchError } = await supabase
+        .from("lessons")
+        .select("*")
+        .eq("id", lesson.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Create duplicated lesson
+      const { error } = await supabase.from("lessons").insert({
+        module_id: moduleId,
+        title: `${fullLesson.title} - Copie`,
+        position: totalLessons,
+        type: fullLesson.type,
+        content_text: fullLesson.content_text,
+        video_url: fullLesson.video_url,
+        resources: fullLesson.resources,
+        tool_id: fullLesson.tool_id,
+        tool_config: fullLesson.tool_config,
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+      toast({ title: "Leçon dupliquée" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la duplication", variant: "destructive" });
+    },
+  });
 
   return (
     <div
@@ -63,8 +99,23 @@ function LessonItem({ lesson, moduleId }: { lesson: Lesson; moduleId: string }) 
       <Button
         variant="ghost"
         size="sm"
+        onClick={() => duplicateLessonMutation.mutate()}
+        disabled={duplicateLessonMutation.isPending}
+        className="hover:bg-orange-100 hover:text-orange-700"
+        title="Dupliquer la leçon"
+      >
+        {duplicateLessonMutation.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Copy className="h-4 w-4" />
+        )}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => navigate(`/school/${slug}/studio/lessons/${lesson.id}`)}
         className="hover:bg-orange-100 hover:text-orange-700"
+        title="Modifier la leçon"
       >
         <Edit className="h-4 w-4" />
       </Button>
@@ -158,7 +209,7 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                   strategy={verticalListSortingStrategy}
                 >
                   {module.lessons.map((lesson) => (
-                    <LessonItem key={lesson.id} lesson={lesson} moduleId={module.id} />
+                    <LessonItem key={lesson.id} lesson={lesson} moduleId={module.id} courseId={courseId} totalLessons={module.lessons.length} />
                   ))}
                 </SortableContext>
               </DndContext>
