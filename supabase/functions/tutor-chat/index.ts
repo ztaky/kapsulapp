@@ -11,25 +11,38 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, courseTitle, lessonTitle } = await req.json();
+    const { messages, courseContext, currentLessonTitle } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const systemPrompt = `Tu es Kapsul, un tuteur pédagogique bienveillant et encourageant.
-L'étudiant suit le cours "${courseTitle}", leçon "${lessonTitle}".
+    // Build rich system prompt with full course context
+    let systemPrompt = `Tu es Kapsul, un tuteur pédagogique bienveillant, encourageant et expert.
 
-Règles :
-- Réponds de façon concise (max 150 mots)
+Règles de communication :
+- Réponds de façon concise (max 200 mots sauf si l'étudiant demande plus de détails)
 - Encourage l'action et la pratique
-- Utilise des exemples concrets
+- Utilise des exemples concrets liés au contenu du cours
 - Félicite les efforts et progrès
 - Si l'étudiant bloque, propose des indices plutôt que des réponses directes
-- Utilise des émojis avec parcimonie 🎯
+- Utilise des émojis avec parcimonie pour rendre tes réponses plus engageantes 🎯
 - Adopte un ton amical et motivant
-- Contextualise tes réponses par rapport à la leçon en cours`;
+- Contextualise toujours tes réponses par rapport au cours
+
+`;
+
+    if (courseContext) {
+      systemPrompt += `\n=== CONTEXTE DU COURS ===\n${courseContext}\n=== FIN DU CONTEXTE ===\n\n`;
+    }
+
+    if (currentLessonTitle) {
+      systemPrompt += `L'étudiant est actuellement sur la leçon : "${currentLessonTitle}"
+Priorise les réponses en lien avec cette leçon, mais tu peux aussi répondre aux questions sur les autres parties du cours.`;
+    }
+
+    console.log('Tutor chat request - lesson:', currentLessonTitle);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -48,6 +61,7 @@ Règles :
     });
 
     if (!response.ok) {
+      console.error('AI gateway error:', response.status);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
           status: 429,
