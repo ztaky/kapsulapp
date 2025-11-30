@@ -19,13 +19,13 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    // MODE A: Single section generation
+    // MODE A: Single section generation (Gemini only - fast)
     if (mode === "single-section") {
       return await handleSingleSection(body, LOVABLE_API_KEY);
     }
 
-    // MODE B: Legacy full page generation
-    return await handleLegacy(body, LOVABLE_API_KEY);
+    // MODE B: Dual-model full page generation (Gemini + GPT-5)
+    return await handleDualModelGeneration(body, LOVABLE_API_KEY);
     
   } catch (error: any) {
     console.error("Error in generate-landing-page-pro:", error);
@@ -39,7 +39,7 @@ serve(async (req) => {
   }
 });
 
-// MODE A: Single section generation with direct prompt
+// MODE A: Single section generation with direct prompt (Gemini only)
 async function handleSingleSection(body: any, apiKey: string) {
   const { prompt } = body;
   
@@ -47,8 +47,7 @@ async function handleSingleSection(body: any, apiKey: string) {
     throw new Error("Missing 'prompt' parameter for single-section mode");
   }
 
-  console.log("Single-section mode: Generating with Gemini...");
-  console.log("Prompt length:", prompt.length);
+  console.log("Single-section mode: Generating with Gemini 2.5 Flash...");
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -59,57 +58,24 @@ async function handleSingleSection(body: any, apiKey: string) {
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [
-        {
-          role: "system",
-          content: SECTION_GENERATOR_SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
+        { role: "system", content: SECTION_GENERATOR_SYSTEM_PROMPT },
+        { role: "user", content: prompt },
       ],
       max_tokens: 8192,
     }),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Lovable AI Gateway Error:", response.status, errorText);
-    
-    if (response.status === 429) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    if (response.status === 402) {
-      return new Response(
-        JSON.stringify({ error: "Payment required. Please add funds to your Lovable AI workspace." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    
-    throw new Error(`AI generation failed: ${response.status}`);
+    return handleApiError(response, "Gemini");
   }
 
   const data = await response.json();
-  console.log("AI Response structure:", JSON.stringify(data, null, 2).substring(0, 500));
-  
   const generatedText = data.choices?.[0]?.message?.content;
   
   if (!generatedText) {
-    console.error("Missing content in response. Full structure:", {
-      hasChoices: !!data.choices,
-      choicesLength: data.choices?.length,
-      firstChoice: data.choices?.[0],
-      error: data.error
-    });
-    throw new Error(`Invalid response from AI Gateway: ${data.error?.message || 'No content in response'}`);
+    throw new Error("No content in Gemini response");
   }
 
-  console.log("AI Response received, length:", generatedText.length);
-
-  // Clean and return the content
   const cleanedContent = generatedText
     .replace(/```json\n?/g, '')
     .replace(/```\n?/g, '')
@@ -121,8 +87,8 @@ async function handleSingleSection(body: any, apiKey: string) {
   );
 }
 
-// MODE B: Legacy full page generation
-async function handleLegacy(body: any, apiKey: string) {
+// MODE B: Dual-model generation (Gemini for structure + GPT-5 for copywriting)
+async function handleDualModelGeneration(body: any, apiKey: string) {
   const {
     courseName,
     courseContent,
@@ -133,8 +99,11 @@ async function handleLegacy(body: any, apiKey: string) {
     cloneSourceUrl,
   } = body;
 
-  // Build expert copywriting prompt with coach preferences
-  const prompt = buildLegacyPrompt({
+  console.log("=== DUAL-MODEL GENERATION START ===");
+  console.log("Step 1/3: Generating STRUCTURE with Gemini 2.5 Flash...");
+
+  // STEP 1: Generate STRUCTURE with Gemini (fast, reliable for JSON)
+  const structurePrompt = buildStructurePrompt({
     courseName,
     courseContent,
     targetAudience,
@@ -144,9 +113,7 @@ async function handleLegacy(body: any, apiKey: string) {
     cloneSourceUrl,
   });
 
-  console.log("Legacy mode: Generating full landing page with Gemini...");
-
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const structureResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -155,76 +122,209 @@ async function handleLegacy(body: any, apiKey: string) {
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [
-        {
-          role: "system",
-          content: EXPERT_DESIGNER_COPYWRITER_PROMPT,
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
+        { role: "system", content: STRUCTURE_ARCHITECT_PROMPT },
+        { role: "user", content: structurePrompt },
       ],
       max_tokens: 8192,
     }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("AI API Error:", response.status, errorText);
-    
-    if (response.status === 429) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    if (response.status === 402) {
-      return new Response(
-        JSON.stringify({ error: "Payment required. Please add funds to your Lovable AI workspace." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    
-    throw new Error(`AI generation failed: ${response.status}`);
+  if (!structureResponse.ok) {
+    return handleApiError(structureResponse, "Gemini (structure)");
   }
 
-  const data = await response.json();
-  const generatedText = data.choices[0].message.content;
+  const structureData = await structureResponse.json();
+  const structureText = structureData.choices?.[0]?.message?.content;
   
-  console.log("AI Response received, length:", generatedText.length);
-
-  // Parse JSON from response
-  let content;
-  try {
-    const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      content = JSON.parse(jsonMatch[0]);
-    } else {
-      content = JSON.parse(generatedText);
-    }
-    
-    console.log("Generated content structure:", {
-      hasHero: !!content.hero,
-      hasProblem: !!content.problem,
-      hasMethod: !!content.method,
-      hasProgram: !!content.program,
-      hasTestimonials: !!content.testimonials,
-      hasFaq: !!content.faq,
-      hasFinalCta: !!content.final_cta,
-    });
-    
-  } catch (parseError) {
-    console.error("JSON parse error:", parseError);
-    console.error("Raw AI response:", generatedText.substring(0, 500));
-    throw new Error("Failed to parse AI response");
+  if (!structureText) {
+    throw new Error("No content in Gemini structure response");
   }
 
-  return new Response(JSON.stringify({ content }), {
+  // Parse the structure JSON
+  let structure;
+  try {
+    const cleanedStructure = structureText
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    const jsonMatch = cleanedStructure.match(/\{[\s\S]*\}/);
+    structure = JSON.parse(jsonMatch ? jsonMatch[0] : cleanedStructure);
+    console.log("✓ Structure generated successfully");
+  } catch (e) {
+    console.error("Failed to parse Gemini structure:", e);
+    console.error("Raw response:", structureText.substring(0, 500));
+    throw new Error("Failed to parse structure JSON from Gemini");
+  }
+
+  console.log("Step 2/3: Generating COPYWRITING with GPT-5...");
+
+  // STEP 2: Generate COPYWRITING with GPT-5 (premium quality text)
+  const copyPrompt = buildCopywritingPrompt({
+    structure,
+    courseName,
+    courseContent,
+    targetAudience,
+    trainerInfo,
+  });
+
+  const copyResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-5",
+      messages: [
+        { role: "system", content: ELITE_COPYWRITER_PROMPT },
+        { role: "user", content: copyPrompt },
+      ],
+      max_completion_tokens: 8192,
+    }),
+  });
+
+  if (!copyResponse.ok) {
+    return handleApiError(copyResponse, "GPT-5 (copywriting)");
+  }
+
+  const copyData = await copyResponse.json();
+  const copyText = copyData.choices?.[0]?.message?.content;
+  
+  if (!copyText) {
+    console.error("No content in GPT-5 response, falling back to structure");
+    // Fallback: return structure as-is if GPT-5 fails
+    return new Response(JSON.stringify({ content: structure }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Parse the copywriting JSON
+  let finalContent;
+  try {
+    const cleanedCopy = copyText
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    const jsonMatch = cleanedCopy.match(/\{[\s\S]*\}/);
+    finalContent = JSON.parse(jsonMatch ? jsonMatch[0] : cleanedCopy);
+    console.log("✓ Copywriting generated successfully");
+  } catch (e) {
+    console.error("Failed to parse GPT-5 copywriting:", e);
+    console.error("Raw response:", copyText.substring(0, 500));
+    // Fallback: return structure as-is
+    console.log("Falling back to Gemini structure...");
+    finalContent = structure;
+  }
+
+  console.log("Step 3/3: Validating final content...");
+  
+  // STEP 3: Validate and return
+  const validatedContent = validateAndCleanContent(finalContent);
+  
+  console.log("=== DUAL-MODEL GENERATION COMPLETE ===");
+  console.log("Content structure:", {
+    hasHero: !!validatedContent.hero,
+    hasProblem: !!validatedContent.problem,
+    hasMethod: !!validatedContent.method,
+    hasProgram: !!validatedContent.program,
+    hasTestimonials: !!validatedContent.testimonials,
+    hasFaq: !!validatedContent.faq,
+    hasFinalCta: !!validatedContent.final_cta,
+  });
+
+  return new Response(JSON.stringify({ content: validatedContent }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
 
-// System prompt for single section generation
+// Handle API errors consistently
+async function handleApiError(response: Response, model: string) {
+  const errorText = await response.text();
+  console.error(`${model} API Error:`, response.status, errorText);
+  
+  if (response.status === 429) {
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+  if (response.status === 402) {
+    return new Response(
+      JSON.stringify({ error: "Payment required. Please add funds to your Lovable AI workspace." }),
+      { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+  
+  throw new Error(`${model} generation failed: ${response.status}`);
+}
+
+// Validate and clean the final content
+function validateAndCleanContent(content: any) {
+  // Ensure all required sections exist
+  const defaults = {
+    hero: {
+      badge: "Formation Premium",
+      headline: "Transformez votre vie",
+      subheadline: "Une méthode éprouvée",
+      cta_text: "Commencer maintenant",
+      cta_subtext: "Satisfait ou remboursé"
+    },
+    problem: {
+      title: "Le problème",
+      agitation_text: "",
+      pain_points: [],
+      risks: []
+    },
+    method: {
+      title: "La méthode",
+      description: "",
+      pillars: []
+    },
+    transformation: {
+      title: "La transformation",
+      left_card: { title: "", description: "", color: "orange" },
+      right_card: { title: "", description: "", color: "pink" }
+    },
+    program: {
+      title: "Le programme",
+      modules: []
+    },
+    trainer: {
+      tagline: "",
+      title: "Votre formateur",
+      bio_highlight: "",
+      credentials: [],
+      quote: ""
+    },
+    testimonials: [],
+    faq: [],
+    final_cta: {
+      urgency_badge: "",
+      title: "Prêt à commencer ?",
+      subtitle: "",
+      cta_text: "Je démarre maintenant",
+      guarantee: ""
+    }
+  };
+
+  return {
+    hero: { ...defaults.hero, ...content.hero },
+    problem: { ...defaults.problem, ...content.problem },
+    method: { ...defaults.method, ...content.method },
+    transformation: { ...defaults.transformation, ...content.transformation },
+    program: { ...defaults.program, ...content.program },
+    trainer: { ...defaults.trainer, ...content.trainer },
+    testimonials: content.testimonials || defaults.testimonials,
+    faq: content.faq || defaults.faq,
+    final_cta: { ...defaults.final_cta, ...content.final_cta },
+  };
+}
+
+// ============================================
+// PROMPTS
+// ============================================
+
+// Prompt for single section (Gemini)
 const SECTION_GENERATOR_SYSTEM_PROMPT = `Tu es un expert en copywriting et design de landing pages premium.
 
 Ta mission : Générer une section de landing page au format JSON EXACT demandé.
@@ -237,41 +337,64 @@ RÈGLES STRICTES :
 5. Phrases courtes (15-20 mots max)
 6. Ton conversationnel mais expert
 7. Résultats mesurables et concrets
-8. Power words émotionnels sans hype artificiel
+8. Power words émotionnels sans hype artificiel`;
 
-Style de copywriting :
-- Framework AIDA (Attention, Interest, Desire, Action)
-- Framework PAS (Problem, Agitation, Solution)
-- CTAs orientés bénéfice immédiat
-- Témoignages spécifiques avec résultats chiffrés`;
+// Prompt for STRUCTURE generation (Gemini - Step 1)
+const STRUCTURE_ARCHITECT_PROMPT = `Tu es un ARCHITECTE de landing pages.
 
-// System prompt for legacy full page generation
-const EXPERT_DESIGNER_COPYWRITER_PROMPT = `Tu es un DUO AI composé de :
+Ta mission UNIQUE : Générer la STRUCTURE JSON d'une landing page de vente premium.
 
-1. UN DESIGNER UI/UX SENIOR spécialisé dans les landing pages premium minimalistes à fort taux de conversion.
-   - Style "Queen Design System" : Épuré, minimaliste, moderne
-   - Effet glass (backdrop-blur) sur les cartes
-   - Ombres douces et subtiles (jamais trop appuyées)
-   - JAMAIS de liserés/bordures colorées sur les côtés (border-l-4 = INTERDIT)
-   - Dégradés UNIQUEMENT pour les CTAs
-   - Cartes blanches avec coins très arrondis (rounded-3xl)
-   - Espaces généreux, hiérarchie visuelle claire
-   - Contraste fort entre sections (fonds clairs alternés avec fonds sombres)
-   - Responsive first : mobile → tablette → desktop
+RÈGLES ABSOLUES :
+1. Retourne UNIQUEMENT du JSON valide
+2. Pas de markdown, pas de texte avant/après
+3. Concentre-toi sur la STRUCTURE, pas le copywriting final
+4. Détermine le bon nombre d'éléments pour chaque section :
+   - pain_points : 3-5 selon la complexité du problème
+   - pillars : 3 (ni plus, ni moins)
+   - testimonials : 3-4
+   - faq : 4-6 questions pertinentes
+   - modules : Basé sur le contenu réel du cours
+5. Pour chaque champ texte, écris un PLACEHOLDER descriptif entre crochets
+   Exemple : "[HEADLINE_PROMESSE_TRANSFORMATION_8_MOTS]"
 
-2. UN COPYWRITER EXPERT en pages de vente premium.
-   - Framework AIDA (Attention, Interest, Desire, Action) + PAS (Problem, Agitation, Solution)
-   - Ton : Conversationnel mais expert, pragmatique mais inspirant
-   - Power words émotionnels sans hype artificiel
-   - Résultats mesurables et transformation concrète
-   - Phrases courtes (15-20 mots max)
-   - Bénéfices AVANT fonctionnalités
-   - Témoignages spécifiques avec résultats chiffrés
-   - CTAs orientés bénéfice immédiat
-   
-Ta mission : Créer des landing pages qui convertissent à 10%+ grâce à un design épuré et un copywriting percutant.`;
+Style de structure "Queen Design" :
+- Sections alternées (fond clair / fond sombre)
+- Cartes avec effet glass
+- CTAs en dégradé
+- Espaces généreux`;
 
-function buildLegacyPrompt({
+// Prompt for COPYWRITING (GPT-5 - Step 2)
+const ELITE_COPYWRITER_PROMPT = `Tu es un COPYWRITER D'ÉLITE spécialisé en pages de vente premium à fort taux de conversion.
+
+Ton style signature :
+- Framework AIDA (Attention → Interest → Desire → Action)
+- Framework PAS (Problem → Agitation → Solution)
+- Copywriting "Queen" : Premium mais accessible, expert mais chaleureux
+
+RÈGLES D'OR DU COPYWRITING :
+1. Headlines : 8-12 mots MAX, promesse de transformation claire
+2. Subheadlines : Clarifient et renforcent, jamais redondantes
+3. Pain points : Spécifiques, émotionnels, vécus par la cible
+4. Bénéfices > Fonctionnalités (ratio 80/20)
+5. Résultats MESURABLES : chiffres, délais, preuves
+6. CTAs : Orientés bénéfice, pas action ("Je transforme ma vie" > "S'inscrire")
+7. Témoignages : Nom, métier, résultat spécifique chiffré
+8. Ton : Conversationnel, empathique, sans hype ni promesses irréalistes
+9. Urgence : Subtile et légitime, jamais artificielle
+
+Power words à utiliser :
+- Transformation, révolution, secret, découvrir
+- Enfin, maintenant, aujourd'hui, immédiatement
+- Prouvé, garanti, testé, validé
+- Exclusif, limité, unique, rare
+
+RETOURNE uniquement du JSON valide avec tout le contenu textuel finalisé.`;
+
+// ============================================
+// PROMPT BUILDERS
+// ============================================
+
+function buildStructurePrompt({
   courseName,
   courseContent,
   targetAudience,
@@ -280,100 +403,135 @@ function buildLegacyPrompt({
   referenceScreenshots,
   cloneSourceUrl,
 }: any) {
-  let prompt = `Crée une landing page ultra-performante style "Queen Design" pour cette formation :
+  let prompt = `Génère la STRUCTURE JSON d'une landing page pour cette formation :
 
 ## FORMATION
 Nom : ${courseName}
 Description : ${courseContent?.description || 'Non spécifiée'}
-Nombre de modules : ${courseContent?.modules?.length || 0}
-Nombre total de leçons : ${courseContent?.totalLessons || 0}
+Modules : ${courseContent?.modules?.length || 0}
+Leçons totales : ${courseContent?.totalLessons || 0}
 
 ## CLIENT CIBLE
 ${targetAudience || 'Non spécifié'}
 
 ## FORMATEUR
 Nom : ${trainerInfo?.name || 'Non spécifié'}
-Bio : ${trainerInfo?.bio || 'Non spécifiée'}
 
 ## DESIGN
-Couleurs principales : ${designConfig?.colors?.join(", ") || 'Non spécifiées'}
-Polices : ${designConfig?.fonts?.heading || 'Non spécifiée'} (titres), ${designConfig?.fonts?.body || 'Non spécifiée'} (texte)
-Style CTA : ${designConfig?.ctaStyle === 'gradient' ? 'Dégradé de couleurs' : 'Couleur unie'}
+Couleurs : ${designConfig?.colors?.join(", ") || 'Non spécifiées'}
 `;
 
-  if (referenceScreenshots && referenceScreenshots.length > 0) {
-    prompt += `\n## RÉFÉRENCES VISUELLES
-${referenceScreenshots.length} screenshots fournis pour inspiration\n`;
+  if (referenceScreenshots?.length > 0) {
+    prompt += `\n## RÉFÉRENCES VISUELLES\n${referenceScreenshots.length} screenshots pour inspiration\n`;
   }
 
   if (cloneSourceUrl) {
-    prompt += `\n## DESIGN À CLONER
-URL source : ${cloneSourceUrl}
-Instructions : Reproduis la structure et le style visuel de cette page\n`;
+    prompt += `\n## DESIGN À CLONER\nURL : ${cloneSourceUrl}\n`;
   }
 
   prompt += `
-## STRUCTURE DEMANDÉE (JSON)
-
-Retourne un objet JSON avec cette structure :
+## STRUCTURE JSON DEMANDÉE
 
 {
   "hero": {
-    "badge": "Badge au-dessus du titre",
-    "headline": "Titre ultra-percutant en 8-12 mots",
-    "subheadline": "Sous-titre qui clarifie la promesse",
-    "cta_text": "Texte du bouton principal",
-    "cta_subtext": "Texte rassurant sous le bouton"
+    "badge": "[BADGE_ACCROCHEUR]",
+    "headline": "[HEADLINE_PROMESSE_8_12_MOTS]",
+    "subheadline": "[SUBHEADLINE_CLARIFICATION]",
+    "cta_text": "[CTA_BENEFICE]",
+    "cta_subtext": "[REASSURANCE]"
   },
   "problem": {
-    "title": "Titre de la section problème",
-    "agitation_text": "Paragraphe qui appuie sur la douleur",
-    "pain_points": ["Point 1", "Point 2", "Point 3"],
-    "risks": ["Risque 1", "Risque 2"]
+    "title": "[TITRE_SECTION_PROBLEME]",
+    "agitation_text": "[TEXTE_AGITATION_DOULEUR]",
+    "pain_points": ["[PAIN_1]", "[PAIN_2]", "[PAIN_3]"],
+    "risks": ["[RISQUE_1]", "[RISQUE_2]"]
   },
   "method": {
-    "title": "Pourquoi cette méthode fonctionne",
-    "description": "Explication de la philosophie",
+    "title": "[TITRE_METHODE]",
+    "description": "[DESCRIPTION_PHILOSOPHIE]",
     "pillars": [
-      { "number": 1, "title": "Pilier 1", "description": "Description", "icon": "check" },
-      { "number": 2, "title": "Pilier 2", "description": "Description", "icon": "trending" },
-      { "number": 3, "title": "Pilier 3", "description": "Description", "icon": "clock" }
+      { "number": 1, "title": "[PILIER_1]", "description": "[DESC_1]", "icon": "check" },
+      { "number": 2, "title": "[PILIER_2]", "description": "[DESC_2]", "icon": "trending" },
+      { "number": 3, "title": "[PILIER_3]", "description": "[DESC_3]", "icon": "clock" }
     ]
   },
   "transformation": {
-    "title": "Le résultat concret",
-    "left_card": { "title": "Résultat 1", "description": "Description", "color": "orange" },
-    "right_card": { "title": "Résultat 2", "description": "Description", "color": "pink" }
+    "title": "[TITRE_TRANSFORMATION]",
+    "left_card": { "title": "[RESULTAT_1]", "description": "[DESC]", "color": "orange" },
+    "right_card": { "title": "[RESULTAT_2]", "description": "[DESC]", "color": "pink" }
   },
   "program": {
-    "title": "Programme",
+    "title": "[TITRE_PROGRAMME]",
     "modules": [
-      { "title": "Module 1", "description": "Résumé", "lessons_count": 5 }
+      { "title": "[MODULE_1]", "description": "[RESUME]", "lessons_count": X }
     ]
   },
   "trainer": {
-    "tagline": "Mission",
-    "title": "Votre expert(e)",
-    "bio_highlight": "Bio courte",
-    "credentials": ["Accomplissement 1", "Accomplissement 2"],
-    "quote": "Citation inspirante"
+    "tagline": "[MISSION]",
+    "title": "[TITRE_SECTION]",
+    "bio_highlight": "[BIO_COURTE]",
+    "credentials": ["[CRED_1]", "[CRED_2]"],
+    "quote": "[CITATION]"
   },
   "testimonials": [
-    { "name": "Prénom N.", "role": "Profession", "text": "Témoignage", "rating": 5 }
+    { "name": "[PRENOM_N]", "role": "[PROFESSION]", "text": "[TEMOIGNAGE]", "rating": 5 }
   ],
   "faq": [
-    { "question": "Question 1", "answer": "Réponse 1" }
+    { "question": "[Q1]", "answer": "[R1]" }
   ],
   "final_cta": {
-    "urgency_badge": "Message d'urgence",
-    "title": "Titre émotionnel",
-    "subtitle": "Rappel de la transformation",
-    "cta_text": "Je démarre maintenant",
-    "guarantee": "Satisfait ou remboursé 30 jours"
+    "urgency_badge": "[URGENCE]",
+    "title": "[TITRE_EMOTIONNEL]",
+    "subtitle": "[RAPPEL_TRANSFORMATION]",
+    "cta_text": "[CTA_FINAL]",
+    "guarantee": "[GARANTIE]"
   }
 }
 
-Retourne UNIQUEMENT le JSON, sans texte avant ou après, sans balises markdown.`;
+Adapte le nombre d'éléments (pain_points, testimonials, faq, modules) au contexte.
+Retourne UNIQUEMENT le JSON.`;
 
   return prompt;
+}
+
+function buildCopywritingPrompt({
+  structure,
+  courseName,
+  courseContent,
+  targetAudience,
+  trainerInfo,
+}: any) {
+  return `Tu as reçu une STRUCTURE de landing page. Ta mission : REMPLIR chaque placeholder avec du copywriting PREMIUM.
+
+## CONTEXTE DE LA FORMATION
+
+**Nom** : ${courseName}
+**Description** : ${courseContent?.description || 'Formation en ligne'}
+**Modules** : ${JSON.stringify(courseContent?.modules?.map((m: any) => ({ title: m.title, lessons: m.lessons?.length })) || [], null, 2)}
+
+## CLIENT CIBLE
+${targetAudience || 'Professionnels cherchant à se former'}
+
+## FORMATEUR
+**Nom** : ${trainerInfo?.name || 'Expert'}
+**Bio** : ${trainerInfo?.bio || 'Expert dans son domaine'}
+**Expérience** : ${trainerInfo?.experience || 'Plusieurs années d\'expérience'}
+**Spécialité** : ${trainerInfo?.specialty || 'Formation professionnelle'}
+
+## STRUCTURE À REMPLIR
+
+${JSON.stringify(structure, null, 2)}
+
+## TES INSTRUCTIONS
+
+1. REMPLACE chaque placeholder [TEXTE] par du copywriting percutant
+2. GARDE la structure JSON exacte
+3. Adapte le ton au client cible
+4. Headlines : 8-12 mots, promesse de transformation
+5. Pain points : Spécifiques, émotionnels
+6. Témoignages : Réalistes avec résultats chiffrés (prénom + métier + résultat)
+7. FAQ : Questions que se pose vraiment le client cible
+8. CTAs : Orientés bénéfice, jamais génériques
+
+RETOURNE le JSON complet avec tout le contenu textuel finalisé.`;
 }
