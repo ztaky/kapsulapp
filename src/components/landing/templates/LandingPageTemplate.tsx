@@ -5,6 +5,14 @@ import { Agitation } from './sections/Agitation';
 import { SolutionTimeframe } from './sections/SolutionTimeframe';
 import { Pedagogy } from './sections/Pedagogy';
 import { Program } from './sections/Program';
+import { Testimonials } from './sections/Testimonials';
+import { FAQ } from './sections/FAQ';
+import { Bonus } from './sections/Bonus';
+import { Guarantee } from './sections/Guarantee';
+import { Instructor } from './sections/Instructor';
+import { Pricing } from './sections/Pricing';
+import { FAQFinal } from './sections/FAQFinal';
+import { Footer } from './sections/Footer';
 
 interface LandingPageTemplateProps {
   config: LandingPageConfig;
@@ -32,35 +40,44 @@ export function LandingPageTemplate({ config }: LandingPageTemplateProps) {
         <Program content={content.program} />
 
         {/* Section 6 - Testimonials */}
-        {/* TODO: À ajouter */}
+        <Testimonials content={content.testimonials} />
 
         {/* Section 7 - FAQ */}
-        {/* TODO: À ajouter */}
+        <FAQ content={content.faq} />
 
         {/* Section 8 - Bonus */}
-        {/* TODO: À ajouter */}
+        <Bonus content={content.bonus} />
 
         {/* Section 9 - Guarantee */}
-        {/* TODO: À ajouter */}
+        <Guarantee content={content.guarantee} />
 
         {/* Section 10 - Instructor */}
-        {/* TODO: À ajouter */}
+        <Instructor content={content.instructor} />
 
         {/* Section 11 - Upsell (optionnel) */}
         {content.upsell && (
-          <div>
-            {/* TODO: À ajouter */}
-          </div>
+          <section className="relative py-24 md:py-32 px-4" style={{ backgroundColor: '#fef8f3' }}>
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">{content.upsell.headline}</h2>
+              <p className="text-xl mb-8">{content.upsell.description}</p>
+              <ul className="space-y-2 mb-8">
+                {content.upsell.benefits.map((b, i) => (
+                  <li key={i} className="text-lg">✓ {b}</li>
+                ))}
+              </ul>
+              <button className="px-8 py-4 rounded-full text-xl font-bold">{content.upsell.cta}</button>
+            </div>
+          </section>
         )}
 
         {/* Section 12 - Pricing */}
-        {/* TODO: À ajouter */}
+        <Pricing content={content.pricing} />
 
         {/* Section 13 - FAQ Final */}
-        {/* TODO: À ajouter */}
+        <FAQFinal content={content.faqFinal} />
 
         {/* Section 14 - Footer */}
-        {/* TODO: À ajouter */}
+        <Footer content={content.footer} />
       </div>
     </ThemeProvider>
   );
