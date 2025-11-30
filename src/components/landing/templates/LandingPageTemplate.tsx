@@ -2,6 +2,9 @@ import { LandingPageConfig } from '@/config/landingPageSchema';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { Hero } from './sections/Hero';
 import { Agitation } from './sections/Agitation';
+import { SolutionTimeframe } from './sections/SolutionTimeframe';
+import { Pedagogy } from './sections/Pedagogy';
+import { Program } from './sections/Program';
 
 interface LandingPageTemplateProps {
   config: LandingPageConfig;
@@ -20,13 +23,13 @@ export function LandingPageTemplate({ config }: LandingPageTemplateProps) {
         <Agitation content={content.agitation} />
 
         {/* Section 3 - Solution Timeframe */}
-        {/* TODO: À ajouter */}
+        <SolutionTimeframe content={content.solutionTimeframe} />
 
         {/* Section 4 - Pedagogy */}
-        {/* TODO: À ajouter */}
+        <Pedagogy content={content.pedagogy} />
 
         {/* Section 5 - Program */}
-        {/* TODO: À ajouter */}
+        <Program content={content.program} />
 
         {/* Section 6 - Testimonials */}
         {/* TODO: À ajouter */}
