@@ -86,37 +86,37 @@ const AdminDashboard = () => {
         badge="Super Admin"
       />
 
-      {/* Stats Grid - Colored cards */}
+      {/* Stats Grid - Neutral style */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Académies"
           value={stats.totalOrgs}
           icon={Building2}
-          colorVariant="blue"
+          colorVariant="slate"
         />
         <StatCard
           title="Super Admins"
           value={stats.totalSuperAdmins}
           icon={Crown}
-          colorVariant="purple"
+          colorVariant="slate"
         />
         <StatCard
           title="Coachs"
           value={stats.totalCoaches}
           icon={GraduationCap}
-          colorVariant="orange"
+          colorVariant="slate"
         />
         <StatCard
           title="Étudiants"
           value={stats.totalStudents}
           icon={Users}
-          colorVariant="pink"
+          colorVariant="slate"
         />
         <StatCard
           title="Revenus totaux"
           value={`${stats.totalRevenue.toFixed(2)}€`}
           icon={DollarSign}
-          colorVariant="green"
+          colorVariant="slate"
           isHighlighted
         />
         <StatCard
@@ -134,7 +134,7 @@ const AdminDashboard = () => {
           <div className="grid gap-4 md:grid-cols-3">
             <button 
               onClick={() => navigate("/admin/academies")}
-              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
             >
               <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <Building2 className="h-5 w-5" />
@@ -148,7 +148,7 @@ const AdminDashboard = () => {
             
             <button 
               onClick={() => navigate("/admin/revenue")}
-              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
             >
               <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <DollarSign className="h-5 w-5" />
@@ -162,7 +162,7 @@ const AdminDashboard = () => {
             
             <button 
               onClick={() => navigate("/admin/support")}
-              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all text-left group"
             >
               <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <Users className="h-5 w-5" />
