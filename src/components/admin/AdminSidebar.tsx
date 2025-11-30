@@ -102,28 +102,30 @@ export function AdminSidebar() {
 
   return (
     <Sidebar 
-      className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-200/60`} 
+      className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-100`} 
       collapsible="icon"
     >
-      <SidebarTrigger className="m-3 self-end text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg" />
+      <SidebarTrigger className="m-4 self-end text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg" />
 
-      <SidebarContent className="bg-transparent px-3">
+      <SidebarContent className="bg-transparent px-3 py-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">
+          <SidebarGroupLabel className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-3">
             Administration
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-0.5">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="w-full">
                     <NavLink
                       to={`${baseUrl}${item.url}`}
                       end={item.url === ""}
-                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-all"
-                      activeClassName="bg-primary/10 text-primary font-semibold"
+                      className="flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-xl transition-all"
+                      activeClassName="bg-primary/5 text-primary font-semibold"
                     >
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      <div className="w-8 h-8 rounded-lg bg-amber-50/80 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-4 h-4 text-slate-500" />
+                      </div>
                       {open && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -134,14 +136,16 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-slate-100">
+      <SidebarFooter className="p-4 border-t border-slate-100">
         <Button
           onClick={handleSignOut}
           variant="ghost"
           className={`w-full justify-start gap-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all ${!open ? 'px-2' : ''}`}
         >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {open && <span className="text-sm font-medium">Déconnexion</span>}
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center flex-shrink-0">
+            <LogOut className="w-4 h-4" />
+          </div>
+          {open && <span className="text-[13px] font-medium">Déconnexion</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>
