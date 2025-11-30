@@ -216,10 +216,10 @@ export default function LearningSpace() {
       </main>
 
       {/* AI Tutor Widget */}
-      {course && currentLesson && (
+      {courseId && currentLesson && (
         <TutorChatWidget 
-          courseTitle={course.title}
-          lessonTitle={currentLesson.title}
+          courseId={courseId}
+          currentLessonTitle={currentLesson.title}
         />
       )}
     </div>
