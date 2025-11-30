@@ -40,12 +40,12 @@ export function LessonPreview({
         {title || "Titre de la leçon"}
       </h1>
 
-      {/* Content based on type */}
+      {/* All content elements */}
       <div className="space-y-6">
-        {/* Video section - shown whenever a video URL exists */}
+        {/* Video */}
         {videoUrl && <VideoPlayer url={videoUrl} />}
 
-        {/* Text content (shown for both types if present) */}
+        {/* Text content */}
         {contentText && (
           <div className="prose prose-lg max-w-none p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-sm">
             <div
@@ -55,27 +55,19 @@ export function LessonPreview({
           </div>
         )}
 
-        {/* Interactive tool section */}
-        {type === "interactive_tool" && (
-          <div>
-            {toolId && toolConfig ? (
-              <InteractiveToolContainer
-                lessonId="preview"
-                toolId={toolId}
-                toolConfig={toolConfig}
-              />
-            ) : (
-              <div className="p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400">
-                Configurez un outil interactif pour voir l'aperçu
-              </div>
-            )}
-          </div>
+        {/* Interactive tool */}
+        {toolId && toolConfig && (
+          <InteractiveToolContainer
+            lessonId="preview"
+            toolId={toolId}
+            toolConfig={toolConfig}
+          />
         )}
 
-        {/* Empty state for video type without content */}
-        {type === "video" && !videoUrl && !contentText && (
+        {/* Empty state */}
+        {!videoUrl && !contentText && !toolId && (
           <div className="p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400">
-            Ajoutez une vidéo ou du contenu textuel pour voir l'aperçu
+            Ajoutez du contenu (vidéo, texte ou outil interactif) pour voir l'aperçu
           </div>
         )}
       </div>
