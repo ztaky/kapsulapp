@@ -3,13 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Wand2, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { Wand2, CheckCircle2, Loader2, AlertCircle, Sparkles, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { WizardData } from "./LandingPageWizard";
 import { 
-  getHeroPrompt
+  getHeroPrompt,
+  getAgitationPrompt,
+  getSolutionTimeframePrompt,
+  getPedagogyPrompt,
+  getProgramPrompt
 } from '@/config/landingPagePrompts';
 import { createThemeFromWizard } from '@/config/landingPageSchema';
 
@@ -20,7 +24,11 @@ interface StepGenerationProps {
 
 const GENERATION_STEPS = [
   "Préparation du contexte...",
-  "Génération Hero...",
+  "Génération Hero (Gemini + GPT-5)...",
+  "Génération Agitation...",
+  "Génération Solution & Timeframe...",
+  "Génération Pédagogie...",
+  "Génération Programme...",
   "Finalisation et sauvegarde...",
 ];
 
@@ -39,8 +47,8 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
     setCurrentStep(0);
 
     try {
-      // Helper function pour appeler Gemini via l'edge function
-      const callGemini = async (prompt: string): Promise<any> => {
+      // Helper function pour appeler l'IA via l'edge function (mode single-section)
+      const callAI = async (prompt: string): Promise<any> => {
         const { data: responseData, error } = await supabase.functions.invoke(
           "generate-landing-page-pro",
           {
@@ -53,76 +61,95 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         
         if (error) throw error;
         
-        // Log de debug
-        console.log("Réponse brute de Gemini:", responseData.content);
+        console.log("Réponse brute de l'IA:", responseData.content);
         
         // Nettoyer la réponse
         let cleaned = responseData.content;
-        
-        // Enlever les markdown code blocks
         cleaned = cleaned.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        
-        // Enlever les espaces/retours à la ligne au début et fin
         cleaned = cleaned.trim();
-        
-        // Enlever les virgules avant les accolades fermantes (erreur fréquente de Gemini)
         cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
         
         console.log("JSON nettoyé:", cleaned);
         
-        // Parser
         try {
           return JSON.parse(cleaned);
         } catch (e) {
           console.error("Erreur parsing JSON:", e);
           console.error("JSON problématique:", cleaned);
-          throw new Error(`Gemini a retourné un JSON invalide: ${(e as Error).message}`);
+          throw new Error(`L'IA a retourné un JSON invalide: ${(e as Error).message}`);
         }
       };
 
       // Créer le thème depuis les données du wizard
       const theme = createThemeFromWizard(data);
 
-      // TEST : Générer UNIQUEMENT le Hero pour valider
+      // === ÉTAPE 1 : Hero ===
       setCurrentStep(1);
-      const heroContent = await callGemini(getHeroPrompt(data));
-      
+      console.log("=== Génération Hero ===");
+      const heroContent = await callAI(getHeroPrompt(data));
       console.log("Hero généré:", heroContent);
 
-      // Assembler une config minimale pour tester
+      // === ÉTAPE 2 : Agitation ===
+      setCurrentStep(2);
+      console.log("=== Génération Agitation ===");
+      const agitationContent = await callAI(getAgitationPrompt(data));
+      console.log("Agitation généré:", agitationContent);
+
+      // === ÉTAPE 3 : Solution Timeframe ===
+      setCurrentStep(3);
+      console.log("=== Génération Solution Timeframe ===");
+      const solutionTimeframeContent = await callAI(getSolutionTimeframePrompt(data));
+      console.log("Solution Timeframe généré:", solutionTimeframeContent);
+
+      // === ÉTAPE 4 : Pédagogie ===
+      setCurrentStep(4);
+      console.log("=== Génération Pédagogie ===");
+      const pedagogyContent = await callAI(getPedagogyPrompt(data));
+      console.log("Pédagogie généré:", pedagogyContent);
+
+      // === ÉTAPE 5 : Programme ===
+      setCurrentStep(5);
+      console.log("=== Génération Programme ===");
+      const programContent = await callAI(getProgramPrompt(data));
+      console.log("Programme généré:", programContent);
+
+      // === ÉTAPE 6 : Assemblage final ===
+      setCurrentStep(6);
+      
       const landingPageConfig = {
         theme,
         content: {
           hero: heroContent,
-          // Sections vides temporairement
-          agitation: { headline: "", subheadline: "", painPoints: [] },
-          solutionTimeframe: { headline: "", stats: [], socialProof: "", secretBox: { title: "", content: "" } },
-          pedagogy: { headline: "", subheadline: "", pillars: [], shockPhrase: "" },
-          program: { headline: "", subheadline: "", aiTypes: [], results: [], weeks: [], deliverables: [] },
-          testimonials: { headline: "", stars: 5, items: [], cta: "" },
-          faq: { headline: "", questions: [], cta: "" },
-          bonus: { headline: "", subheadline: "", items: [], cta: "" },
-          guarantee: { title: "", description: "", riskPhrase: "" },
-          instructor: { headline: "", name: "", photo: "", credentials: [], mission: "", difference: "" },
-          pricing: { headline: "", subheadline: "", offers: [] },
+          agitation: agitationContent,
+          solutionTimeframe: solutionTimeframeContent,
+          pedagogy: pedagogyContent,
+          program: programContent,
+          // Sections à générer dans une future itération
+          testimonials: { headline: "Ils ont transformé leur business", stars: 5, items: [], cta: "" },
+          faq: { headline: "Questions fréquentes", questions: [], cta: "" },
+          bonus: { headline: "Bonus exclusifs", subheadline: "", items: [], cta: "" },
+          guarantee: { title: "Garantie 30 jours", description: "Satisfait ou remboursé", riskPhrase: "" },
+          instructor: { 
+            headline: "Votre formateur", 
+            name: data.trainerName || "", 
+            photo: data.trainerPhoto || "", 
+            credentials: [], 
+            mission: data.trainerBio || "", 
+            difference: "" 
+          },
+          pricing: { headline: "Tarifs", subheadline: "", offers: [] },
           faqFinal: { questions: [] },
           footer: { logo: "", copyright: "", links: [] }
         }
       };
 
       setGeneratedContent(landingPageConfig);
-      setCurrentStep(2);
 
       // Sauvegarder dans la DB
       const slug = `${data.courseName?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
       
-      // === DEBUG ===
       console.log("=== DEBUG SAUVEGARDE ===");
-      console.log("Hero content:", heroContent);
       console.log("Config complète:", landingPageConfig);
-      console.log("Type de headline:", typeof landingPageConfig.content.hero.headline);
-      console.log("Headline est objet ?", landingPageConfig.content.hero.headline && typeof landingPageConfig.content.hero.headline === 'object');
-      // === FIN DEBUG ===
       
       const { error: insertError } = await supabase.from("landing_pages").insert([{
         organization_id: currentOrg.id,
@@ -171,7 +198,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       <div>
         <h3 className="text-lg font-semibold mb-2">Génération de la Landing Page</h3>
         <p className="text-muted-foreground">
-          Gemini 3 va créer une landing page professionnelle avec un copywriting expert
+          Approche dual-model : Gemini pour la structure + GPT-5 pour le copywriting premium
         </p>
       </div>
 
@@ -218,13 +245,22 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       {isGenerating && (
         <Card className="p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <div className="relative">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <Sparkles className="h-3 w-3 absolute -top-1 -right-1 text-amber-500 animate-pulse" />
+            </div>
             <span className="font-semibold">Génération en cours...</span>
           </div>
           <Progress value={(currentStep / GENERATION_STEPS.length) * 100} />
-          <p className="text-sm text-muted-foreground">
-            {GENERATION_STEPS[currentStep]}
-          </p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {currentStep <= 1 && <Brain className="h-4 w-4 text-blue-500" />}
+            {currentStep > 1 && currentStep < 6 && <Sparkles className="h-4 w-4 text-amber-500" />}
+            {currentStep >= 6 && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+            <span>{GENERATION_STEPS[currentStep]}</span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Étape {currentStep + 1} / {GENERATION_STEPS.length}
+          </div>
         </Card>
       )}
 
@@ -241,7 +277,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         <Alert className="border-green-200 bg-green-50 dark:bg-green-950">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-200">
-            Landing page générée avec succès ! Elle sera bientôt disponible dans votre liste.
+            Landing page générée avec succès ! 5 sections complètes créées.
           </AlertDescription>
         </Alert>
       )}
@@ -255,7 +291,7 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           disabled={isGenerating}
         >
           <Wand2 className="mr-2 h-5 w-5" />
-          Générer avec Gemini 3 (Nouveau Système)
+          Générer avec Gemini + GPT-5 (Dual-Model)
         </Button>
       )}
     </div>
