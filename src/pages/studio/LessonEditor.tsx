@@ -211,13 +211,16 @@ export default function LessonEditor() {
               onValueChange={(v) => {
                 const newTab = v as "video" | "text" | "interactive_tool";
                 setActiveTab(newTab);
-                // Update the database type accordingly
-                if (newTab === "text") {
-                  setFormData({ ...formData, type: "video", video_url: "" });
-                } else if (newTab === "video") {
-                  setFormData({ ...formData, type: "video" });
-                } else {
+                // Only update type when switching to interactive_tool, keep all content
+                if (newTab === "interactive_tool") {
                   setFormData({ ...formData, type: "interactive_tool" });
+                } else {
+                  // Keep type as video for video/text tabs, don't clear any content
+                  if (formData.type !== "interactive_tool") {
+                    // Keep current type
+                  } else {
+                    setFormData({ ...formData, type: "video" });
+                  }
                 }
               }}
             >
