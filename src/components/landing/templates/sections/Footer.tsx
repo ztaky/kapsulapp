@@ -3,10 +3,21 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 interface FooterProps {
   content: FooterContent;
+  landingSlug?: string;
 }
 
-export function Footer({ content }: FooterProps) {
+export function Footer({ content, landingSlug }: FooterProps) {
   const { theme } = useTheme();
+
+  // Auto-generate legal page links if we have a slug
+  const legalLinks = landingSlug ? [
+    { text: 'Mentions légales', url: `/lp/${landingSlug}/legal/mentions_legales` },
+    { text: 'Politique de confidentialité', url: `/lp/${landingSlug}/legal/politique_confidentialite` },
+    { text: 'CGV', url: `/lp/${landingSlug}/legal/cgv` },
+  ] : [];
+
+  // Combine custom links with legal links
+  const allLinks = [...(content.links || []), ...legalLinks];
 
   return (
     <footer 
@@ -30,12 +41,12 @@ export function Footer({ content }: FooterProps) {
           className="text-sm mb-6"
           style={{ color: theme.colors.textLight, opacity: 0.8 }}
         >
-          {content.copyright}
+          {content.copyright || `© ${new Date().getFullYear()} Tous droits réservés`}
         </p>
 
         {/* Links */}
         <div className="flex flex-wrap justify-center gap-6">
-          {content.links.map((link, index) => (
+          {allLinks.map((link, index) => (
             <a
               key={index}
               href={link.url}

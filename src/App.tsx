@@ -28,6 +28,7 @@ import StudentCertificates from "./pages/student/StudentCertificates";
 import StudentAssistant from "./pages/student/StudentAssistant";
 import StudentSupport from "./pages/student/StudentSupport";
 import LandingPageView from "./pages/LandingPageView";
+import LegalPageView from "./pages/LegalPageView";
 import CourseSalesPage from "./pages/CourseSalesPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -109,6 +110,7 @@ const App = () => (
           
           {/* Public Landing Pages */}
           <Route path="/lp/:slug" element={<LandingPageView />} />
+          <Route path="/lp/:landingSlug/legal/:type" element={<LegalPageView />} />
           
           {/* Public Course Sales Page */}
           <Route path="/school/:slug/course/:courseId" element={<CourseSalesPage />} />

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { ImageUploader } from "./ImageUploader";
+import { FooterSectionEditor } from "./FooterSectionEditor";
 
 interface SectionEditorProps {
   section: string;
@@ -548,6 +549,138 @@ export function SectionEditor({
             />
           </div>
         </div>
+      );
+
+    case 'pricing':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Titre de section</Label>
+            <Input
+              value={content?.pricing?.headline || ""}
+              onChange={(e) => updateField('headline', e.target.value)}
+              placeholder="Investissez dans votre avenir"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Sous-titre</Label>
+            <Textarea
+              value={content?.pricing?.subheadline || ""}
+              onChange={(e) => updateField('subheadline', e.target.value)}
+              placeholder="Choisissez l'offre qui vous correspond"
+              rows={2}
+            />
+          </div>
+          <div className="space-y-3">
+            <Label>Offres tarifaires</Label>
+            {(content?.pricing?.offers || []).map((offer: any, index: number) => (
+              <Card key={index} className="p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm font-medium">Offre {index + 1}</Label>
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    const newOffers = [...(content?.pricing?.offers || [])];
+                    newOffers.splice(index, 1);
+                    updateField('offers', newOffers);
+                  }}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Input
+                  value={offer.name || ""}
+                  onChange={(e) => {
+                    const newOffers = [...(content?.pricing?.offers || [])];
+                    newOffers[index] = { ...offer, name: e.target.value };
+                    updateField('offers', newOffers);
+                  }}
+                  placeholder="Nom de l'offre (ex: Formation Complète)"
+                />
+                <Input
+                  type="number"
+                  value={offer.price || ""}
+                  onChange={(e) => {
+                    const newOffers = [...(content?.pricing?.offers || [])];
+                    newOffers[index] = { ...offer, price: parseInt(e.target.value) || 0 };
+                    updateField('offers', newOffers);
+                  }}
+                  placeholder="Prix (€)"
+                />
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Avantages inclus</Label>
+                  {(offer.features || []).map((feature: string, fIndex: number) => (
+                    <div key={fIndex} className="flex gap-2">
+                      <Input
+                        value={feature}
+                        onChange={(e) => {
+                          const newOffers = [...(content?.pricing?.offers || [])];
+                          const newFeatures = [...(offer.features || [])];
+                          newFeatures[fIndex] = e.target.value;
+                          newOffers[index] = { ...offer, features: newFeatures };
+                          updateField('offers', newOffers);
+                        }}
+                        placeholder="Avantage inclus"
+                      />
+                      <Button variant="ghost" size="icon" onClick={() => {
+                        const newOffers = [...(content?.pricing?.offers || [])];
+                        const newFeatures = [...(offer.features || [])];
+                        newFeatures.splice(fIndex, 1);
+                        newOffers[index] = { ...offer, features: newFeatures };
+                        updateField('offers', newOffers);
+                      }}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newOffers = [...(content?.pricing?.offers || [])];
+                    newOffers[index] = { ...offer, features: [...(offer.features || []), ''] };
+                    updateField('offers', newOffers);
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" /> Ajouter un avantage
+                  </Button>
+                </div>
+                <Input
+                  value={offer.cta || ""}
+                  onChange={(e) => {
+                    const newOffers = [...(content?.pricing?.offers || [])];
+                    newOffers[index] = { ...offer, cta: e.target.value };
+                    updateField('offers', newOffers);
+                  }}
+                  placeholder="Texte du bouton (ex: Je m'inscris)"
+                />
+                <Input
+                  value={offer.ribbon || ""}
+                  onChange={(e) => {
+                    const newOffers = [...(content?.pricing?.offers || [])];
+                    newOffers[index] = { ...offer, ribbon: e.target.value };
+                    updateField('offers', newOffers);
+                  }}
+                  placeholder="Badge (optionnel, ex: Plus populaire)"
+                />
+              </Card>
+            ))}
+            <Button variant="outline" size="sm" onClick={() => {
+              const newOffers = [...(content?.pricing?.offers || []), { 
+                name: '', 
+                price: 0, 
+                features: [], 
+                cta: "Je m'inscris",
+                ribbon: ''
+              }];
+              updateField('offers', newOffers);
+            }}>
+              <Plus className="h-4 w-4 mr-2" /> Ajouter une offre
+            </Button>
+          </div>
+        </div>
+      );
+
+    case 'footer':
+      return (
+        <FooterSectionEditor
+          content={content}
+          organizationId={organizationId}
+          onChange={onChange}
+        />
       );
 
     default:

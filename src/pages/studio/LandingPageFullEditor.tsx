@@ -25,7 +25,9 @@ import {
   Bot,
   Eye,
   EyeOff,
-  Palette
+  Palette,
+  CreditCard,
+  FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import { SectionEditor } from "@/components/landing/SectionEditor";
@@ -41,7 +43,9 @@ const SECTIONS = [
   { id: 'trainer', label: 'Formateur', icon: Users, required: false },
   { id: 'testimonials', label: 'Témoignages', icon: MessageSquare, required: false },
   { id: 'faq', label: 'FAQ', icon: HelpCircle, required: false },
+  { id: 'pricing', label: 'Tarifs', icon: CreditCard, required: false },
   { id: 'final_cta', label: 'CTA Final', icon: Rocket, required: false },
+  { id: 'footer', label: 'Pied de page', icon: FileText, required: false },
 ];
 
 // All sections enabled by default

@@ -307,6 +307,44 @@ export type Database = {
           },
         ]
       }
+      legal_pages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          organization_id: string
+          title: string
+          type: Database["public"]["Enums"]["legal_page_type"]
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          title: string
+          type: Database["public"]["Enums"]["legal_page_type"]
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["legal_page_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_pages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           content_text: string | null
@@ -836,6 +874,7 @@ export type Database = {
     Enums: {
       app_role: "super_admin" | "user"
       landing_page_status: "draft" | "published"
+      legal_page_type: "mentions_legales" | "politique_confidentialite" | "cgv"
       lesson_type: "video" | "interactive_tool"
       org_role: "coach" | "student"
       ticket_priority: "low" | "medium" | "high" | "urgent"
@@ -974,6 +1013,7 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "user"],
       landing_page_status: ["draft", "published"],
+      legal_page_type: ["mentions_legales", "politique_confidentialite", "cgv"],
       lesson_type: ["video", "interactive_tool"],
       org_role: ["coach", "student"],
       ticket_priority: ["low", "medium", "high", "urgent"],
