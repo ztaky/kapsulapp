@@ -18,6 +18,7 @@ interface LandingPageTemplateProps {
   config: LandingPageConfig;
   trainerPhoto?: string; // Photo from trainerInfo for backward compatibility
   enabledSections?: string[]; // Sections to display
+  landingSlug?: string; // Slug for legal page links
 }
 
 // Map editor section IDs to template section IDs
@@ -30,7 +31,9 @@ const SECTION_ID_MAP: Record<string, string[]> = {
   'trainer': ['instructor'],
   'testimonials': ['testimonials'],
   'faq': ['faq', 'faqFinal'],
-  'final_cta': ['pricing'],
+  'pricing': ['pricing'],
+  'final_cta': [],
+  'footer': ['footer'],
 };
 
 // Default all sections enabled
@@ -40,7 +43,7 @@ const ALL_TEMPLATE_SECTIONS = [
   'upsell', 'pricing', 'faqFinal', 'footer'
 ];
 
-export function LandingPageTemplate({ config, trainerPhoto, enabledSections }: LandingPageTemplateProps) {
+export function LandingPageTemplate({ config, trainerPhoto, enabledSections, landingSlug }: LandingPageTemplateProps) {
   const { theme, content } = config;
   
   // Convert editor section IDs to template section IDs
@@ -145,9 +148,9 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections }: L
           <FAQFinal content={content.faqFinal} />
         )}
 
-        {/* Section 14 - Footer (always shown) */}
-        {content.footer && (
-          <Footer content={content.footer} />
+        {/* Section 14 - Footer */}
+        {isEnabled('footer') && content.footer && (
+          <Footer content={content.footer} landingSlug={landingSlug} />
         )}
       </div>
     </ThemeProvider>

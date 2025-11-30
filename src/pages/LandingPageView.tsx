@@ -166,7 +166,7 @@ export default function LandingPageView() {
     // Get enabled sections from design_config
     const enabledSections = (landingPage.design_config as any)?.enabledSections;
     
-    return <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} enabledSections={enabledSections} />;
+    return <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} enabledSections={enabledSections} landingSlug={slug} />;
   }
 
   // Legacy format - keep old renderer for backwards compatibility
