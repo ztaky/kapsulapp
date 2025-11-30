@@ -76,15 +76,6 @@ export function QuizEditor({ config, onChange }: QuizEditorProps) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label>Titre du Quiz</Label>
-        <Input
-          placeholder="Mon Quiz"
-          value={config.title || ""}
-          onChange={(e) => onChange({ ...config, title: e.target.value })}
-        />
-      </div>
-
       <div className="space-y-4">
         {questions.map((q, qIdx) => (
           <Card key={qIdx} className="border-2">
