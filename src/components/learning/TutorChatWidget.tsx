@@ -7,9 +7,10 @@ import { AIAssistantChat } from "@/components/AIAssistantChat";
 interface TutorChatWidgetProps {
   courseTitle: string;
   lessonTitle: string;
+  lessonContent?: string;
 }
 
-export function TutorChatWidget({ courseTitle, lessonTitle }: TutorChatWidgetProps) {
+export function TutorChatWidget({ courseTitle, lessonTitle, lessonContent }: TutorChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -31,7 +32,7 @@ export function TutorChatWidget({ courseTitle, lessonTitle }: TutorChatWidgetPro
           <SheetHeader className="p-6 border-b bg-gradient-to-r from-orange-50 to-pink-50 dark:from-orange-950/20 dark:to-pink-950/20 shrink-0">
             <SheetTitle className="text-xl font-bold flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-orange-500" />
-              Kapsul Assistant
+              Kapsul Tutor
             </SheetTitle>
             <p className="text-sm text-muted-foreground">
               Je suis là pour t'aider sur "{lessonTitle}"
@@ -40,9 +41,11 @@ export function TutorChatWidget({ courseTitle, lessonTitle }: TutorChatWidgetPro
           
           <div className="flex-1 overflow-hidden">
             <AIAssistantChat
-              apiEndpoint={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`}
-              context={{ courseTitle, lessonTitle }}
+              mode="tutor"
+              context={{ courseTitle, lessonTitle, lessonContent }}
               placeholder="Pose-moi une question sur cette leçon..."
+              showHeader={false}
+              className="h-full border-0 shadow-none rounded-none"
             />
           </div>
         </SheetContent>
