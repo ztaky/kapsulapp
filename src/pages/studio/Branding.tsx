@@ -42,6 +42,8 @@ export default function StudioBranding() {
     contact_email: "",
     webhook_url: "",
     webhook_events: ["new_student", "new_purchase"] as string[],
+    paypal_email: "",
+    paypal_merchant_id: "",
   });
 
   // Check Stripe Connect status
@@ -74,6 +76,8 @@ export default function StudioBranding() {
         contact_email: org.contact_email || "",
         webhook_url: org.webhook_url || "",
         webhook_events: org.webhook_events || ["new_student", "new_purchase"],
+        paypal_email: org.paypal_email || "",
+        paypal_merchant_id: org.paypal_merchant_id || "",
       });
       
       // Check Stripe status when org loads
@@ -171,6 +175,7 @@ export default function StudioBranding() {
           contact_email: data.contact_email || null,
           webhook_url: data.webhook_url || null,
           webhook_events: data.webhook_events,
+          paypal_merchant_id: data.paypal_merchant_id || null,
         } as any)
         .eq("id", currentOrg.id);
 
@@ -677,6 +682,114 @@ export default function StudioBranding() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* PayPal Card */}
+        <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100">
+                <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.217a.77.77 0 0 1 .757-.645h6.922c2.33 0 4.13.49 5.35 1.457 1.23.97 1.74 2.39 1.52 4.23-.36 2.92-1.67 5.03-3.89 6.27-1.12.62-2.47.94-4.01.94H9.05a.77.77 0 0 0-.757.645l-.94 4.68a.64.64 0 0 1-.63.54h-.647zm13.448-14.18c-.24 1.93-1.36 3.33-3.12 4.06-.85.36-1.83.54-2.91.54H12.3l-.96 4.78h-1.9l2.05-10.22h4.1c1.06 0 1.9.18 2.51.54.61.36.98.9 1.11 1.63.06.23.09.46.09.68z"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-xl font-bold text-[#1e293b] tracking-tight">
+                    PayPal
+                  </CardTitle>
+                  {formData.paypal_email && (
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                      Configuré
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription>
+                  Acceptez les paiements PayPal en plus de Stripe
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="paypal_email" className="text-slate-900 font-medium text-sm">
+                    Email PayPal Business
+                  </Label>
+                  <Input
+                    id="paypal_email"
+                    type="email"
+                    placeholder="paiements@votre-entreprise.com"
+                    value={formData.paypal_email}
+                    onChange={(e) => setFormData({ ...formData, paypal_email: e.target.value })}
+                    className="rounded-xl border-slate-200"
+                  />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    L'adresse email associée à votre compte PayPal Business
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="paypal_merchant_id" className="text-slate-900 font-medium text-sm">
+                    Merchant ID PayPal (optionnel)
+                  </Label>
+                  <Input
+                    id="paypal_merchant_id"
+                    placeholder="ABC123XYZ456"
+                    value={formData.paypal_merchant_id}
+                    onChange={(e) => setFormData({ ...formData, paypal_merchant_id: e.target.value })}
+                    className="rounded-xl border-slate-200"
+                  />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Trouvable dans Paramètres PayPal → Informations du compte
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-sky-50 rounded-xl border border-blue-100">
+                  <h4 className="font-semibold text-slate-900 text-sm mb-3">
+                    Pourquoi ajouter PayPal ?
+                  </h4>
+                  <ul className="space-y-2 text-sm text-slate-600">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                      Plus d'options de paiement pour vos clients
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                      Populaire pour les paiements internationaux
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                      Protection acheteur intégrée
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h4 className="font-semibold text-slate-900 text-sm mb-2">
+                    Comment obtenir ces informations ?
+                  </h4>
+                  <ol className="space-y-1 text-sm text-slate-600 list-decimal list-inside">
+                    <li>Connectez-vous à paypal.com</li>
+                    <li>Allez dans Paramètres → Compte</li>
+                    <li>Copiez votre email et/ou Merchant ID</li>
+                  </ol>
+                  <a 
+                    href="https://www.paypal.com/businessprofile/settings" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-3"
+                  >
+                    Ouvrir les paramètres PayPal
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
