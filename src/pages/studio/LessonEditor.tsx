@@ -38,6 +38,21 @@ export default function LessonEditor() {
     tool_config: {},
   });
 
+  // Fetch organization ID from slug
+  const { data: organization } = useQuery({
+    queryKey: ["organization", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("slug", slug)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!slug,
+  });
+
   const { data: lesson } = useQuery({
     queryKey: ["lesson", lessonId],
     queryFn: async () => {
@@ -228,6 +243,7 @@ export default function LessonEditor() {
                 <InteractiveToolEditor
                   toolId={formData.tool_id}
                   toolConfig={formData.tool_config}
+                  organizationId={organization?.id}
                   onChange={(toolId, toolConfig) =>
                     setFormData({ ...formData, tool_id: toolId, tool_config: toolConfig })
                   }
