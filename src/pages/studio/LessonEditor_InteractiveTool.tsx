@@ -5,14 +5,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { QuizEditor } from "@/components/studio/QuizEditor";
 import { AIToolBuilder } from "@/components/studio/AIToolBuilder";
 import { RichTextEditor } from "@/components/studio/RichTextEditor";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, EyeOff, Code, Plus, Library, Sparkles, FileCode, HelpCircle, FileText, ExternalLink, Loader2, Save, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Code, Plus, Library, Sparkles, FileCode, HelpCircle, FileText, ExternalLink, Loader2, Save, Trash2, Pencil, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { InteractiveToolContainer } from "@/components/learning/InteractiveToolContainer";
 
 interface InteractiveToolEditorProps {
   toolId: string | null;
@@ -31,12 +32,12 @@ const TOOL_TYPES = [
 
 export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onChange }: InteractiveToolEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
-  const [mode, setMode] = useState<"library" | "create">("library");
-  const [newToolName, setNewToolName] = useState("");
+  const [mode, setMode] = useState<"library" | "create" | "edit">("library");
   const [newToolType, setNewToolType] = useState<string>("ai_tool");
   const [newToolConfig, setNewToolConfig] = useState<any>({});
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [toolNameToSave, setToolNameToSave] = useState("");
+  const [newToolName, setNewToolName] = useState("");
+  const [editingToolId, setEditingToolId] = useState<string | null>(null);
+  const [previewToolId, setPreviewToolId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch existing tools from library
@@ -78,11 +79,34 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
       // Select the newly created tool
       onChange(data.tool_type, data.config);
       setMode("library");
-      setSaveDialogOpen(false);
-      setToolNameToSave("");
+      resetForm();
     },
     onError: () => {
       toast.error("Erreur lors de la sauvegarde");
+    },
+  });
+
+  // Update tool in library
+  const updateToolMutation = useMutation({
+    mutationFn: async ({ id, name, config }: { id: string; name: string; config: any }) => {
+      const { data, error } = await supabase
+        .from("interactive_tools")
+        .update({ name, config })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId] });
+      toast.success("Outil mis à jour");
+      onChange(data.tool_type, data.config);
+      setMode("library");
+      resetForm();
+    },
+    onError: () => {
+      toast.error("Erreur lors de la mise à jour");
     },
   });
 
@@ -101,6 +125,13 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
     },
   });
 
+  const resetForm = () => {
+    setNewToolType("ai_tool");
+    setNewToolConfig({});
+    setNewToolName("");
+    setEditingToolId(null);
+  };
+
   const getDefaultConfig = (type: string) => {
     switch (type) {
       case "custom_embed":
@@ -108,11 +139,11 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
       case "rich_content":
         return { html_content: "", attachments: [] };
       case "quiz":
-        return { title: "", questions: [] };
+        return { questions: [] };
       case "ai_tool":
         return { description: "", generatedCode: "", generatedAt: "" };
       case "custom_code":
-        return { htmlCode: "", title: "" };
+        return { htmlCode: "" };
       default:
         return {};
     }
@@ -122,26 +153,63 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
     onChange(tool.tool_type, tool.config);
   };
 
-  const handleSaveToLibrary = () => {
-    if (!toolNameToSave.trim()) {
+  const handleEditFromLibrary = (tool: any) => {
+    setMode("edit");
+    setEditingToolId(tool.id);
+    setNewToolType(tool.tool_type);
+    setNewToolConfig(tool.config);
+    setNewToolName(tool.name);
+  };
+
+  const handleSaveNew = () => {
+    if (!newToolName.trim()) {
       toast.error("Veuillez entrer un nom pour l'outil");
       return;
     }
-    if (!toolId || !toolConfig) {
+    if (!hasValidConfig()) {
       toast.error("Configurez d'abord l'outil");
       return;
     }
     saveToolMutation.mutate({
-      name: toolNameToSave,
-      type: toolId,
-      config: toolConfig,
+      name: newToolName,
+      type: newToolType,
+      config: newToolConfig,
     });
+  };
+
+  const handleUpdateExisting = () => {
+    if (!editingToolId || !newToolName.trim()) {
+      toast.error("Veuillez entrer un nom pour l'outil");
+      return;
+    }
+    updateToolMutation.mutate({
+      id: editingToolId,
+      name: newToolName,
+      config: newToolConfig,
+    });
+  };
+
+  const hasValidConfig = () => {
+    return (
+      newToolConfig.htmlCode ||
+      newToolConfig.generatedCode ||
+      newToolConfig.embed_url ||
+      newToolConfig.html_content ||
+      (newToolConfig.questions && newToolConfig.questions.length > 0)
+    );
   };
 
   const getToolIcon = (type: string) => {
     const tool = TOOL_TYPES.find(t => t.id === type);
     return tool?.icon || FileCode;
   };
+
+  // Auto-update lesson's tool when editing
+  useEffect(() => {
+    if (mode === "edit" && editingToolId) {
+      onChange(newToolType, newToolConfig);
+    }
+  }, [newToolConfig]);
 
   return (
     <div className="space-y-4">
@@ -151,7 +219,10 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
           type="button"
           variant={mode === "library" ? "default" : "outline"}
           size="sm"
-          onClick={() => setMode("library")}
+          onClick={() => {
+            setMode("library");
+            resetForm();
+          }}
           className="gap-2"
         >
           <Library className="h-4 w-4" />
@@ -163,6 +234,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
           size="sm"
           onClick={() => {
             setMode("create");
+            resetForm();
             setNewToolType("ai_tool");
             setNewToolConfig(getDefaultConfig("ai_tool"));
           }}
@@ -171,6 +243,17 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
           <Plus className="h-4 w-4" />
           Créer un outil
         </Button>
+        {mode === "edit" && (
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            className="gap-2"
+          >
+            <Pencil className="h-4 w-4" />
+            Édition
+          </Button>
+        )}
       </div>
 
       {/* Library Mode */}
@@ -188,26 +271,54 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
                 return (
                   <Card
                     key={tool.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${
+                    className={`transition-all hover:shadow-md ${
                       isSelected ? "ring-2 ring-primary border-primary" : ""
                     }`}
-                    onClick={() => handleSelectFromLibrary(tool)}
                   >
                     <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                        <IconComponent className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{tool.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {TOOL_TYPES.find(t => t.id === tool.tool_type)?.label || tool.tool_type}
-                        </p>
+                      <div 
+                        className="flex-1 flex items-center gap-4 cursor-pointer"
+                        onClick={() => handleSelectFromLibrary(tool)}
+                      >
+                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                          <IconComponent className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{tool.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {TOOL_TYPES.find(t => t.id === tool.tool_type)?.label || tool.tool_type}
+                          </p>
+                        </div>
                       </div>
                       {isSelected && (
                         <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
                           Sélectionné
                         </span>
                       )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewToolId(previewToolId === tool.id ? null : tool.id);
+                        }}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {previewToolId === tool.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditFromLibrary(tool);
+                        }}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button
                         type="button"
                         variant="ghost"
@@ -221,6 +332,20 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </CardContent>
+                    
+                    {/* Preview panel */}
+                    {previewToolId === tool.id && (
+                      <div className="border-t p-4 bg-muted/30">
+                        <p className="text-sm font-medium mb-3">Aperçu de l'outil</p>
+                        <div className="border rounded-lg p-4 bg-background min-h-[200px]">
+                          <InteractiveToolContainer
+                            lessonId=""
+                            toolId={tool.tool_type}
+                            toolConfig={tool.config}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </Card>
                 );
               })}
@@ -245,16 +370,16 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
             </Card>
           )}
 
-          {/* Current tool preview if selected */}
-          {toolId && toolConfig && (
+          {/* Current tool preview if selected but not in library */}
+          {toolId && toolConfig && !tools?.some(t => JSON.stringify(t.config) === JSON.stringify(toolConfig)) && (
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium">Outil actuellement configuré</p>
-                <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                <p className="text-sm font-medium">Outil actuellement configuré (non sauvegardé)</p>
+                <Dialog>
                   <DialogTrigger asChild>
                     <Button type="button" variant="outline" size="sm" className="gap-2">
                       <Save className="h-4 w-4" />
-                      Sauvegarder dans la bibliothèque
+                      Sauvegarder
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -266,8 +391,8 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
                         <Label>Nom de l'outil</Label>
                         <Input
                           placeholder="Ex: Calculateur de calories, Quiz module 1..."
-                          value={toolNameToSave}
-                          onChange={(e) => setToolNameToSave(e.target.value)}
+                          value={newToolName}
+                          onChange={(e) => setNewToolName(e.target.value)}
                         />
                       </div>
                     </div>
@@ -277,7 +402,17 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
                       </DialogClose>
                       <Button
                         type="button"
-                        onClick={handleSaveToLibrary}
+                        onClick={() => {
+                          if (!newToolName.trim()) {
+                            toast.error("Veuillez entrer un nom pour l'outil");
+                            return;
+                          }
+                          saveToolMutation.mutate({
+                            name: newToolName,
+                            type: toolId,
+                            config: toolConfig,
+                          });
+                        }}
                         disabled={saveToolMutation.isPending}
                       >
                         {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
@@ -298,6 +433,16 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
       {/* Create Mode */}
       {mode === "create" && (
         <div className="space-y-4">
+          <div>
+            <Label>Nom de l'outil *</Label>
+            <Input
+              placeholder="Ex: Calculateur de calories, Quiz module 1..."
+              value={newToolName}
+              onChange={(e) => setNewToolName(e.target.value)}
+              className="mb-4"
+            />
+          </div>
+
           <div>
             <Label>Type d'outil</Label>
             <Select
@@ -321,150 +466,187 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
           </div>
 
           {/* Tool-specific editors */}
-          {newToolType === "ai_tool" && (
-            <AIToolBuilder
-              toolConfig={newToolConfig}
-              onChange={(config) => {
-                setNewToolConfig(config);
-                onChange("ai_tool", config);
-              }}
-            />
-          )}
-
-          {newToolType === "custom_code" && (
-            <CustomCodeEditor
-              config={newToolConfig}
-              onChange={(config) => {
-                setNewToolConfig(config);
-                onChange("custom_code", config);
-              }}
-            />
-          )}
-
-          {newToolType === "custom_embed" && (
-            <div>
-              <Label>URL à intégrer</Label>
-              <Input
-                type="url"
-                placeholder="https://notion.so/... ou typeform.com/..."
-                value={newToolConfig.embed_url || ""}
-                onChange={(e) => {
-                  const config = { ...newToolConfig, embed_url: e.target.value };
-                  setNewToolConfig(config);
-                  onChange("custom_embed", config);
-                }}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Supporte Notion, Typeform, Google Forms, Loom, etc.
-              </p>
-            </div>
-          )}
-
-          {newToolType === "rich_content" && (
-            <div>
-              <Label>Contenu enrichi</Label>
-              <RichTextEditor
-                content={newToolConfig.html_content || ""}
-                onChange={(html) => {
-                  const config = { ...newToolConfig, html_content: html };
-                  setNewToolConfig(config);
-                  onChange("rich_content", config);
-                }}
-                placeholder="Écrivez votre contenu enrichi..."
-              />
-            </div>
-          )}
-
-          {newToolType === "quiz" && (
-            <QuizEditor
-              config={newToolConfig}
-              onChange={(config) => {
-                setNewToolConfig(config);
-                onChange("quiz", config);
-              }}
-            />
-          )}
+          <ToolConfigEditor
+            toolType={newToolType}
+            config={newToolConfig}
+            onChange={(config) => {
+              setNewToolConfig(config);
+              onChange(newToolType, config);
+            }}
+          />
 
           {/* Save & Return buttons */}
-          {(newToolConfig.htmlCode || newToolConfig.generatedCode || newToolConfig.embed_url || newToolConfig.html_content || (newToolConfig.questions && newToolConfig.questions.length > 0)) && (
-            <div className="flex gap-3 pt-4 border-t">
-              <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button type="button" variant="default" className="gap-2">
-                    <Save className="h-4 w-4" />
-                    Sauvegarder dans la bibliothèque
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Sauvegarder l'outil</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div>
-                      <Label>Nom de l'outil</Label>
-                      <Input
-                        placeholder="Ex: Calculateur de calories, Quiz module 1..."
-                        value={toolNameToSave}
-                        onChange={(e) => setToolNameToSave(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Annuler</Button>
-                    </DialogClose>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        if (!toolNameToSave.trim()) {
-                          toast.error("Veuillez entrer un nom pour l'outil");
-                          return;
-                        }
-                        saveToolMutation.mutate({
-                          name: toolNameToSave,
-                          type: newToolType,
-                          config: newToolConfig,
-                        });
-                      }}
-                      disabled={saveToolMutation.isPending}
-                    >
-                      {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                      Sauvegarder
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMode("library")}
-                className="gap-2"
-              >
-                <Library className="h-4 w-4" />
-                Retour à la bibliothèque
-              </Button>
-            </div>
-          )}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleSaveNew}
+              disabled={saveToolMutation.isPending || !newToolName.trim()}
+              className="gap-2"
+            >
+              {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Save className="h-4 w-4" />
+              Sauvegarder
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setMode("library");
+                resetForm();
+              }}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Annuler
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Mode */}
+      {mode === "edit" && (
+        <div className="space-y-4">
+          <div>
+            <Label>Nom de l'outil *</Label>
+            <Input
+              placeholder="Ex: Calculateur de calories, Quiz module 1..."
+              value={newToolName}
+              onChange={(e) => setNewToolName(e.target.value)}
+              className="mb-4"
+            />
+          </div>
+
+          <div>
+            <Label>Type d'outil</Label>
+            <Input
+              value={TOOL_TYPES.find(t => t.id === newToolType)?.label || newToolType}
+              disabled
+              className="bg-muted"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Le type ne peut pas être modifié
+            </p>
+          </div>
+
+          {/* Tool-specific editors */}
+          <ToolConfigEditor
+            toolType={newToolType}
+            config={newToolConfig}
+            onChange={(config) => {
+              setNewToolConfig(config);
+              onChange(newToolType, config);
+            }}
+          />
+
+          {/* Update & Return buttons */}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleUpdateExisting}
+              disabled={updateToolMutation.isPending || !newToolName.trim()}
+              className="gap-2"
+            >
+              {updateToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Save className="h-4 w-4" />
+              Mettre à jour
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setMode("library");
+                resetForm();
+              }}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Annuler
+            </Button>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-// Extracted Custom Code Editor component
+// Centralized Tool Config Editor
+function ToolConfigEditor({ 
+  toolType, 
+  config, 
+  onChange 
+}: { 
+  toolType: string; 
+  config: any; 
+  onChange: (config: any) => void;
+}) {
+  const [showPreview, setShowPreview] = useState(false);
+
+  switch (toolType) {
+    case "ai_tool":
+      return (
+        <AIToolBuilder
+          toolConfig={config}
+          onChange={onChange}
+        />
+      );
+
+    case "custom_code":
+      return (
+        <CustomCodeEditor
+          config={config}
+          onChange={onChange}
+        />
+      );
+
+    case "custom_embed":
+      return (
+        <div>
+          <Label>URL à intégrer</Label>
+          <Input
+            type="url"
+            placeholder="https://notion.so/... ou typeform.com/..."
+            value={config.embed_url || ""}
+            onChange={(e) => onChange({ ...config, embed_url: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Supporte Notion, Typeform, Google Forms, Loom, etc.
+          </p>
+        </div>
+      );
+
+    case "rich_content":
+      return (
+        <div>
+          <Label>Contenu enrichi</Label>
+          <RichTextEditor
+            content={config.html_content || ""}
+            onChange={(html) => onChange({ ...config, html_content: html })}
+            placeholder="Écrivez votre contenu enrichi..."
+          />
+        </div>
+      );
+
+    case "quiz":
+      return (
+        <QuizEditor
+          config={config}
+          onChange={onChange}
+        />
+      );
+
+    default:
+      return null;
+  }
+}
+
+// Custom Code Editor component
 function CustomCodeEditor({ config, onChange }: { config: any; onChange: (config: any) => void }) {
   const [showPreview, setShowPreview] = useState(false);
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label>Titre de l'outil (optionnel)</Label>
-        <Input
-          placeholder="Ex: Calculateur de calories, Quiz interactif..."
-          value={config.title || ""}
-          onChange={(e) => onChange({ ...config, title: e.target.value })}
-        />
-      </div>
       <div>
         <Label>Code HTML/CSS/JS</Label>
         <Textarea
