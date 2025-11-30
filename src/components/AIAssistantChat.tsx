@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, User, Sparkles } from "lucide-react";
+import { Bot, Send, Loader2, User, Sparkles, Trash2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { useChatHistory } from "@/hooks/useChatHistory";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,7 +16,7 @@ type ChatMode = 'tutor' | 'student' | 'studio' | 'support';
 
 interface AIAssistantChatProps {
   mode?: ChatMode;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   placeholder?: string;
   suggestions?: string[];
   showHeader?: boolean;
@@ -60,9 +61,21 @@ export function AIAssistantChat({
   showHeader = true,
   className = "",
 }: AIAssistantChatProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: WELCOME_MESSAGES[mode] }
-  ]);
+  const {
+    messages,
+    setMessages,
+    isLoadingHistory,
+    userId,
+    saveMessage,
+    startNewConversation,
+    getConversationId,
+    clearHistory,
+  } = useChatHistory({
+    mode,
+    context,
+    welcomeMessage: WELCOME_MESSAGES[mode],
+  });
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
@@ -78,12 +91,25 @@ export function AIAssistantChat({
     }
   }, [messages]);
 
+  // Hide suggestions if there's history
+  useEffect(() => {
+    if (messages.length > 1) {
+      setShowSuggestions(false);
+    }
+  }, [messages.length]);
+
   const streamChat = async (userMessage: string) => {
-    const allMessages = [...messages, { role: "user" as const, content: userMessage }];
+    const allMessages: Message[] = [...messages, { role: "user", content: userMessage }];
     setMessages(allMessages);
     setInput("");
     setIsLoading(true);
     setShowSuggestions(false);
+
+    // Get conversation ID and save user message
+    const convId = getConversationId();
+    if (userId) {
+      await saveMessage("user", userMessage, convId);
+    }
 
     try {
       const response = await fetch(CHAT_URL, {
@@ -154,6 +180,11 @@ export function AIAssistantChat({
           }
         }
       }
+
+      // Save assistant response after streaming is complete
+      if (userId && assistantContent) {
+        await saveMessage("assistant", assistantContent, convId);
+      }
     } catch (error) {
       console.error("Chat error:", error);
       toast.error("Erreur lors de la communication avec l'assistant");
@@ -171,19 +202,63 @@ export function AIAssistantChat({
     streamChat(suggestion);
   };
 
+  const handleNewConversation = () => {
+    startNewConversation();
+    setShowSuggestions(true);
+  };
+
+  const handleClearHistory = async () => {
+    await clearHistory();
+    setShowSuggestions(true);
+    toast.success("Historique effacé");
+  };
+
+  if (isLoadingHistory) {
+    return (
+      <Card className={`shadow-premium border-slate-100 flex flex-col h-[600px] items-center justify-center ${className}`}>
+        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <p className="text-sm text-slate-500 mt-2">Chargement de l'historique...</p>
+      </Card>
+    );
+  }
+
   return (
     <Card className={`shadow-premium border-slate-100 flex flex-col h-[600px] ${className}`}>
       {showHeader && (
         <CardHeader className="border-b border-slate-100 bg-gradient-to-br from-orange-50 to-slate-50 shrink-0">
-          <CardTitle className="flex items-center gap-2 text-slate-900">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-              <Bot className="h-5 w-5 text-orange-600" />
-            </div>
-            {mode === 'tutor' ? 'Kapsul Tutor' : 
-             mode === 'studio' ? 'Assistant Création' :
-             mode === 'support' ? 'Support Kapsul' :
-             'Assistant Pédagogique'}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-orange-600" />
+              </div>
+              {mode === 'tutor' ? 'Kapsul Tutor' : 
+               mode === 'studio' ? 'Assistant Création' :
+               mode === 'support' ? 'Support Kapsul' :
+               'Assistant Pédagogique'}
+            </CardTitle>
+            {userId && (
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-500 hover:text-orange-600"
+                  onClick={handleNewConversation}
+                  title="Nouvelle conversation"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-500 hover:text-red-600"
+                  onClick={handleClearHistory}
+                  title="Effacer l'historique"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
       )}
 
