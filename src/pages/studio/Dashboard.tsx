@@ -1,12 +1,15 @@
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, DollarSign, BookOpen, TrendingUp, LucideIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 
 interface StatCardProps {
   title: string;
@@ -23,8 +26,35 @@ interface StatCardProps {
 
 export default function StudioDashboard() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
+
+  const [showWizard, setShowWizard] = useState(false);
+  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
+
+  const {
+    steps,
+    progress,
+    completedCount,
+    totalSteps,
+    onboardingCompleted,
+    isLoading: onboardingLoading,
+    markComplete,
+    skipStep,
+    completeOnboarding,
+    refetch: refetchOnboarding,
+  } = useOnboarding(currentOrg?.id);
+
+  // Auto-open wizard for new coaches
+  useEffect(() => {
+    if (!onboardingLoading && !hasCheckedOnboarding && currentOrg?.id) {
+      setHasCheckedOnboarding(true);
+      if (!onboardingCompleted && completedCount === 0) {
+        setShowWizard(true);
+      }
+    }
+  }, [onboardingLoading, onboardingCompleted, completedCount, hasCheckedOnboarding, currentOrg?.id]);
 
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ["studio-stats", currentOrg?.id],
@@ -88,7 +118,10 @@ export default function StudioDashboard() {
           table: 'courses',
           filter: `organization_id=eq.${currentOrg.id}`
         },
-        () => refetch()
+        () => {
+          refetch();
+          refetchOnboarding();
+        }
       )
       .subscribe();
 
@@ -124,7 +157,15 @@ export default function StudioDashboard() {
       supabase.removeChannel(membersChannel);
       supabase.removeChannel(purchasesChannel);
     };
-  }, [currentOrg?.id, refetch]);
+  }, [currentOrg?.id, refetch, refetchOnboarding]);
+
+  const handleStepAction = (stepKey: string, action: "complete" | "skip") => {
+    if (action === "complete") {
+      markComplete(stepKey);
+    } else {
+      skipStep(stepKey);
+    }
+  };
 
   const StatCard = ({ title, value, description, icon: Icon, colorClass, iconBgClass }: StatCardProps & { iconBgClass: string }) => (
     <Card className="relative overflow-hidden bg-white border border-slate-100 rounded-3xl shadow-premium hover:shadow-lg transition-all duration-300">
@@ -214,6 +255,15 @@ export default function StudioDashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Onboarding Wizard */}
+      <OnboardingWizard
+        open={showWizard}
+        onOpenChange={setShowWizard}
+        organizationSlug={slug || ""}
+        organizationName={currentOrg?.name || ""}
+        onStepAction={handleStepAction}
+      />
+
       {/* Hero Header - Premium Style */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
         <div className="relative z-10">
@@ -225,6 +275,19 @@ export default function StudioDashboard() {
           </p>
         </div>
       </div>
+
+      {/* Onboarding Checklist - Show if not completed */}
+      {!onboardingCompleted && (
+        <OnboardingChecklist
+          steps={steps}
+          progress={progress}
+          completedCount={completedCount}
+          totalSteps={totalSteps}
+          organizationSlug={slug || ""}
+          onOpenWizard={() => setShowWizard(true)}
+          onComplete={completeOnboarding}
+        />
+      )}
 
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -238,7 +301,10 @@ export default function StudioDashboard() {
         <div className="relative z-10">
           <h3 className="text-xl font-bold mb-6 text-[#1e293b] tracking-tight">Actions rapides</h3>
           <div className="grid gap-4 md:grid-cols-3">
-            <button className="p-6 bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-2xl border border-orange-100 hover:shadow-lg transition-all text-left group">
+            <button 
+              onClick={() => navigate(`/school/${slug}/studio/courses`)}
+              className="p-6 bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-2xl border border-orange-100 hover:shadow-lg transition-all text-left group"
+            >
               <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <BookOpen className="h-6 w-6" />
               </div>
@@ -246,7 +312,10 @@ export default function StudioDashboard() {
               <div className="text-sm text-slate-500 leading-relaxed">Démarrez une nouvelle formation</div>
             </button>
             
-            <button className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-2xl border border-blue-100 hover:shadow-lg transition-all text-left group">
+            <button 
+              onClick={() => navigate(`/school/${slug}/studio/students`)}
+              className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-2xl border border-blue-100 hover:shadow-lg transition-all text-left group"
+            >
               <div className="rounded-2xl bg-blue-100 text-blue-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Users className="h-6 w-6" />
               </div>
@@ -254,7 +323,10 @@ export default function StudioDashboard() {
               <div className="text-sm text-slate-500 leading-relaxed">Agrandissez votre communauté</div>
             </button>
             
-            <button className="p-6 bg-gradient-to-br from-green-50 to-green-100/30 rounded-2xl border border-green-100 hover:shadow-lg transition-all text-left group">
+            <button 
+              onClick={() => navigate(`/school/${slug}/studio/landing-pages`)}
+              className="p-6 bg-gradient-to-br from-green-50 to-green-100/30 rounded-2xl border border-green-100 hover:shadow-lg transition-all text-left group"
+            >
               <div className="rounded-2xl bg-green-100 text-green-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-6 w-6" />
               </div>
