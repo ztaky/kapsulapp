@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { AddStudentDialog } from "@/components/studio/AddStudentDialog";
 
 export default function StudioStudents() {
   const { slug } = useParams<{ slug: string }>();
@@ -42,13 +43,21 @@ export default function StudioStudents() {
     <div className="space-y-8 animate-fade-in">
       {/* Header - Premium Style */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
-            Communauté
-          </h1>
-          <p className="text-base text-slate-600 leading-relaxed">
-            Gérez les apprenants de votre académie
-          </p>
+        <div className="relative z-10 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
+              Communauté
+            </h1>
+            <p className="text-base text-slate-600 leading-relaxed">
+              Gérez les apprenants de votre académie
+            </p>
+          </div>
+          {currentOrg && (
+            <AddStudentDialog 
+              organizationId={currentOrg.id} 
+              organizationName={currentOrg.name} 
+            />
+          )}
         </div>
       </div>
 
