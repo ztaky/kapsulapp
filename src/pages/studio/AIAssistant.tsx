@@ -118,6 +118,7 @@ export default function AIAssistant() {
           studioContext: formattedContext,
           organizationId: studioContext.organizationId,
           organizationName: studioContext.organizationName,
+          specialty: studioContext.organizationSpecialty,
           coursesCount: studioContext.courses.length,
           lessonsCount: studioContext.totalLessons,
           studentsCount: studioContext.totalStudents,

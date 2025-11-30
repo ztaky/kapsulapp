@@ -37,6 +37,8 @@ export default function StudioBranding() {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
+    specialty: "",
+    description: "",
     logo_url: "",
     brand_color: "#d97706",
     contact_email: "",
@@ -71,6 +73,8 @@ export default function StudioBranding() {
       setFormData({
         name: currentOrg.name,
         slug: currentOrg.slug,
+        specialty: org.specialty || "",
+        description: org.description || "",
         logo_url: currentOrg.logo_url || "",
         brand_color: currentOrg.brand_color || "#d97706",
         contact_email: org.contact_email || "",
@@ -170,6 +174,8 @@ export default function StudioBranding() {
         .from("organizations")
         .update({
           name: data.name,
+          specialty: data.specialty || null,
+          description: data.description || null,
           logo_url: data.logo_url || null,
           brand_color: data.brand_color,
           contact_email: data.contact_email || null,
@@ -336,6 +342,36 @@ export default function StudioBranding() {
               <p className="text-xs text-slate-500 leading-relaxed">
                 Le slug ne peut pas être modifié
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="specialty" className="text-slate-900 font-medium text-sm">
+                Spécialité / Niche
+              </Label>
+              <Input
+                id="specialty"
+                placeholder="Ex: Bien-être, Marketing digital, Développement personnel..."
+                value={formData.specialty}
+                onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                className="rounded-xl border-slate-200"
+              />
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Aide l'IA à personnaliser ses suggestions selon votre domaine d'expertise
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-slate-900 font-medium text-sm">
+                Description de l'académie
+              </Label>
+              <textarea
+                id="description"
+                placeholder="Décrivez votre académie, votre mission et votre public cible..."
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full min-h-[100px] rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                rows={3}
+              />
             </div>
 
             <div className="space-y-2">

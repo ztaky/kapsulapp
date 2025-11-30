@@ -603,6 +603,7 @@ export type Database = {
           brand_color: string | null
           contact_email: string | null
           created_at: string
+          description: string | null
           id: string
           logo_url: string | null
           name: string
@@ -611,6 +612,7 @@ export type Database = {
           paypal_email: string | null
           paypal_merchant_id: string | null
           slug: string
+          specialty: string | null
           stripe_account_id: string | null
           updated_at: string
           webhook_events: string[] | null
@@ -620,6 +622,7 @@ export type Database = {
           brand_color?: string | null
           contact_email?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           logo_url?: string | null
           name: string
@@ -628,6 +631,7 @@ export type Database = {
           paypal_email?: string | null
           paypal_merchant_id?: string | null
           slug: string
+          specialty?: string | null
           stripe_account_id?: string | null
           updated_at?: string
           webhook_events?: string[] | null
@@ -637,6 +641,7 @@ export type Database = {
           brand_color?: string | null
           contact_email?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -645,6 +650,7 @@ export type Database = {
           paypal_email?: string | null
           paypal_merchant_id?: string | null
           slug?: string
+          specialty?: string | null
           stripe_account_id?: string | null
           updated_at?: string
           webhook_events?: string[] | null
