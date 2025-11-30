@@ -608,6 +608,7 @@ export type Database = {
           name: string
           onboarding_completed: boolean | null
           payment_methods_enabled: string[] | null
+          paypal_email: string | null
           paypal_merchant_id: string | null
           slug: string
           stripe_account_id: string | null
@@ -624,6 +625,7 @@ export type Database = {
           name: string
           onboarding_completed?: boolean | null
           payment_methods_enabled?: string[] | null
+          paypal_email?: string | null
           paypal_merchant_id?: string | null
           slug: string
           stripe_account_id?: string | null
@@ -640,6 +642,7 @@ export type Database = {
           name?: string
           onboarding_completed?: boolean | null
           payment_methods_enabled?: string[] | null
+          paypal_email?: string | null
           paypal_merchant_id?: string | null
           slug?: string
           stripe_account_id?: string | null

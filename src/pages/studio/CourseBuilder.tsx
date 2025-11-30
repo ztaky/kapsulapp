@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { ArrowLeft, Plus, Save, Sparkles, X } from "lucide-react";
 import { ModuleAccordion } from "@/components/studio/ModuleAccordion";
+import { CourseInfoCard } from "@/components/studio/CourseInfoCard";
 import {
   DndContext,
   closestCenter,
@@ -583,51 +584,13 @@ export default function CourseBuilder() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configuration du paiement</CardTitle>
-                <CardDescription>Lien vers votre page de paiement Stripe ou PayPal</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="payment-link">Lien de paiement Stripe/PayPal</Label>
-                  <Input
-                    id="payment-link"
-                    type="url"
-                    value={paymentLinkUrl}
-                    onChange={(e) => setPaymentLinkUrl(e.target.value)}
-                    placeholder="https://buy.stripe.com/..."
-                  />
-                </div>
-                <Button
-                  onClick={() => updatePaymentLinkMutation.mutate(paymentLinkUrl)}
-                  disabled={updatePaymentLinkMutation.isPending}
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Enregistrer le lien
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Informations du cours</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Titre</Label>
-                  <Input value={course?.title} disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={course?.description || ""} disabled rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Prix</Label>
-                  <Input value={`${course?.price}€`} disabled />
-                </div>
-              </CardContent>
-            </Card>
+            <CourseInfoCard 
+              course={course} 
+              courseId={courseId!} 
+              paymentLinkUrl={paymentLinkUrl}
+              setPaymentLinkUrl={setPaymentLinkUrl}
+              updatePaymentLinkMutation={updatePaymentLinkMutation}
+            />
           </TabsContent>
         </Tabs>
       </div>
