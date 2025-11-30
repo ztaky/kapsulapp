@@ -369,7 +369,7 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={8}
                       disabled={loading}
                       className="pr-10"
                     />
@@ -381,7 +381,7 @@ const Auth = () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
+                  <p className="text-xs text-muted-foreground">Minimum 8 caractères</p>
                 </div>
                 <Button 
                   type="submit" 
