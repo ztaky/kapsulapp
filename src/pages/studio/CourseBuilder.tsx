@@ -29,7 +29,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 export default function CourseBuilder() {
-  const { slug, id } = useParams();
+  const { slug, courseId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newModuleTitle, setNewModuleTitle] = useState("");
@@ -55,12 +55,12 @@ export default function CourseBuilder() {
 
   // Fetch course details
   const { data: course, isLoading: courseLoading } = useQuery({
-    queryKey: ["course", id],
+    queryKey: ["course", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
         .select("*")
-        .eq("id", id)
+        .eq("id", courseId)
         .single();
 
       if (error) throw error;
@@ -88,7 +88,7 @@ export default function CourseBuilder() {
 
   // Fetch modules with lessons
   const { data: modules, isLoading: modulesLoading } = useQuery({
-    queryKey: ["course-modules", id],
+    queryKey: ["course-modules", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("modules")
@@ -96,7 +96,7 @@ export default function CourseBuilder() {
           *,
           lessons (*)
         `)
-        .eq("course_id", id)
+        .eq("course_id", courseId)
         .order("position", { ascending: true });
 
       if (error) throw error;
@@ -111,7 +111,7 @@ export default function CourseBuilder() {
       const { data, error } = await supabase
         .from("modules")
         .insert({
-          course_id: id,
+          course_id: courseId,
           title,
           position,
         })
@@ -122,7 +122,7 @@ export default function CourseBuilder() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course-modules", id] });
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
       toast.success("Module créé avec succès");
       setNewModuleTitle("");
       setIsModuleDialogOpen(false);
@@ -135,13 +135,13 @@ export default function CourseBuilder() {
   // Update module positions mutation
   const updateModulePositionsMutation = useMutation({
     mutationFn: async (updates: Array<{ id: string; position: number }>) => {
-      const promises = updates.map(({ id, position }) =>
-        supabase.from("modules").update({ position }).eq("id", id)
+      const promises = updates.map(({ id: moduleId, position }) =>
+        supabase.from("modules").update({ position }).eq("id", moduleId)
       );
       await Promise.all(promises);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course-modules", id] });
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
       toast.success("Ordre des modules mis à jour");
     },
   });
@@ -152,12 +152,12 @@ export default function CourseBuilder() {
       const { error } = await supabase
         .from("courses")
         .update({ is_published: isPublished })
-        .eq("id", id);
+        .eq("id", courseId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course", id] });
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       toast.success(course?.is_published ? "Cours dépublié" : "Cours publié");
     },
   });
@@ -168,12 +168,12 @@ export default function CourseBuilder() {
       const { error } = await supabase
         .from("courses")
         .update({ payment_link_url: url })
-        .eq("id", id);
+        .eq("id", courseId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course", id] });
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       toast.success("Lien de paiement enregistré");
     },
   });
@@ -184,12 +184,12 @@ export default function CourseBuilder() {
       const { error } = await supabase
         .from("courses")
         .update({ marketing_content: content })
-        .eq("id", id);
+        .eq("id", courseId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course", id] });
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       toast.success("Contenu marketing enregistré");
     },
   });
@@ -384,7 +384,7 @@ export default function CourseBuilder() {
                 <SortableContext items={modules.map((m) => m.id)} strategy={verticalListSortingStrategy}>
                   <div className="space-y-4">
                     {modules.map((module: any) => (
-                      <ModuleAccordion key={module.id} module={module} courseId={id!} />
+                      <ModuleAccordion key={module.id} module={module} courseId={courseId!} />
                     ))}
                   </div>
                 </SortableContext>

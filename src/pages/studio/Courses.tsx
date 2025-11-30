@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { CourseTable } from "@/components/studio/CourseTable";
+import { CourseCoverUploader } from "@/components/studio/CourseCoverUploader";
 
 export default function StudioCourses() {
   const { slug } = useParams<{ slug: string }>();
@@ -146,17 +147,11 @@ export default function StudioCourses() {
                     className="mt-1.5 rounded-xl border-slate-200"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="cover_image" className="text-slate-900 font-medium text-sm">Image de couverture (URL)</Label>
-                  <Input
-                    id="cover_image"
-                    type="url"
-                    value={formData.cover_image}
-                    onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
-                    placeholder="https://..."
-                    className="mt-1.5 rounded-xl border-slate-200"
-                  />
-                </div>
+                <CourseCoverUploader
+                  value={formData.cover_image}
+                  onChange={(url) => setFormData({ ...formData, cover_image: url })}
+                  organizationId={currentOrg?.id}
+                />
                 <Button 
                   type="submit" 
                   variant="gradient" 
