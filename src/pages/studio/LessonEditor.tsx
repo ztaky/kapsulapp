@@ -20,6 +20,8 @@ export default function LessonEditor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [activeTab, setActiveTab] = useState<"video" | "text" | "interactive_tool">("video");
+  
   const [formData, setFormData] = useState<{
     title: string;
     content_text: string;
@@ -96,6 +98,15 @@ export default function LessonEditor() {
         tool_id: (lesson as any).tool_id || null,
         tool_config: (lesson as any).tool_config || {},
       });
+
+      // Set active tab based on lesson data
+      if (lesson.type === "interactive_tool") {
+        setActiveTab("interactive_tool");
+      } else if (lesson.content_text && !lesson.video_url) {
+        setActiveTab("text");
+      } else {
+        setActiveTab("video");
+      }
     }
   }, [lesson]);
 
@@ -196,13 +207,17 @@ export default function LessonEditor() {
             </div>
 
             <Tabs
-              value={formData.type === "video" && formData.content_text && !formData.video_url ? "text" : formData.type}
+              value={activeTab}
               onValueChange={(v) => {
-                // "text" is not a real type, it's just a UI tab - we save as "video" with content_text
-                if (v === "text") {
+                const newTab = v as "video" | "text" | "interactive_tool";
+                setActiveTab(newTab);
+                // Update the database type accordingly
+                if (newTab === "text") {
+                  setFormData({ ...formData, type: "video", video_url: "" });
+                } else if (newTab === "video") {
                   setFormData({ ...formData, type: "video" });
                 } else {
-                  setFormData({ ...formData, type: v as "video" | "interactive_tool" });
+                  setFormData({ ...formData, type: "interactive_tool" });
                 }
               }}
             >
