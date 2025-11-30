@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -134,6 +135,33 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
     transition,
   };
 
+  const deleteModuleMutation = useMutation({
+    mutationFn: async () => {
+      // Delete all lessons first
+      const { error: lessonsError } = await supabase
+        .from("lessons")
+        .delete()
+        .eq("module_id", module.id);
+
+      if (lessonsError) throw lessonsError;
+
+      // Then delete the module
+      const { error: moduleError } = await supabase
+        .from("modules")
+        .delete()
+        .eq("id", module.id);
+
+      if (moduleError) throw moduleError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+      toast({ title: "Module supprimé" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la suppression", variant: "destructive" });
+    },
+  });
+
   const createLessonMutation = useMutation({
     mutationFn: async (title: string) => {
       const { error } = await supabase.from("lessons").insert({
@@ -200,6 +228,38 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                 </span>
               </div>
             </AccordionTrigger>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hover:bg-red-100 hover:text-red-700"
+                  title="Supprimer le module"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Supprimer ce module ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Cette action est irréversible. Le module "{module.title}" et ses {module.lessons.length} leçon{module.lessons.length > 1 ? "s" : ""} seront définitivement supprimés.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteModuleMutation.mutate()}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {deleteModuleMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Supprimer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           <AccordionContent className="px-4 pt-4">
             <div className="space-y-2">
