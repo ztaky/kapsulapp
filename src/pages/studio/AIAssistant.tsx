@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Sparkles, Loader2 } from "lucide-react";
+import { Send, Sparkles, Loader2, Bot, User } from "lucide-react";
 import { toast } from "sonner";
 
 type Message = {
@@ -28,6 +28,8 @@ export default function AIAssistant() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unified-chat`;
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -45,21 +47,24 @@ export default function AIAssistant() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-assistant`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: [...messages, userMessage],
-          }),
-        }
-      );
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          mode: "studio",
+        }),
+      });
 
       if (!response.ok || !response.body) {
+        if (response.status === 429) {
+          toast.error("Trop de requêtes, veuillez patienter...");
+        } else if (response.status === 402) {
+          toast.error("Limite de crédits atteinte");
+        }
         throw new Error("Erreur lors de l'appel à l'assistant IA");
       }
 
@@ -132,7 +137,7 @@ export default function AIAssistant() {
             <Sparkles className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-1">Assistant IA</h1>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">Assistant IA</h1>
             <p className="text-base text-slate-600 leading-relaxed">
               Votre expert personnel en création de formations
             </p>
@@ -148,7 +153,7 @@ export default function AIAssistant() {
                 <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="h-8 w-8" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-[#1e293b] tracking-tight">
+                <h3 className="text-2xl font-bold mb-3 text-slate-900 tracking-tight">
                   Bienvenue ! Comment puis-je vous aider ?
                 </h3>
                 <p className="text-base text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto">
@@ -173,14 +178,19 @@ export default function AIAssistant() {
             {messages.map((message, idx) => (
               <div
                 key={idx}
-                className={`flex ${
+                className={`flex gap-3 ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
+                {message.role === "assistant" && (
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shrink-0">
+                    <Bot className="h-5 w-5 text-orange-600" />
+                  </div>
+                )}
                 <Card
                   className={`p-5 max-w-[80%] rounded-2xl border shadow-sm ${
                     message.role === "user"
-                      ? "bg-gradient-primary text-white border-0 shadow-lg"
+                      ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg"
                       : "bg-white border-slate-100"
                   }`}
                 >
@@ -190,13 +200,26 @@ export default function AIAssistant() {
                     {message.content}
                   </p>
                 </Card>
+                {message.role === "user" && (
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shrink-0">
+                    <User className="h-5 w-5 text-slate-600" />
+                  </div>
+                )}
               </div>
             ))}
 
             {isLoading && messages[messages.length - 1]?.content === "" && (
-              <div className="flex justify-start">
-                <Card className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
-                  <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
+              <div className="flex gap-3 justify-start">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-orange-600" />
+                </div>
+                <Card className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center gap-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-sm text-slate-500">Réflexion en cours...</span>
                 </Card>
               </div>
             )}

@@ -31,7 +31,7 @@ export function SupportChatWidget({ organizationId }: SupportChatWidgetProps) {
   }, [messages]);
 
   const streamChat = async (userMessage: string) => {
-    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/support-chat`;
+    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unified-chat`;
     const newMessages = [...messages, { role: "user" as const, content: userMessage }];
     
     setMessages(newMessages);
@@ -45,7 +45,7 @@ export function SupportChatWidget({ organizationId }: SupportChatWidgetProps) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, mode: "support" }),
       });
 
       if (!resp.ok || !resp.body) {
