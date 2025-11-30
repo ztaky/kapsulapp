@@ -477,6 +477,41 @@ export type Database = {
           },
         ]
       }
+      onboarding_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          organization_id: string
+          skipped: boolean | null
+          step_key: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          skipped?: boolean | null
+          step_key: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          skipped?: boolean | null
+          step_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -527,6 +562,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          onboarding_completed: boolean | null
           payment_methods_enabled: string[] | null
           paypal_merchant_id: string | null
           slug: string
@@ -542,6 +578,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          onboarding_completed?: boolean | null
           payment_methods_enabled?: string[] | null
           paypal_merchant_id?: string | null
           slug: string
@@ -557,6 +594,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          onboarding_completed?: boolean | null
           payment_methods_enabled?: string[] | null
           paypal_merchant_id?: string | null
           slug?: string
