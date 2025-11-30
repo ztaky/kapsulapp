@@ -6,18 +6,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import kapsulLogo from "@/assets/kapsul-logo.png";
+
+// Helper function to translate Supabase auth errors to French
+const getAuthErrorMessage = (error: any): string => {
+  const errorMessage = error?.message?.toLowerCase() || "";
+  
+  if (errorMessage.includes("user already registered") || errorMessage.includes("already been registered")) {
+    return "Un compte existe déjà avec cet email. Essayez de vous connecter.";
+  }
+  if (errorMessage.includes("invalid email")) {
+    return "L'adresse email n'est pas valide.";
+  }
+  if (errorMessage.includes("password") && errorMessage.includes("weak")) {
+    return "Le mot de passe est trop faible. Utilisez au moins 8 caractères.";
+  }
+  if (errorMessage.includes("password") && errorMessage.includes("short")) {
+    return "Le mot de passe doit contenir au moins 6 caractères.";
+  }
+  if (errorMessage.includes("rate limit") || errorMessage.includes("too many requests")) {
+    return "Trop de tentatives. Veuillez réessayer dans quelques minutes.";
+  }
+  if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+    return "Erreur de connexion. Vérifiez votre connexion internet.";
+  }
+  
+  return error?.message || "Une erreur est survenue lors de l'inscription.";
+};
+
+// Password validation
+const validatePassword = (password: string): { valid: boolean; message: string } => {
+  if (password.length < 8) {
+    return { valid: false, message: "Le mot de passe doit contenir au moins 8 caractères." };
+  }
+  return { valid: true, message: "" };
+};
 
 export default function CoachSignup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     academyName: "",
     fullName: "",
     email: "",
     password: "",
   });
+  const [passwordError, setPasswordError] = useState("");
 
   const generateUniqueSlug = async (baseName: string): Promise<string> => {
     const baseSlug = baseName
@@ -45,12 +81,30 @@ export default function CoachSignup() {
     return slug;
   };
 
+  const handlePasswordChange = (value: string) => {
+    setFormData({ ...formData, password: value });
+    if (value.length > 0) {
+      const validation = validatePassword(value);
+      setPasswordError(validation.valid ? "" : validation.message);
+    } else {
+      setPasswordError("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate password before submission
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.message);
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      // 1. Create user
+      // 1. Create user with emailRedirectTo
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -58,10 +112,28 @@ export default function CoachSignup() {
           data: {
             full_name: formData.fullName,
           },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        const friendlyMessage = getAuthErrorMessage(authError);
+        
+        // Special handling for existing user
+        if (friendlyMessage.includes("existe déjà")) {
+          toast.error(friendlyMessage, {
+            action: {
+              label: "Se connecter",
+              onClick: () => navigate("/auth"),
+            },
+          });
+          setLoading(false);
+          return;
+        }
+        
+        throw new Error(friendlyMessage);
+      }
+      
       if (!authData.user) throw new Error("Échec de création du compte");
 
       // 2. Generate unique slug
@@ -79,12 +151,13 @@ export default function CoachSignup() {
         }
       );
 
-      if (orgError) throw orgError;
+      if (orgError) {
+        throw new Error("Erreur lors de la création de l'académie. Veuillez réessayer.");
+      }
 
       toast.success("🎉 Votre académie a été créée avec succès !");
       navigate(`/school/${slug}/studio`);
     } catch (error: any) {
-      console.error("Signup error:", error);
       toast.error(error.message || "Une erreur est survenue lors de l'inscription");
     } finally {
       setLoading(false);
@@ -171,23 +244,38 @@ export default function CoachSignup() {
               <Label htmlFor="password" className="text-slate-700 font-medium">
                 Mot de passe
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                minLength={8}
-                disabled={loading}
-                className="h-11 border-slate-300 focus:border-orange-500 focus:ring-orange-500"
-              />
-              <p className="text-xs text-slate-500">Minimum 8 caractères</p>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  required
+                  minLength={8}
+                  disabled={loading}
+                  className={`h-11 border-slate-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${
+                    passwordError ? "border-red-500" : ""
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {passwordError ? (
+                <p className="text-xs text-red-500">{passwordError}</p>
+              ) : (
+                <p className="text-xs text-slate-500">Minimum 8 caractères</p>
+              )}
             </div>
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !!passwordError}
               className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all"
             >
               {loading ? (
