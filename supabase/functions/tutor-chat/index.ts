@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,11 +12,74 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, courseContext, currentLessonTitle } = await req.json();
+    const { messages, courseContext, currentLessonTitle, organizationId } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Initialize Supabase client for quota checking
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get user from authorization header
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      // Try to get user from JWT (if it's a user token, not anon key)
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    // Check quota if we have user and organization
+    if (userId && organizationId) {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+
+      // Get organization quota
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('tutor_quota_per_student')
+        .eq('id', organizationId)
+        .single();
+
+      const quotaLimit = org?.tutor_quota_per_student ?? 50;
+
+      // Get current usage
+      const { data: currentUsage } = await supabase.rpc('get_tutor_usage', {
+        _user_id: userId,
+        _organization_id: organizationId,
+        _month_year: currentMonth,
+      });
+
+      const usage = currentUsage ?? 0;
+
+      console.log('Tutor quota check:', { userId, organizationId, usage, quotaLimit });
+
+      // Check if quota exceeded
+      if (usage >= quotaLimit) {
+        return new Response(JSON.stringify({ 
+          error: 'quota_exceeded',
+          message: 'Tu as atteint ta limite de messages ce mois-ci. Ton quota sera renouvelé le 1er du mois prochain.',
+          usage,
+          limit: quotaLimit
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Increment usage
+      await supabase.rpc('increment_tutor_usage', {
+        _user_id: userId,
+        _organization_id: organizationId,
+        _month_year: currentMonth,
+      });
+
+      console.log('Tutor usage incremented for user:', userId);
     }
 
     // Build rich system prompt with full course context

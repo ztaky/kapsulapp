@@ -614,6 +614,7 @@ export type Database = {
           slug: string
           specialty: string | null
           stripe_account_id: string | null
+          tutor_quota_per_student: number | null
           updated_at: string
           webhook_events: string[] | null
           webhook_url: string | null
@@ -633,6 +634,7 @@ export type Database = {
           slug: string
           specialty?: string | null
           stripe_account_id?: string | null
+          tutor_quota_per_student?: number | null
           updated_at?: string
           webhook_events?: string[] | null
           webhook_url?: string | null
@@ -652,6 +654,7 @@ export type Database = {
           slug?: string
           specialty?: string | null
           stripe_account_id?: string | null
+          tutor_quota_per_student?: number | null
           updated_at?: string
           webhook_events?: string[] | null
           webhook_url?: string | null
@@ -845,6 +848,44 @@ export type Database = {
           },
         ]
       }
+      tutor_usage: {
+        Row: {
+          created_at: string
+          id: string
+          message_count: number
+          month_year: string
+          organization_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_count?: number
+          month_year: string
+          organization_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_count?: number
+          month_year?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutor_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           completed_at: string | null
@@ -927,6 +968,14 @@ export type Database = {
         }
         Returns: string
       }
+      get_tutor_usage: {
+        Args: {
+          _month_year: string
+          _organization_id: string
+          _user_id: string
+        }
+        Returns: number
+      }
       get_user_org_role: {
         Args: { _org_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["org_role"]
@@ -951,6 +1000,14 @@ export type Database = {
       increment_landing_page_views: {
         Args: { page_slug: string }
         Returns: undefined
+      }
+      increment_tutor_usage: {
+        Args: {
+          _month_year: string
+          _organization_id: string
+          _user_id: string
+        }
+        Returns: number
       }
       log_activity: {
         Args: {

@@ -3,9 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Send, Loader2, MessageCircle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Sparkles, Send, Loader2, MessageCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCourseContext, formatCourseContextForAI } from "@/hooks/useCourseContext";
+import { useTutorQuota } from "@/hooks/useTutorQuota";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,16 +18,28 @@ interface Message {
 interface TutorChatWidgetProps {
   courseId: string;
   currentLessonTitle: string;
+  organizationId: string;
 }
 
-export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidgetProps) {
+export function TutorChatWidget({ courseId, currentLessonTitle, organizationId }: TutorChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session;
+    },
+  });
 
   const { data: courseContext } = useCourseContext(courseId);
+  const { data: quota, refetch: refetchQuota } = useTutorQuota(session?.user?.id, organizationId);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -33,28 +48,48 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
   }, [messages]);
 
   const streamChat = async (userMessage: string) => {
+    // Check quota before sending
+    if (quota?.isAtLimit) {
+      setQuotaError("Tu as atteint ta limite de messages ce mois-ci. Ton quota sera renouvelé le 1er du mois prochain. 📅");
+      return;
+    }
+
+    setQuotaError(null);
     const newMessages: Message[] = [...messages, { role: "user", content: userMessage }];
     setMessages(newMessages);
     setIsLoading(true);
 
     try {
+      // Get fresh auth token
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const token = currentSession?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tutor-chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
             courseContext: courseContext ? formatCourseContextForAI(courseContext) : null,
             currentLessonTitle,
+            organizationId,
           }),
         }
       );
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        
+        if (response.status === 429 && errorData.error === 'quota_exceeded') {
+          setQuotaError(errorData.message || "Tu as atteint ta limite de messages ce mois-ci.");
+          setMessages(messages); // Revert to previous messages
+          refetchQuota();
+          return;
+        }
         if (response.status === 429) {
           throw new Error("Trop de requêtes. Réessayez dans quelques instants.");
         }
@@ -108,6 +143,9 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
           }
         }
       }
+
+      // Refetch quota after successful message
+      refetchQuota();
     } catch (error) {
       console.error("Tutor chat error:", error);
       setMessages((prev) => [
@@ -123,7 +161,7 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
   };
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || quota?.isAtLimit) return;
     const message = input.trim();
     setInput("");
     streamChat(message);
@@ -134,6 +172,13 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
     "Donne-moi un exemple concret",
     "C'est quoi l'essentiel à retenir ?",
   ];
+
+  const getProgressColor = () => {
+    if (!quota) return "bg-orange-500";
+    if (quota.percentage >= 100) return "bg-red-500";
+    if (quota.percentage >= 80) return "bg-amber-500";
+    return "bg-orange-500";
+  };
 
   return (
     <>
@@ -159,11 +204,46 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
             <p className="text-sm text-muted-foreground">
               Je connais tout le cours et je suis là pour t'aider !
             </p>
+            
+            {/* Quota indicator */}
+            {quota && (
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    Messages ce mois : {quota.usage}/{quota.limit}
+                  </span>
+                  {quota.isNearLimit && !quota.isAtLimit && (
+                    <span className="text-amber-600 font-medium flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      Presque atteint
+                    </span>
+                  )}
+                  {quota.isAtLimit && (
+                    <span className="text-red-600 font-medium flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      Limite atteinte
+                    </span>
+                  )}
+                </div>
+                <Progress 
+                  value={quota.percentage} 
+                  className="h-1.5"
+                  indicatorClassName={getProgressColor()}
+                />
+              </div>
+            )}
           </SheetHeader>
 
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {messages.length === 0 && (
+              {quotaError && (
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-center">
+                  <AlertCircle className="h-8 w-8 mx-auto text-red-500 mb-2" />
+                  <p className="text-sm text-red-700 dark:text-red-300">{quotaError}</p>
+                </div>
+              )}
+
+              {messages.length === 0 && !quotaError && (
                 <div className="text-center py-8">
                   <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
                   <p className="text-muted-foreground mb-4">
@@ -179,6 +259,7 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
                         onClick={() => {
                           setInput(suggestion);
                         }}
+                        disabled={quota?.isAtLimit}
                       >
                         {suggestion}
                       </Button>
@@ -227,14 +308,14 @@ export function TutorChatWidget({ courseId, currentLessonTitle }: TutorChatWidge
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Pose ta question..."
-                disabled={isLoading}
+                placeholder={quota?.isAtLimit ? "Quota atteint pour ce mois" : "Pose ta question..."}
+                disabled={isLoading || quota?.isAtLimit}
                 className="flex-1"
               />
               <Button
                 type="submit"
-                disabled={isLoading || !input.trim()}
-                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                disabled={isLoading || !input.trim() || quota?.isAtLimit}
+                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
               </Button>
