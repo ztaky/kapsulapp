@@ -93,10 +93,18 @@ async function handleSingleSection(body: any, apiKey: string) {
   }
 
   const data = await response.json();
+  console.log("AI Response structure:", JSON.stringify(data, null, 2).substring(0, 500));
+  
   const generatedText = data.choices?.[0]?.message?.content;
   
   if (!generatedText) {
-    throw new Error("Invalid response from AI Gateway");
+    console.error("Missing content in response. Full structure:", {
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      firstChoice: data.choices?.[0],
+      error: data.error
+    });
+    throw new Error(`Invalid response from AI Gateway: ${data.error?.message || 'No content in response'}`);
   }
 
   console.log("AI Response received, length:", generatedText.length);
