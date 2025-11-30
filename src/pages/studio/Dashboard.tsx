@@ -155,34 +155,6 @@ export default function StudioDashboard() {
     }
   };
 
-  const statCards = [
-    {
-      title: "Formations",
-      value: stats?.totalCourses || 0,
-      icon: BookOpen,
-      description: "Total de formations créées",
-    },
-    {
-      title: "Étudiants",
-      value: stats?.totalStudents || 0,
-      icon: Users,
-      description: "Membres de votre communauté",
-    },
-    {
-      title: "Revenus",
-      value: `${stats?.totalRevenue || 0} €`,
-      icon: DollarSign,
-      description: "Chiffre d'affaires total",
-      isHighlighted: true,
-    },
-    {
-      title: "Ventes",
-      value: stats?.totalPurchases || 0,
-      icon: TrendingUp,
-      description: "Nombre total d'achats",
-    },
-  ];
-
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -191,18 +163,17 @@ export default function StudioDashboard() {
           <Skeleton className="h-6 w-96" />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="bg-white border border-slate-100 rounded-3xl shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-12 w-12 rounded-2xl" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-10 w-24 mb-2" />
-                <Skeleton className="h-4 w-32" />
-              </CardContent>
-            </Card>
+            <div key={i} className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
+              <div className="flex items-start gap-4">
+                <Skeleton className="h-11 w-11 rounded-xl" />
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -240,11 +211,33 @@ export default function StudioDashboard() {
         />
       )}
 
-      {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <StatCard key={stat.title} {...stat} />
-        ))}
+      {/* Stats Grid - Colored cards like landing page */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Formations"
+          value={stats?.totalCourses || 0}
+          icon={BookOpen}
+          colorVariant="pink"
+        />
+        <StatCard
+          title="Étudiants"
+          value={stats?.totalStudents || 0}
+          icon={Users}
+          colorVariant="orange"
+        />
+        <StatCard
+          title="Revenus"
+          value={`${stats?.totalRevenue || 0} €`}
+          icon={TrendingUp}
+          colorVariant="purple"
+          isHighlighted
+        />
+        <StatCard
+          title="Ventes"
+          value={stats?.totalPurchases || 0}
+          icon={DollarSign}
+          colorVariant="green"
+        />
       </div>
 
       {/* Quick Actions Section */}
@@ -254,12 +247,12 @@ export default function StudioDashboard() {
           <div className="grid gap-4 md:grid-cols-3">
             <button 
               onClick={() => navigate(`/school/${slug}/studio/courses`)}
-              className="p-6 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
             >
-              <div className="rounded-2xl bg-slate-200 text-slate-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <BookOpen className="h-6 w-6" />
+              <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <BookOpen className="h-5 w-5" />
               </div>
-              <div className="font-bold text-foreground mb-2 tracking-tight flex items-center gap-2">
+              <div className="font-semibold text-foreground mb-1 tracking-tight flex items-center gap-2">
                 Créer une formation
                 <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -268,12 +261,12 @@ export default function StudioDashboard() {
             
             <button 
               onClick={() => navigate(`/school/${slug}/studio/students`)}
-              className="p-6 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
             >
-              <div className="rounded-2xl bg-slate-200 text-slate-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Users className="h-6 w-6" />
+              <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <Users className="h-5 w-5" />
               </div>
-              <div className="font-bold text-foreground mb-2 tracking-tight flex items-center gap-2">
+              <div className="font-semibold text-foreground mb-1 tracking-tight flex items-center gap-2">
                 Inviter des étudiants
                 <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -282,12 +275,12 @@ export default function StudioDashboard() {
             
             <button 
               onClick={() => navigate(`/school/${slug}/studio/landing-pages`)}
-              className="p-6 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
+              className="p-6 bg-slate-50/50 hover:bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-all text-left group"
             >
-              <div className="rounded-2xl bg-slate-200 text-slate-600 p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <TrendingUp className="h-6 w-6" />
+              <div className="rounded-xl bg-amber-50 text-slate-600 p-3 w-11 h-11 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <TrendingUp className="h-5 w-5" />
               </div>
-              <div className="font-bold text-foreground mb-2 tracking-tight flex items-center gap-2">
+              <div className="font-semibold text-foreground mb-1 tracking-tight flex items-center gap-2">
                 Voir les analyses
                 <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
