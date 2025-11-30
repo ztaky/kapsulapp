@@ -297,7 +297,7 @@ export default function StudioBranding() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-10 border border-slate-100 shadow-premium">
         <div className="relative z-10">
           <h1 className="text-3xl font-bold text-[#1e293b] tracking-tight mb-2">
-            Branding de l'académie
+            Paramètres de l'académie
           </h1>
           <p className="text-base text-slate-600 leading-relaxed">
             Personnalisez l'apparence de votre académie et configurez vos intégrations

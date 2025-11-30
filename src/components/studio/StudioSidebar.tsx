@@ -60,7 +60,7 @@ const navItems = [
     icon: Scale,
   },
   {
-    title: "Branding",
+    title: "Paramètres",
     url: "/branding",
     icon: Palette,
   },
