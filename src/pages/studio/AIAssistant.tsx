@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Sparkles, Loader2, Bot, User } from "lucide-react";
+import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import { useStudioContext, formatStudioContextForAI } from "@/hooks/useStudioContext";
+import { useChatHistory } from "@/hooks/useChatHistory";
 
 type Message = {
   role: "user" | "assistant";
@@ -20,9 +21,25 @@ const SUGGESTIONS = [
   "Stratégies marketing pour promouvoir mon cours",
 ];
 
+const WELCOME_MESSAGE = "Bonjour ! Je suis votre assistant expert en création de formations. J'ai accès aux détails de vos cours pour vous aider au mieux. Comment puis-je vous aider ?";
+
 export default function AIAssistant() {
-  const { slug } = useParams();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const studioContext = useStudioContext();
+  const {
+    messages,
+    setMessages,
+    isLoadingHistory,
+    userId,
+    saveMessage,
+    getConversationId,
+    startNewConversation,
+    clearHistory,
+  } = useChatHistory({
+    mode: 'studio',
+    context: { organizationId: studioContext.organizationId },
+    welcomeMessage: WELCOME_MESSAGE,
+  });
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -42,11 +59,21 @@ export default function AIAssistant() {
     if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: messageText };
-    setMessages((prev) => [...prev, userMessage]);
+    const allMessages = [...messages, userMessage];
+    setMessages(allMessages);
     setInput("");
     setIsLoading(true);
 
+    // Save user message
+    const convId = getConversationId();
+    if (userId) {
+      await saveMessage("user", messageText, convId);
+    }
+
     try {
+      // Format context for AI
+      const formattedContext = formatStudioContextForAI(studioContext);
+
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -54,8 +81,14 @@ export default function AIAssistant() {
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: allMessages.map(m => ({ role: m.role, content: m.content })),
           mode: "studio",
+          studioContext: formattedContext,
+          organizationId: studioContext.organizationId,
+          organizationName: studioContext.organizationName,
+          coursesCount: studioContext.courses.length,
+          lessonsCount: studioContext.totalLessons,
+          studentsCount: studioContext.totalStudents,
         }),
       });
 
@@ -110,6 +143,11 @@ export default function AIAssistant() {
           }
         }
       }
+
+      // Save assistant response
+      if (userId && assistantMessage) {
+        await saveMessage("assistant", assistantMessage, convId);
+      }
     } catch (error) {
       console.error("Error:", error);
       toast.error("Erreur lors de la communication avec l'assistant IA");
@@ -128,19 +166,49 @@ export default function AIAssistant() {
     sendMessage(suggestion);
   };
 
+  if (studioContext.isLoading || isLoadingHistory) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-8rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <p className="text-sm text-slate-500 mt-2">Chargement du contexte...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] space-y-6">
       {/* Header - Premium Style */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-8 border border-slate-100 shadow-premium">
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-14 h-14 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="h-7 w-7" />
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-14 h-14 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">Assistant IA</h1>
+              <p className="text-base text-slate-600 leading-relaxed">
+                Votre expert personnel en création de formations
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">Assistant IA</h1>
-            <p className="text-base text-slate-600 leading-relaxed">
-              Votre expert personnel en création de formations
-            </p>
+          
+          {/* Context Stats */}
+          <div className="hidden md:flex items-center gap-6">
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <BookOpen className="h-4 w-4 text-orange-500" />
+              <span className="font-medium">{studioContext.courses.length}</span>
+              <span>cours</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <GraduationCap className="h-4 w-4 text-orange-500" />
+              <span className="font-medium">{studioContext.totalLessons}</span>
+              <span>leçons</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <Users className="h-4 w-4 text-orange-500" />
+              <span className="font-medium">{studioContext.totalStudents}</span>
+              <span>étudiants</span>
+            </div>
           </div>
         </div>
       </div>
@@ -148,7 +216,7 @@ export default function AIAssistant() {
       <div className="flex-1 overflow-hidden flex flex-col">
         <ScrollArea className="flex-1">
           <div className="max-w-4xl mx-auto space-y-6 p-6">
-            {messages.length === 0 && (
+            {messages.length <= 1 && (
               <Card className="p-10 text-center bg-white border border-slate-100 rounded-3xl shadow-premium">
                 <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="h-8 w-8" />
@@ -156,9 +224,14 @@ export default function AIAssistant() {
                 <h3 className="text-2xl font-bold mb-3 text-slate-900 tracking-tight">
                   Bienvenue ! Comment puis-je vous aider ?
                 </h3>
-                <p className="text-base text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto">
-                  Posez-moi vos questions sur la création de cours, le marketing, l'engagement...
+                <p className="text-base text-slate-600 leading-relaxed mb-4 max-w-2xl mx-auto">
+                  J'ai accès aux informations de vos cours pour vous donner des conseils personnalisés.
                 </p>
+                {studioContext.courses.length > 0 && (
+                  <p className="text-sm text-orange-600 mb-6">
+                    📚 Je connais vos {studioContext.courses.length} cours et {studioContext.totalLessons} leçons
+                  </p>
+                )}
                 <div className="grid gap-3 max-w-xl mx-auto">
                   {SUGGESTIONS.map((suggestion, idx) => (
                     <Button
@@ -175,7 +248,7 @@ export default function AIAssistant() {
               </Card>
             )}
 
-            {messages.map((message, idx) => (
+            {messages.slice(1).map((message, idx) => (
               <div
                 key={idx}
                 className={`flex gap-3 ${
