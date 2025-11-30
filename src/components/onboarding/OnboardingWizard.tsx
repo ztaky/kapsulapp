@@ -163,9 +163,7 @@ export function OnboardingWizard({
         <div className="p-6 pt-4">
           <DialogHeader className="text-center space-y-4">
             <div className={cn("mx-auto w-20 h-20 rounded-3xl flex items-center justify-center", step.bgColor)}>
-              <Icon className={cn("w-10 h-10 text-transparent bg-clip-text", `bg-gradient-to-br ${step.color}`)} 
-                    style={{ color: 'transparent', backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }} />
-              <Icon className={cn("w-10 h-10 absolute", "text-orange-500")} />
+              <Icon className="w-10 h-10 text-primary" />
             </div>
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
