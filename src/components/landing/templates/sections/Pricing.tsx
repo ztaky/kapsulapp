@@ -14,7 +14,7 @@ export function Pricing({ content }: PricingProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4"
-      style={{ backgroundColor: 'white' }}
+      style={{ backgroundColor: theme.colors.bgLight }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline */}
@@ -36,14 +36,14 @@ export function Pricing({ content }: PricingProps) {
         {/* Offers */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {content.offers.map((offer, index) => {
-            const isHighlighted = index === 0;
+            const isHighlighted = !!offer.ribbon;
             return (
               <div 
                 key={index}
                 className="p-10 rounded-3xl shadow-2xl relative"
                 style={{ 
-                  backgroundColor: isHighlighted ? '#fef8f3' : 'white',
-                  border: isHighlighted ? `3px solid ${theme.colors.primary}` : '2px solid rgba(0,0,0,0.1)'
+                  backgroundColor: isHighlighted ? theme.colors.bgLight : theme.colors.textLight,
+                  border: isHighlighted ? `3px solid ${theme.colors.primary}` : `2px solid ${theme.colors.textDark}1a`
                 }}
               >
                 {offer.ribbon && (

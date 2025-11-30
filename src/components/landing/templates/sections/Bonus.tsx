@@ -14,7 +14,7 @@ export function Bonus({ content }: BonusProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4"
-      style={{ backgroundColor: '#fef8f3' }}
+      style={{ backgroundColor: theme.colors.bgLight }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline */}
@@ -40,7 +40,7 @@ export function Bonus({ content }: BonusProps) {
               key={index}
               className="p-8 rounded-3xl shadow-xl relative overflow-hidden"
               style={{ 
-                backgroundColor: 'white',
+                backgroundColor: theme.colors.textLight,
                 border: `2px solid ${theme.colors.primary}`
               }}
             >
@@ -74,11 +74,24 @@ export function Bonus({ content }: BonusProps) {
                 Valeur : {item.value}
               </p>
               <p 
-                className="text-base md:text-lg leading-relaxed"
+                className="text-base md:text-lg leading-relaxed mb-4"
                 style={{ color: theme.colors.textDark }}
               >
                 {item.description}
               </p>
+              {/* Contenu détaillé du bonus */}
+              {item.content && (
+                <div 
+                  className="mt-4 pt-4 text-sm leading-relaxed"
+                  style={{ 
+                    color: theme.colors.textDark,
+                    opacity: 0.8,
+                    borderTop: `1px solid ${theme.colors.primary}30`
+                  }}
+                >
+                  {item.content}
+                </div>
+              )}
             </div>
           ))}
         </div>
