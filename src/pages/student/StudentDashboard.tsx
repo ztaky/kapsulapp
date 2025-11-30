@@ -141,7 +141,7 @@ const StudentDashboard = () => {
       ) : courses.length === 0 ? (
         <Card className="shadow-sm border-slate-100">
           <CardHeader className="text-center py-12">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-4">
               <BookOpen className="h-8 w-8 text-slate-600" />
             </div>
             <CardTitle className="text-foreground tracking-tight">Aucune formation</CardTitle>
@@ -174,7 +174,7 @@ const StudentDashboard = () => {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-2xl bg-slate-200 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center">
                       <BookOpen className="h-8 w-8 text-slate-600" />
                     </div>
                   </div>
