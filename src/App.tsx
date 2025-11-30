@@ -18,6 +18,7 @@ import StudioBranding from "./pages/studio/Branding";
 import AIAssistant from "./pages/studio/AIAssistant";
 import LandingPages from "./pages/studio/LandingPages";
 import LandingPageFullEditor from "./pages/studio/LandingPageFullEditor";
+import LegalPages from "./pages/studio/LegalPages";
 import StudioSupport from "./pages/studio/Support";
 import LearningSpace from "./pages/learning/LearningSpace";
 import StudentLayout from "./pages/student/StudentLayout";
@@ -96,6 +97,7 @@ const App = () => (
             <Route path="assistant" element={<AIAssistant />} />
             <Route path="landing-pages" element={<LandingPages />} />
             <Route path="landing-pages/:pageId/edit" element={<LandingPageFullEditor />} />
+            <Route path="legal" element={<LegalPages />} />
             <Route path="branding" element={<StudioBranding />} />
             <Route path="support/*" element={<StudioSupport />} />
           </Route>
