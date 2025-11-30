@@ -42,8 +42,8 @@ export function LessonPreview({
 
       {/* Content based on type */}
       <div className="space-y-6">
-        {/* Video section (for video type or if video exists) */}
-        {type === "video" && videoUrl && <VideoPlayer url={videoUrl} />}
+        {/* Video section - shown whenever a video URL exists */}
+        {videoUrl && <VideoPlayer url={videoUrl} />}
 
         {/* Text content (shown for both types if present) */}
         {contentText && (
