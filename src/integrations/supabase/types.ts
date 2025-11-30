@@ -353,6 +353,7 @@ export type Database = {
           module_id: string
           position: number
           resource_url: string | null
+          resources: Json | null
           title: string
           tool_config: Json | null
           tool_id: string | null
@@ -367,6 +368,7 @@ export type Database = {
           module_id: string
           position?: number
           resource_url?: string | null
+          resources?: Json | null
           title: string
           tool_config?: Json | null
           tool_id?: string | null
@@ -381,6 +383,7 @@ export type Database = {
           module_id?: string
           position?: number
           resource_url?: string | null
+          resources?: Json | null
           title?: string
           tool_config?: Json | null
           tool_id?: string | null
