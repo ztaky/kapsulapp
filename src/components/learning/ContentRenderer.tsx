@@ -53,81 +53,87 @@ export function ContentRenderer({ lesson }: ContentRendererProps) {
     return [];
   })();
 
-  switch (lesson.type) {
-    case "video":
-      return (
-        <div className="space-y-6">
-          {lesson.video_url && <VideoPlayer url={lesson.video_url} />}
-          
-          {lesson.content_text && (
-            <div className="prose prose-lg max-w-none p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-premium">
-              <div 
-                className="text-slate-700 leading-relaxed rich-text-content"
-                dangerouslySetInnerHTML={{ __html: lesson.content_text }}
-              />
-            </div>
-          )}
+  const hasVideo = !!lesson.video_url;
+  const hasText = !!lesson.content_text;
+  const hasInteractiveTool = !!(lesson as any).tool_id && !!(lesson as any).tool_config;
+  const hasResources = resources.length > 0 || !!lesson.resource_url;
 
-          {/* New resources array */}
-          {resources.length > 0 && (
-            <div className="p-6 border border-orange-200 rounded-3xl bg-gradient-to-br from-orange-50 to-slate-50 shadow-premium">
-              <p className="text-sm font-semibold mb-4 text-slate-900">
-                Ressources téléchargeables ({resources.length})
-              </p>
-              <div className="space-y-2">
-                {resources.map((resource, index) => (
-                  <a
-                    key={resource.id || index}
-                    href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-white/80 rounded-xl hover:bg-white transition-colors group"
-                  >
-                    {resource.type === "file" ? (
-                      getFileIcon(resource.fileType)
-                    ) : (
-                      <ExternalLink className="h-4 w-4 text-blue-600" />
-                    )}
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                      {resource.title}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Legacy single resource_url support */}
-          {lesson.resource_url && resources.length === 0 && (
-            <div className="p-6 border border-orange-200 rounded-3xl bg-gradient-to-br from-orange-50 to-slate-50 shadow-premium">
-              <p className="text-sm font-semibold mb-3 text-slate-900">Ressource téléchargeable</p>
-              <a
-                href={lesson.resource_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium text-sm hover:underline transition-colors"
-              >
-                📥 Télécharger la ressource
-              </a>
-            </div>
-          )}
+  return (
+    <div className="space-y-6">
+      {/* Video */}
+      {hasVideo && <VideoPlayer url={lesson.video_url!} />}
+      
+      {/* Text content */}
+      {hasText && (
+        <div className="prose prose-lg max-w-none p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-premium">
+          <div 
+            className="text-slate-700 leading-relaxed rich-text-content"
+            dangerouslySetInnerHTML={{ __html: lesson.content_text! }}
+          />
         </div>
-      );
+      )}
 
-      case "interactive_tool":
-        return <InteractiveToolContainer 
+      {/* Interactive tool */}
+      {hasInteractiveTool && (
+        <InteractiveToolContainer 
           lessonId={lesson.id} 
           toolId={(lesson as any).tool_id}
           toolConfig={(lesson as any).tool_config}
-        />;
+        />
+      )}
 
-    default:
-      return (
+      {/* Resources */}
+      {resources.length > 0 && (
+        <div className="p-6 border border-orange-200 rounded-3xl bg-gradient-to-br from-orange-50 to-slate-50 shadow-premium">
+          <p className="text-sm font-semibold mb-4 text-slate-900">
+            Ressources téléchargeables ({resources.length})
+          </p>
+          <div className="space-y-2">
+            {resources.map((resource, index) => (
+              <a
+                key={resource.id || index}
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-white/80 rounded-xl hover:bg-white transition-colors group"
+              >
+                {resource.type === "file" ? (
+                  getFileIcon(resource.fileType)
+                ) : (
+                  <ExternalLink className="h-4 w-4 text-blue-600" />
+                )}
+                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                  {resource.title}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Legacy single resource_url support */}
+      {lesson.resource_url && resources.length === 0 && (
+        <div className="p-6 border border-orange-200 rounded-3xl bg-gradient-to-br from-orange-50 to-slate-50 shadow-premium">
+          <p className="text-sm font-semibold mb-3 text-slate-900">Ressource téléchargeable</p>
+          <a
+            href={lesson.resource_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium text-sm hover:underline transition-colors"
+          >
+            📥 Télécharger la ressource
+          </a>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!hasVideo && !hasText && !hasInteractiveTool && !hasResources && (
         <div className="p-8 border border-slate-200 rounded-3xl bg-white/60 backdrop-blur-sm text-center shadow-premium">
           <p className="text-slate-600">
-            Type de contenu non pris en charge : {lesson.type}
+            Aucun contenu disponible pour cette leçon
           </p>
         </div>
-      );
-  }
+      )}
+    </div>
+  );
 }
