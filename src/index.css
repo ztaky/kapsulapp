@@ -206,3 +206,63 @@ All colors MUST be HSL.
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1 {
+  @apply text-2xl font-bold mb-4;
+}
+
+.ProseMirror h2 {
+  @apply text-xl font-semibold mb-3;
+}
+
+.ProseMirror h3 {
+  @apply text-lg font-medium mb-2;
+}
+
+.ProseMirror p {
+  @apply mb-2;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-6 mb-2;
+}
+
+.ProseMirror ol {
+  @apply list-decimal pl-6 mb-2;
+}
+
+.ProseMirror blockquote {
+  @apply border-l-4 border-primary pl-4 italic my-4;
+}
+
+.ProseMirror img {
+  @apply max-w-full rounded-lg my-4;
+}
+
+/* AI Generated Tool Styles */
+.ai-tool-preview,
+.ai-generated-tool {
+  font-family: inherit;
+}
+
+.ai-tool-preview input,
+.ai-generated-tool input,
+.ai-tool-preview select,
+.ai-generated-tool select,
+.ai-tool-preview button,
+.ai-generated-tool button {
+  font-family: inherit;
+}

@@ -4,14 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { InteractiveToolEditor } from "./LessonEditor_InteractiveTool";
+import { RichTextEditor } from "@/components/studio/RichTextEditor";
+import { LessonResourcesManager, Resource } from "@/components/studio/LessonResourcesManager";
 
 export default function LessonEditor() {
   const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>();
@@ -22,7 +22,7 @@ export default function LessonEditor() {
     title: string;
     content_text: string;
     video_url: string;
-    resource_url: string;
+    resources: Resource[];
     type: "video" | "interactive_tool";
     tool_id: string | null;
     tool_config: any;
@@ -30,7 +30,7 @@ export default function LessonEditor() {
     title: "",
     content_text: "",
     video_url: "",
-    resource_url: "",
+    resources: [],
     type: "video",
     tool_id: null,
     tool_config: {},
@@ -58,11 +58,23 @@ export default function LessonEditor() {
 
   useEffect(() => {
     if (lesson) {
+      // Parse resources from JSONB
+      let parsedResources: Resource[] = [];
+      if ((lesson as any).resources) {
+        try {
+          parsedResources = typeof (lesson as any).resources === 'string' 
+            ? JSON.parse((lesson as any).resources) 
+            : (lesson as any).resources;
+        } catch (e) {
+          parsedResources = [];
+        }
+      }
+      
       setFormData({
         title: lesson.title,
         content_text: lesson.content_text || "",
         video_url: lesson.video_url || "",
-        resource_url: lesson.resource_url || "",
+        resources: parsedResources,
         type: lesson.type,
         tool_id: (lesson as any).tool_id || null,
         tool_config: (lesson as any).tool_config || {},
@@ -74,7 +86,15 @@ export default function LessonEditor() {
     mutationFn: async (data: typeof formData) => {
       const { error } = await supabase
         .from("lessons")
-        .update(data)
+        .update({
+          title: data.title,
+          content_text: data.content_text,
+          video_url: data.video_url,
+          resources: data.resources as any,
+          type: data.type,
+          tool_id: data.tool_id,
+          tool_config: data.tool_config,
+        })
         .eq("id", lessonId);
 
       if (error) throw error;
@@ -164,16 +184,11 @@ export default function LessonEditor() {
               <TabsContent value="text" className="space-y-4">
                 <div>
                   <Label htmlFor="content_text">Contenu textuel</Label>
-                  <Textarea
-                    id="content_text"
-                    rows={12}
+                  <RichTextEditor
+                    content={formData.content_text}
+                    onChange={(content) => setFormData({ ...formData, content_text: content })}
                     placeholder="Écrivez le contenu de votre leçon..."
-                    value={formData.content_text}
-                    onChange={(e) => setFormData({ ...formData, content_text: e.target.value })}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Rich text editor à venir
-                  </p>
                 </div>
               </TabsContent>
 
@@ -194,18 +209,13 @@ export default function LessonEditor() {
           <div className="rounded-3xl border border-slate-100 shadow-premium bg-white p-8 space-y-4">
             <h3 className="font-bold text-[#1e293b] text-lg tracking-tight">Paramètres</h3>
             
-            <div>
-              <Label htmlFor="resource_url">Ressource téléchargeable</Label>
-              <Input
-                id="resource_url"
-                type="url"
-                placeholder="https://..."
-                value={formData.resource_url}
-                onChange={(e) => setFormData({ ...formData, resource_url: e.target.value })}
-              />
-            </div>
+            <LessonResourcesManager
+              resources={formData.resources}
+              onChange={(resources) => setFormData({ ...formData, resources })}
+              lessonId={lessonId}
+            />
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-4 border-t">
               <Label htmlFor="free_preview">Aperçu gratuit</Label>
               <Switch id="free_preview" />
             </div>

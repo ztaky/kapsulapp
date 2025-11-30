@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CustomEmbedTool } from "./tools/CustomEmbedTool";
 import { RichContentTool } from "./tools/RichContentTool";
 import { QuizTool } from "./tools/QuizTool";
+import { AIGeneratedTool } from "./tools/AIGeneratedTool";
 
 interface InteractiveToolContainerProps {
   lessonId: string;
@@ -29,6 +30,9 @@ export function InteractiveToolContainer({ lessonId, toolId, toolConfig }: Inter
     
     case "quiz":
       return <QuizTool config={toolConfig} lessonId={lessonId} />;
+    
+    case "ai_tool":
+      return <AIGeneratedTool config={toolConfig} />;
     
     default:
       return (

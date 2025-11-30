@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.create-checkout-session]
 verify_jwt = false
+
+[functions.generate-interactive-tool]
+verify_jwt = false
