@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ArrowLeft, Save, Eye } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { InteractiveToolEditor } from "./LessonEditor_InteractiveTool";
 import { RichTextEditor } from "@/components/studio/RichTextEditor";
 import { LessonResourcesManager, Resource } from "@/components/studio/LessonResourcesManager";
+import { LessonPreview } from "@/components/studio/LessonPreview";
 
 export default function LessonEditor() {
   const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>();
@@ -134,10 +136,35 @@ export default function LessonEditor() {
             </div>
           </div>
 
-          <Button onClick={handleSave} variant="gradient" size="lg" className="shadow-lg">
-            <Save className="mr-2 h-5 w-5" />
-            Sauvegarder
-          </Button>
+          <div className="flex gap-3">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="lg" className="shadow-sm">
+                  <Eye className="mr-2 h-5 w-5" />
+                  Prévisualiser
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Aperçu étudiant</DialogTitle>
+                </DialogHeader>
+                <LessonPreview
+                  title={formData.title}
+                  type={formData.type}
+                  videoUrl={formData.video_url}
+                  contentText={formData.content_text}
+                  resources={formData.resources}
+                  toolId={formData.tool_id}
+                  toolConfig={formData.tool_config}
+                />
+              </DialogContent>
+            </Dialog>
+            
+            <Button onClick={handleSave} variant="gradient" size="lg" className="shadow-lg">
+              <Save className="mr-2 h-5 w-5" />
+              Sauvegarder
+            </Button>
+          </div>
         </div>
       </div>
 
