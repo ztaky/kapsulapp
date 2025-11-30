@@ -1,6 +1,6 @@
 import { ProgramContent } from '@/config/landingPageSchema';
 import { useTheme, getGradientStyle } from '@/theme/ThemeProvider';
-import { CheckCircle2, Calendar } from 'lucide-react';
+import { CheckCircle2, Calendar, Bot } from 'lucide-react';
 
 interface ProgramProps {
   content: ProgramContent;
@@ -32,6 +32,64 @@ export function Program({ content }: ProgramProps) {
           {content.subheadline}
         </p>
 
+        {/* AI Types Section */}
+        {content.aiTypes && content.aiTypes.length > 0 && (
+          <div className="mb-16">
+            <h3 
+              className="text-2xl md:text-3xl font-bold mb-8 text-center flex items-center justify-center gap-3"
+              style={{ color: theme.colors.textLight }}
+            >
+              <Bot className="w-8 h-8" style={{ color: theme.colors.primary }} />
+              Les outils IA que tu vas maîtriser
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {content.aiTypes.map((ai, index) => (
+                <div 
+                  key={index}
+                  className="p-6 rounded-2xl"
+                  style={{ 
+                    backgroundColor: `${theme.colors.primary}15`,
+                    border: `1px solid ${theme.colors.primary}40`
+                  }}
+                >
+                  <h4 
+                    className="text-xl font-bold mb-2"
+                    style={{ 
+                      background: gradientStyle,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}
+                  >
+                    {ai.type}
+                  </h4>
+                  <p 
+                    className="text-sm mb-4"
+                    style={{ color: theme.colors.textLight, opacity: 0.8 }}
+                  >
+                    {ai.purpose}
+                  </p>
+                  <ul className="space-y-2">
+                    {ai.tasks.map((task, taskIndex) => (
+                      <li 
+                        key={taskIndex} 
+                        className="flex items-start gap-2 text-sm"
+                        style={{ color: theme.colors.textLight, opacity: 0.9 }}
+                      >
+                        <CheckCircle2 
+                          className="w-4 h-4 flex-shrink-0 mt-0.5" 
+                          style={{ color: theme.colors.accentGreen }}
+                        />
+                        {task}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {content.results.map((result, index) => (
@@ -39,8 +97,8 @@ export function Program({ content }: ProgramProps) {
               key={index}
               className="flex items-start gap-3 p-6 rounded-2xl"
               style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
+                backgroundColor: `${theme.colors.textLight}08`,
+                border: `1px solid ${theme.colors.textLight}15`
               }}
             >
               <CheckCircle2 
@@ -79,8 +137,8 @@ export function Program({ content }: ProgramProps) {
                     key={dayIndex}
                     className="p-6 rounded-2xl"
                     style={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                      backgroundColor: `${theme.colors.textLight}08`,
+                      border: `1px solid ${theme.colors.textLight}15`
                     }}
                   >
                     <h4 
@@ -103,7 +161,10 @@ export function Program({ content }: ProgramProps) {
         </div>
 
         {/* Deliverables */}
-        <div className="mt-16 p-10 rounded-3xl" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
+        <div 
+          className="mt-16 p-10 rounded-3xl" 
+          style={{ backgroundColor: `${theme.colors.textLight}08` }}
+        >
           <h3 
             className="text-3xl md:text-4xl font-bold mb-8 text-center"
             style={{ color: theme.colors.textLight }}
