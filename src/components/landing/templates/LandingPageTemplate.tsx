@@ -1,6 +1,7 @@
 import { LandingPageConfig } from '@/config/landingPageSchema';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { Hero } from './sections/Hero';
+import { Agitation } from './sections/Agitation';
 
 interface LandingPageTemplateProps {
   config: LandingPageConfig;
@@ -16,7 +17,7 @@ export function LandingPageTemplate({ config }: LandingPageTemplateProps) {
         <Hero content={content.hero} />
 
         {/* Section 2 - Agitation */}
-        {/* TODO: À ajouter */}
+        <Agitation content={content.agitation} />
 
         {/* Section 3 - Solution Timeframe */}
         {/* TODO: À ajouter */}
