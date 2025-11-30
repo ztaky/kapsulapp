@@ -43,7 +43,7 @@ const WIZARD_STEPS = [
     icon: Palette,
     color: "from-blue-500 to-cyan-500",
     bgColor: "bg-gradient-to-br from-blue-50 to-cyan-50",
-    actionLabel: "Aller au Branding",
+    actionLabel: "Aller aux Paramètres",
     actionPath: "/branding",
   },
   {
