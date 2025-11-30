@@ -163,7 +163,10 @@ export default function LandingPageView() {
     // Pass trainer photo for backward compatibility
     const trainerPhoto = (landingPage.trainer_info as any)?.photo;
     
-    return <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} />;
+    // Get enabled sections from design_config
+    const enabledSections = (landingPage.design_config as any)?.enabledSections;
+    
+    return <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} enabledSections={enabledSections} />;
   }
 
   // Legacy format - keep old renderer for backwards compatibility

@@ -17,46 +17,110 @@ import { Footer } from './sections/Footer';
 interface LandingPageTemplateProps {
   config: LandingPageConfig;
   trainerPhoto?: string; // Photo from trainerInfo for backward compatibility
+  enabledSections?: string[]; // Sections to display
 }
 
-export function LandingPageTemplate({ config, trainerPhoto }: LandingPageTemplateProps) {
+// Map editor section IDs to template section IDs
+const SECTION_ID_MAP: Record<string, string[]> = {
+  'hero': ['hero'],
+  'problem': ['agitation'],
+  'method': ['solutionTimeframe', 'pedagogy'],
+  'transformation': ['guarantee'],
+  'program': ['program', 'bonus'],
+  'trainer': ['instructor'],
+  'testimonials': ['testimonials'],
+  'faq': ['faq', 'faqFinal'],
+  'final_cta': ['pricing'],
+};
+
+// Default all sections enabled
+const ALL_TEMPLATE_SECTIONS = [
+  'hero', 'agitation', 'solutionTimeframe', 'pedagogy', 'program',
+  'testimonials', 'faq', 'bonus', 'guarantee', 'instructor',
+  'upsell', 'pricing', 'faqFinal', 'footer'
+];
+
+export function LandingPageTemplate({ config, trainerPhoto, enabledSections }: LandingPageTemplateProps) {
   const { theme, content } = config;
+  
+  // Convert editor section IDs to template section IDs
+  const getEnabledTemplateSections = () => {
+    if (!enabledSections) return ALL_TEMPLATE_SECTIONS;
+    
+    const templateSections = new Set<string>();
+    // Always include hero and footer
+    templateSections.add('hero');
+    templateSections.add('footer');
+    
+    enabledSections.forEach(editorSection => {
+      const mappedSections = SECTION_ID_MAP[editorSection];
+      if (mappedSections) {
+        mappedSections.forEach(s => templateSections.add(s));
+      } else {
+        // Direct match if no mapping exists
+        templateSections.add(editorSection);
+      }
+    });
+    
+    return Array.from(templateSections);
+  };
+  
+  const activeSections = getEnabledTemplateSections();
+  const isEnabled = (sectionId: string) => activeSections.includes(sectionId);
 
   return (
     <ThemeProvider theme={theme}>
       <div className="landing-page-container">
-        {/* Section 1 - Hero */}
+        {/* Section 1 - Hero (always shown) */}
         <Hero content={content.hero} />
 
         {/* Section 2 - Agitation */}
-        <Agitation content={content.agitation} />
+        {isEnabled('agitation') && content.agitation && (
+          <Agitation content={content.agitation} />
+        )}
 
         {/* Section 3 - Solution Timeframe */}
-        <SolutionTimeframe content={content.solutionTimeframe} />
+        {isEnabled('solutionTimeframe') && content.solutionTimeframe && (
+          <SolutionTimeframe content={content.solutionTimeframe} />
+        )}
 
         {/* Section 4 - Pedagogy */}
-        <Pedagogy content={content.pedagogy} />
+        {isEnabled('pedagogy') && content.pedagogy && (
+          <Pedagogy content={content.pedagogy} />
+        )}
 
         {/* Section 5 - Program */}
-        <Program content={content.program} />
+        {isEnabled('program') && content.program && (
+          <Program content={content.program} />
+        )}
 
         {/* Section 6 - Testimonials */}
-        <Testimonials content={content.testimonials} />
+        {isEnabled('testimonials') && content.testimonials && (
+          <Testimonials content={content.testimonials} />
+        )}
 
         {/* Section 7 - FAQ */}
-        <FAQ content={content.faq} />
+        {isEnabled('faq') && content.faq && (
+          <FAQ content={content.faq} />
+        )}
 
         {/* Section 8 - Bonus */}
-        <Bonus content={content.bonus} />
+        {isEnabled('bonus') && content.bonus && (
+          <Bonus content={content.bonus} />
+        )}
 
         {/* Section 9 - Guarantee */}
-        <Guarantee content={content.guarantee} />
+        {isEnabled('guarantee') && content.guarantee && (
+          <Guarantee content={content.guarantee} />
+        )}
 
         {/* Section 10 - Instructor */}
-        <Instructor content={content.instructor} trainerPhoto={trainerPhoto} />
+        {isEnabled('instructor') && content.instructor && (
+          <Instructor content={content.instructor} trainerPhoto={trainerPhoto} />
+        )}
 
         {/* Section 11 - Upsell (optionnel) */}
-        {content.upsell && (
+        {isEnabled('upsell') && content.upsell && (
           <section className="relative py-24 md:py-32 px-4" style={{ backgroundColor: '#fef8f3' }}>
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">{content.upsell.headline}</h2>
@@ -72,13 +136,19 @@ export function LandingPageTemplate({ config, trainerPhoto }: LandingPageTemplat
         )}
 
         {/* Section 12 - Pricing */}
-        <Pricing content={content.pricing} />
+        {isEnabled('pricing') && content.pricing && (
+          <Pricing content={content.pricing} />
+        )}
 
         {/* Section 13 - FAQ Final */}
-        <FAQFinal content={content.faqFinal} />
+        {isEnabled('faqFinal') && content.faqFinal && (
+          <FAQFinal content={content.faqFinal} />
+        )}
 
-        {/* Section 14 - Footer */}
-        <Footer content={content.footer} />
+        {/* Section 14 - Footer (always shown) */}
+        {content.footer && (
+          <Footer content={content.footer} />
+        )}
       </div>
     </ThemeProvider>
   );
