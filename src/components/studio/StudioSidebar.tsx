@@ -1,4 +1,4 @@
-import { LayoutDashboard, GraduationCap, Users, Palette, Bot, LogOut, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Palette, Bot, LogOut, Sparkles, MessageCircleQuestion, Scale } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,11 @@ const navItems = [
     title: "Pages de vente",
     url: "/landing-pages",
     icon: Sparkles,
+  },
+  {
+    title: "Pages légales",
+    url: "/legal",
+    icon: Scale,
   },
   {
     title: "Branding",
