@@ -16,7 +16,7 @@ export function FAQ({ content }: FAQProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4"
-      style={{ backgroundColor: 'white' }}
+      style={{ backgroundColor: theme.colors.bgLight }}
     >
       <div className="max-w-4xl mx-auto">
         {/* Headline */}
@@ -27,15 +27,15 @@ export function FAQ({ content }: FAQProps) {
           {content.headline}
         </h2>
 
-        {/* Questions - FAQ simple (string[]) */}
+        {/* Questions with Answers */}
         <div className="space-y-4 mb-16">
-          {content.questions.map((question, index) => (
+          {content.questions.map((item, index) => (
             <div 
               key={index}
               className="border-2 rounded-2xl overflow-hidden transition-all"
               style={{ 
                 borderColor: openIndex === index ? theme.colors.primary : 'rgba(0,0,0,0.1)',
-                backgroundColor: openIndex === index ? '#fef8f3' : 'white'
+                backgroundColor: openIndex === index ? theme.colors.bgLight : 'white'
               }}
             >
               <button
@@ -46,13 +46,25 @@ export function FAQ({ content }: FAQProps) {
                   className="text-lg md:text-xl font-bold pr-4"
                   style={{ color: theme.colors.textDark }}
                 >
-                  {question}
+                  {item.question}
                 </span>
                 <ChevronDown 
                   className={`w-6 h-6 flex-shrink-0 transition-transform ${openIndex === index ? 'rotate-180' : ''}`}
                   style={{ color: theme.colors.primary }}
                 />
               </button>
+              
+              {/* Answer */}
+              {openIndex === index && (
+                <div 
+                  className="px-6 pb-6"
+                  style={{ color: theme.colors.textDark }}
+                >
+                  <p className="text-base md:text-lg leading-relaxed opacity-80">
+                    {item.answer}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -61,7 +73,7 @@ export function FAQ({ content }: FAQProps) {
         <div className="text-center">
           <Button 
             size="lg"
-            className="text-xl px-12 py-8 h-auto gradient-button shadow-2xl hover:shadow-3xl transition-all rounded-full"
+            className="text-xl px-12 py-8 h-auto shadow-2xl hover:shadow-3xl transition-all rounded-full"
             style={{ 
               background: gradientStyle,
               color: theme.colors.textLight

@@ -113,7 +113,10 @@ export interface TestimonialsContent {
 
 export interface FAQContent {
   headline: string;
-  questions: string[];
+  questions: Array<{
+    question: string;
+    answer: string;
+  }>;
   cta: string;
 }
 
