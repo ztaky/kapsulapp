@@ -28,6 +28,8 @@ interface Course {
 interface StudioContext {
   organizationId: string | null;
   organizationName: string | null;
+  organizationSpecialty: string | null;
+  organizationDescription: string | null;
   courses: Course[];
   totalStudents: number;
   totalLessons: number;
@@ -38,6 +40,8 @@ export function useStudioContext(): StudioContext {
   const { slug } = useParams<{ slug: string }>();
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [organizationName, setOrganizationName] = useState<string | null>(null);
+  const [organizationSpecialty, setOrganizationSpecialty] = useState<string | null>(null);
+  const [organizationDescription, setOrganizationDescription] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [totalStudents, setTotalStudents] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +57,7 @@ export function useStudioContext(): StudioContext {
         // Fetch organization
         const { data: org, error: orgError } = await supabase
           .from('organizations')
-          .select('id, name')
+          .select('id, name, specialty, description')
           .eq('slug', slug)
           .single();
 
@@ -65,6 +69,8 @@ export function useStudioContext(): StudioContext {
 
         setOrganizationId(org.id);
         setOrganizationName(org.name);
+        setOrganizationSpecialty(org.specialty);
+        setOrganizationDescription(org.description);
 
         // Fetch courses with modules and lessons
         const { data: coursesData, error: coursesError } = await supabase
@@ -132,6 +138,8 @@ export function useStudioContext(): StudioContext {
   return {
     organizationId,
     organizationName,
+    organizationSpecialty,
+    organizationDescription,
     courses,
     totalStudents,
     totalLessons,
@@ -141,13 +149,24 @@ export function useStudioContext(): StudioContext {
 
 // Helper to format context for AI
 export function formatStudioContextForAI(context: StudioContext): string {
+  let summary = `Académie: ${context.organizationName || 'Non défini'}\n`;
+  
+  if (context.organizationSpecialty) {
+    summary += `Spécialité/Niche: ${context.organizationSpecialty}\n`;
+  }
+  
+  if (context.organizationDescription) {
+    summary += `Description: ${context.organizationDescription}\n`;
+  }
+  
+  summary += `\nStatistiques: ${context.courses.length} cours, ${context.totalLessons} leçons, ${context.totalStudents} étudiants\n`;
+
   if (context.courses.length === 0) {
-    return "Le coach n'a pas encore créé de cours.";
+    summary += "\nLe coach n'a pas encore créé de cours.";
+    return summary;
   }
 
-  let summary = `Académie: ${context.organizationName || 'Non défini'}\n`;
-  summary += `Statistiques: ${context.courses.length} cours, ${context.totalLessons} leçons, ${context.totalStudents} étudiants\n\n`;
-  summary += "Cours existants:\n";
+  summary += "\nCours existants:\n";
 
   context.courses.forEach((course, idx) => {
     summary += `\n${idx + 1}. "${course.title}" (${course.is_published ? 'Publié' : 'Brouillon'}, ${course.price}€)\n`;
