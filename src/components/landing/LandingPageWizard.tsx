@@ -8,7 +8,6 @@ import { StepDesign } from "./StepDesign";
 import { StepTargetAudience } from "./StepTargetAudience";
 import { StepTrainerInfo } from "./StepTrainerInfo";
 import { StepReferences } from "./StepReferences";
-import { StepCloneDesign } from "./StepCloneDesign";
 import { StepGeneration } from "./StepGeneration";
 
 interface LandingPageWizardProps {
@@ -31,7 +30,6 @@ export interface WizardData {
   trainerPhoto?: string;
   trainerSocials: { platform: string; url: string }[];
   referenceScreenshots: string[];
-  cloneSourceUrl?: string;
 }
 
 const STEPS = [
@@ -40,8 +38,7 @@ const STEPS = [
   { id: 3, title: "Client Cible", component: StepTargetAudience },
   { id: 4, title: "Formateur", component: StepTrainerInfo },
   { id: 5, title: "Références", component: StepReferences },
-  { id: 6, title: "Clone Design", component: StepCloneDesign },
-  { id: 7, title: "Génération", component: StepGeneration },
+  { id: 6, title: "Génération", component: StepGeneration },
 ];
 
 export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizardProps) {
@@ -96,9 +93,8 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
       case 4:
         return wizardData.trainerName.length > 0 && wizardData.trainerBio.length > 0;
       case 5:
+        return true; // Optional step
       case 6:
-        return true; // Optional steps
-      case 7:
         return true;
       default:
         return false;
@@ -129,7 +125,7 @@ export function LandingPageWizard({ open, onClose, onSuccess }: LandingPageWizar
           />
         </div>
 
-        {currentStep < 7 && (
+        {currentStep < 6 && (
           <div className="flex justify-between pt-4 border-t">
             <Button
               variant="outline"

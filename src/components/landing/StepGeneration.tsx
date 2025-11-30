@@ -231,7 +231,6 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         },
         target_audience: data.targetAudience,
         reference_screenshots: data.referenceScreenshots,
-        clone_source_url: data.cloneSourceUrl,
       }]);
 
       if (insertError) throw insertError;
@@ -286,14 +285,6 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
             <span className="text-muted-foreground">Références :</span>
             <span className="font-medium">{data.referenceScreenshots.length} image(s)</span>
           </div>
-          {data.cloneSourceUrl && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Clone :</span>
-              <span className="font-medium text-xs truncate max-w-[200px]">
-                {data.cloneSourceUrl}
-              </span>
-            </div>
-          )}
         </div>
       </Card>
 
