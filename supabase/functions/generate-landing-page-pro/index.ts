@@ -57,7 +57,7 @@ async function handleSingleSection(body: any, apiKey: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-pro-preview",
+      model: "google/gemini-2.5-flash",
       messages: [
         {
           role: "system",
@@ -68,7 +68,7 @@ async function handleSingleSection(body: any, apiKey: string) {
           content: prompt,
         },
       ],
-      max_tokens: 2048,
+      max_tokens: 8192,
     }),
   });
 
@@ -153,7 +153,7 @@ async function handleLegacy(body: any, apiKey: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-pro-preview",
+      model: "google/gemini-2.5-flash",
       messages: [
         {
           role: "system",
@@ -164,7 +164,7 @@ async function handleLegacy(body: any, apiKey: string) {
           content: prompt,
         },
       ],
-      max_tokens: 4000,
+      max_tokens: 8192,
     }),
   });
 
