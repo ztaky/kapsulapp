@@ -7,21 +7,56 @@ import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap } fr
 import { toast } from "sonner";
 import { useStudioContext, formatStudioContextForAI } from "@/hooks/useStudioContext";
 import { useChatHistory } from "@/hooks/useChatHistory";
+import { ActionCard, ActionType } from "@/components/assistant/ActionCard";
 
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
+interface ActionData {
+  type: ActionType;
+  data: any;
+}
 
 const SUGGESTIONS = [
   "Comment structurer mon premier cours ?",
-  "Aide-moi à écrire une description accrocheuse",
+  "Génère un quiz de 5 questions sur le marketing digital",
+  "Propose une structure de modules pour un cours sur React",
   "Conseils pour engager mes étudiants",
   "Comment fixer le prix de ma formation ?",
-  "Stratégies marketing pour promouvoir mon cours",
 ];
 
-const WELCOME_MESSAGE = "Bonjour ! Je suis votre assistant expert en création de formations. J'ai accès aux détails de vos cours pour vous aider au mieux. Comment puis-je vous aider ?";
+const WELCOME_MESSAGE = "Bonjour ! Je suis votre assistant expert en création de formations. Je peux vous aider à structurer vos cours, et même **générer des quiz** ou **proposer des modules** que vous pourrez ajouter directement. Comment puis-je vous aider ?";
+
+// Parse tool calls from streamed response
+function parseToolCalls(content: string, toolCalls: any[]): { text: string; action?: ActionData } {
+  if (toolCalls && toolCalls.length > 0) {
+    const toolCall = toolCalls[0];
+    if (toolCall.function) {
+      try {
+        const args = JSON.parse(toolCall.function.arguments);
+        return {
+          text: content || getDefaultTextForAction(toolCall.function.name, args),
+          action: {
+            type: toolCall.function.name as ActionType,
+            data: args,
+          },
+        };
+      } catch (e) {
+        console.error("Error parsing tool call arguments:", e);
+      }
+    }
+  }
+  
+  return { text: content };
+}
+
+function getDefaultTextForAction(actionType: string, data: any): string {
+  switch (actionType) {
+    case "generate_quiz":
+      return `J'ai créé un quiz "${data.title}" avec ${data.questions?.length || 0} questions. Vous pouvez le prévisualiser ci-dessous et l'ajouter à une leçon de votre choix.`;
+    case "suggest_modules":
+      return `Voici une structure de ${data.modules?.length || 0} modules pour votre cours sur "${data.course_topic}". Vous pouvez les ajouter directement à un de vos cours.`;
+    default:
+      return "Voici le contenu généré :";
+  }
+}
 
 export default function AIAssistant() {
   const studioContext = useStudioContext();
@@ -32,8 +67,6 @@ export default function AIAssistant() {
     userId,
     saveMessage,
     getConversationId,
-    startNewConversation,
-    clearHistory,
   } = useChatHistory({
     mode: 'studio',
     context: { organizationId: studioContext.organizationId },
@@ -42,7 +75,8 @@ export default function AIAssistant() {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  // Store actions separately, keyed by message index
+  const [messageActions, setMessageActions] = useState<Record<number, ActionData>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unified-chat`;
@@ -58,20 +92,18 @@ export default function AIAssistant() {
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: messageText };
+    const userMessage = { role: "user" as const, content: messageText };
     const allMessages = [...messages, userMessage];
     setMessages(allMessages);
     setInput("");
     setIsLoading(true);
 
-    // Save user message
     const convId = getConversationId();
     if (userId) {
       await saveMessage("user", messageText, convId);
     }
 
     try {
-      // Format context for AI
       const formattedContext = formatStudioContextForAI(studioContext);
 
       const response = await fetch(CHAT_URL, {
@@ -103,8 +135,9 @@ export default function AIAssistant() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let assistantMessage = "";
+      let assistantContent = "";
       let textBuffer = "";
+      let toolCalls: any[] = [];
 
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
@@ -128,14 +161,37 @@ export default function AIAssistant() {
 
           try {
             const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantMessage += content;
+            const delta = parsed.choices?.[0]?.delta;
+            
+            if (delta?.content) {
+              assistantContent += delta.content;
               setMessages((prev) => {
                 const newMessages = [...prev];
-                newMessages[newMessages.length - 1].content = assistantMessage;
+                newMessages[newMessages.length - 1] = {
+                  ...newMessages[newMessages.length - 1],
+                  content: assistantContent,
+                };
                 return newMessages;
               });
+            }
+            
+            if (delta?.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                if (tc.index !== undefined) {
+                  if (!toolCalls[tc.index]) {
+                    toolCalls[tc.index] = {
+                      id: tc.id || "",
+                      function: { name: "", arguments: "" },
+                    };
+                  }
+                  if (tc.function?.name) {
+                    toolCalls[tc.index].function.name = tc.function.name;
+                  }
+                  if (tc.function?.arguments) {
+                    toolCalls[tc.index].function.arguments += tc.function.arguments;
+                  }
+                }
+              }
             }
           } catch {
             textBuffer = line + "\n" + textBuffer;
@@ -144,9 +200,34 @@ export default function AIAssistant() {
         }
       }
 
-      // Save assistant response
-      if (userId && assistantMessage) {
-        await saveMessage("assistant", assistantMessage, convId);
+      // Process tool calls after streaming is complete
+      if (toolCalls.length > 0) {
+        const { text, action } = parseToolCalls(assistantContent, toolCalls);
+        const finalContent = text || assistantContent;
+        
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = {
+            role: "assistant",
+            content: finalContent,
+          };
+          // Store action with the message index
+          if (action) {
+            setMessageActions(prevActions => ({
+              ...prevActions,
+              [newMessages.length - 1]: action,
+            }));
+          }
+          return newMessages;
+        });
+        
+        if (userId && finalContent) {
+          await saveMessage("assistant", finalContent, convId);
+        }
+      } else {
+        if (userId && assistantContent) {
+          await saveMessage("assistant", assistantContent, convId);
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -177,7 +258,7 @@ export default function AIAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] space-y-6">
-      {/* Header - Premium Style */}
+      {/* Header */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-8 border border-slate-100 shadow-premium">
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -187,12 +268,11 @@ export default function AIAssistant() {
             <div>
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">Assistant IA</h1>
               <p className="text-base text-slate-600 leading-relaxed">
-                Votre expert personnel en création de formations
+                Génère des quiz, structure des modules, et plus encore
               </p>
             </div>
           </div>
           
-          {/* Context Stats */}
           <div className="hidden md:flex items-center gap-6">
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <BookOpen className="h-4 w-4 text-orange-500" />
@@ -225,7 +305,7 @@ export default function AIAssistant() {
                   Bienvenue ! Comment puis-je vous aider ?
                 </h3>
                 <p className="text-base text-slate-600 leading-relaxed mb-4 max-w-2xl mx-auto">
-                  J'ai accès aux informations de vos cours pour vous donner des conseils personnalisés.
+                  Je peux créer des <span className="font-semibold text-orange-600">quiz</span>, proposer des <span className="font-semibold text-orange-600">structures de modules</span>, et vous conseiller sur vos formations.
                 </p>
                 {studioContext.courses.length > 0 && (
                   <p className="text-sm text-orange-600 mb-6">
@@ -248,38 +328,55 @@ export default function AIAssistant() {
               </Card>
             )}
 
-            {messages.slice(1).map((message, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-3 ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {message.role === "assistant" && (
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shrink-0">
-                    <Bot className="h-5 w-5 text-orange-600" />
+            {messages.slice(1).map((message, idx) => {
+              const actualIndex = idx + 1; // Account for the slice(1)
+              const action = messageActions[actualIndex];
+              
+              return (
+                <div key={idx} className="space-y-4">
+                  <div
+                    className={`flex gap-3 ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {message.role === "assistant" && (
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shrink-0">
+                        <Bot className="h-5 w-5 text-orange-600" />
+                      </div>
+                    )}
+                    <Card
+                      className={`p-5 max-w-[80%] rounded-2xl border shadow-sm ${
+                        message.role === "user"
+                          ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg"
+                          : "bg-white border-slate-100"
+                      }`}
+                    >
+                      <p className={`whitespace-pre-wrap leading-relaxed ${
+                        message.role === "user" ? "text-white" : "text-slate-700"
+                      }`}>
+                        {message.content}
+                      </p>
+                    </Card>
+                    {message.role === "user" && (
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shrink-0">
+                        <User className="h-5 w-5 text-slate-600" />
+                      </div>
+                    )}
                   </div>
-                )}
-                <Card
-                  className={`p-5 max-w-[80%] rounded-2xl border shadow-sm ${
-                    message.role === "user"
-                      ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg"
-                      : "bg-white border-slate-100"
-                  }`}
-                >
-                  <p className={`whitespace-pre-wrap leading-relaxed ${
-                    message.role === "user" ? "text-white" : "text-slate-700"
-                  }`}>
-                    {message.content}
-                  </p>
-                </Card>
-                {message.role === "user" && (
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shrink-0">
-                    <User className="h-5 w-5 text-slate-600" />
-                  </div>
-                )}
-              </div>
-            ))}
+                  
+                  {/* Render ActionCard if there's an action for this message */}
+                  {message.role === "assistant" && action && (
+                    <div className="ml-13 pl-13">
+                      <ActionCard
+                        type={action.type}
+                        data={action.data}
+                        organizationId={studioContext.organizationId || ""}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {isLoading && messages[messages.length - 1]?.content === "" && (
               <div className="flex gap-3 justify-start">
@@ -307,7 +404,7 @@ export default function AIAssistant() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Posez votre question..."
+                placeholder="Demandez un quiz, une structure de modules, ou posez votre question..."
                 disabled={isLoading}
                 className="flex-1 rounded-xl border-slate-200 h-12"
               />
