@@ -38,6 +38,7 @@ function generateWelcomeEmailHtml(
   const brandColor = branding.brand_color || "#d97706";
   const academyName = branding.name;
   const logoUrl = branding.logo_url;
+  const supportEmail = branding.contact_email || `contact@${branding.slug}.kapsulapp.io`;
 
   return `
 <!DOCTYPE html>
@@ -57,6 +58,7 @@ function generateWelcomeEmailHtml(
             <td style="background: linear-gradient(135deg, ${brandColor} 0%, ${adjustColor(brandColor, -20)} 100%); padding: 40px 40px 30px; border-radius: 16px 16px 0 0; text-align: center;">
               ${logoUrl ? `<img src="${logoUrl}" alt="${academyName}" style="max-height: 60px; margin-bottom: 16px;">` : ''}
               <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Bienvenue ! 🎉</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 12px 0 0; font-size: 16px;">Votre accès est maintenant actif</p>
             </td>
           </tr>
           
@@ -66,27 +68,98 @@ function generateWelcomeEmailHtml(
               <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
                 Bonjour${recipientName ? ` <strong>${recipientName}</strong>` : ''} !
               </p>
-              <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                Félicitations pour votre inscription à <strong>"${courseName}"</strong> ! 
+              <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                Félicitations pour votre inscription à <strong style="color: ${brandColor};">"${courseName}"</strong> ! 
                 Vous avez fait un excellent choix pour développer vos compétences.
-              </p>
-              <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                Votre accès est maintenant actif. Cliquez sur le bouton ci-dessous pour commencer votre formation :
               </p>
               
               <!-- CTA Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
                 <tr>
                   <td align="center">
                     <a href="${courseUrl}" style="display: inline-block; background: linear-gradient(135deg, ${brandColor} 0%, ${adjustColor(brandColor, -20)} 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px ${brandColor}40;">
-                      Accéder à ma formation →
+                      🚀 Commencer ma formation
                     </a>
                   </td>
                 </tr>
               </table>
               
+              <!-- Next Steps Section -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <h2 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 0 0 16px;">📋 Vos prochaines étapes</h2>
+                    
+                    <!-- Step 1 -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
+                      <tr>
+                        <td width="40" valign="top">
+                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">1</div>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Accédez à votre espace apprenant</p>
+                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Connectez-vous et découvrez le programme complet de la formation.</p>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Step 2 -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
+                      <tr>
+                        <td width="40" valign="top">
+                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">2</div>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Commencez par le premier module</p>
+                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Suivez les leçons dans l'ordre pour une progression optimale.</p>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Step 3 -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
+                      <tr>
+                        <td width="40" valign="top">
+                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">3</div>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Utilisez l'assistant IA</p>
+                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Notre tuteur virtuel est là pour répondre à toutes vos questions.</p>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Step 4 -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td width="40" valign="top">
+                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">4</div>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Pratiquez et progressez</p>
+                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Appliquez ce que vous apprenez et suivez votre avancement.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Tips Section -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, ${brandColor}10 0%, ${brandColor}05 100%); border-radius: 12px; border-left: 4px solid ${brandColor};">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="color: ${brandColor}; font-size: 14px; font-weight: 700; margin: 0 0 8px;">💡 Conseil pour réussir</p>
+                    <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0;">
+                      Réservez des créneaux réguliers dans votre agenda pour suivre la formation. 
+                      Même 20 minutes par jour peuvent faire une grande différence !
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
               <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
-                Des questions ? Répondez directement à cet email.
+                Des questions ? Contactez-nous à <a href="mailto:${supportEmail}" style="color: ${brandColor}; text-decoration: none;">${supportEmail}</a>
               </p>
             </td>
           </tr>
