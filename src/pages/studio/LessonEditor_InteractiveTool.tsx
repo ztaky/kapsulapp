@@ -7,16 +7,99 @@ import { AIToolBuilder } from "@/components/studio/AIToolBuilder";
 import { RichTextEditor } from "@/components/studio/RichTextEditor";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Code } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Eye, EyeOff, Code, Plus, Library, Sparkles, FileCode, HelpCircle, FileText, ExternalLink, Loader2, Save, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
 interface InteractiveToolEditorProps {
   toolId: string | null;
   toolConfig: any;
+  organizationId?: string;
   onChange: (toolId: string | null, toolConfig: any) => void;
 }
 
-export function InteractiveToolEditor({ toolId, toolConfig, onChange }: InteractiveToolEditorProps) {
+const TOOL_TYPES = [
+  { id: "ai_tool", label: "🤖 Outil IA", icon: Sparkles, description: "Généré par IA" },
+  { id: "custom_code", label: "💻 Code Personnalisé", icon: FileCode, description: "HTML/CSS/JS" },
+  { id: "quiz", label: "❓ Quiz", icon: HelpCircle, description: "Quiz interactif" },
+  { id: "custom_embed", label: "📦 Embed", icon: ExternalLink, description: "iframe externe" },
+  { id: "rich_content", label: "📝 Contenu Enrichi", icon: FileText, description: "Texte formaté" },
+];
+
+export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onChange }: InteractiveToolEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
+  const [mode, setMode] = useState<"library" | "create">("library");
+  const [newToolName, setNewToolName] = useState("");
+  const [newToolType, setNewToolType] = useState<string>("ai_tool");
+  const [newToolConfig, setNewToolConfig] = useState<any>({});
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [toolNameToSave, setToolNameToSave] = useState("");
+  const queryClient = useQueryClient();
+
+  // Fetch existing tools from library
+  const { data: tools, isLoading: toolsLoading } = useQuery({
+    queryKey: ["interactive-tools", organizationId],
+    queryFn: async () => {
+      if (!organizationId) return [];
+      const { data, error } = await supabase
+        .from("interactive_tools")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!organizationId,
+  });
+
+  // Save tool to library
+  const saveToolMutation = useMutation({
+    mutationFn: async ({ name, type, config }: { name: string; type: string; config: any }) => {
+      if (!organizationId) throw new Error("Organization ID required");
+      const { data, error } = await supabase
+        .from("interactive_tools")
+        .insert({
+          organization_id: organizationId,
+          name,
+          tool_type: type,
+          config,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId] });
+      toast.success("Outil sauvegardé dans la bibliothèque");
+      // Select the newly created tool
+      onChange(data.tool_type, data.config);
+      setMode("library");
+      setSaveDialogOpen(false);
+      setToolNameToSave("");
+    },
+    onError: () => {
+      toast.error("Erreur lors de la sauvegarde");
+    },
+  });
+
+  // Delete tool from library
+  const deleteToolMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("interactive_tools")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId] });
+      toast.success("Outil supprimé");
+    },
+  });
 
   const getDefaultConfig = (type: string) => {
     switch (type) {
@@ -35,130 +118,333 @@ export function InteractiveToolEditor({ toolId, toolConfig, onChange }: Interact
     }
   };
 
+  const handleSelectFromLibrary = (tool: any) => {
+    onChange(tool.tool_type, tool.config);
+  };
+
+  const handleSaveToLibrary = () => {
+    if (!toolNameToSave.trim()) {
+      toast.error("Veuillez entrer un nom pour l'outil");
+      return;
+    }
+    if (!toolId || !toolConfig) {
+      toast.error("Configurez d'abord l'outil");
+      return;
+    }
+    saveToolMutation.mutate({
+      name: toolNameToSave,
+      type: toolId,
+      config: toolConfig,
+    });
+  };
+
+  const getToolIcon = (type: string) => {
+    const tool = TOOL_TYPES.find(t => t.id === type);
+    return tool?.icon || FileCode;
+  };
+
   return (
     <div className="space-y-4">
-      <div>
-        <Label>Type d'outil</Label>
-        <Select
-          value={toolId || ""}
-          onValueChange={(v) => {
-            onChange(v, getDefaultConfig(v));
-          }}
+      {/* Mode Toggle */}
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant={mode === "library" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setMode("library")}
+          className="gap-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Sélectionner un outil" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ai_tool">🤖 Outil IA (Générateur)</SelectItem>
-            <SelectItem value="custom_code">💻 Code Personnalisé (HTML/CSS/JS)</SelectItem>
-            <SelectItem value="quiz">❓ Quiz Interactif</SelectItem>
-            <SelectItem value="custom_embed">📦 Embed Personnalisé (iframe)</SelectItem>
-            <SelectItem value="rich_content">📝 Contenu Enrichi</SelectItem>
-          </SelectContent>
-        </Select>
+          <Library className="h-4 w-4" />
+          Bibliothèque
+        </Button>
+        <Button
+          type="button"
+          variant={mode === "create" ? "default" : "outline"}
+          size="sm"
+          onClick={() => {
+            setMode("create");
+            setNewToolType("ai_tool");
+            setNewToolConfig(getDefaultConfig("ai_tool"));
+          }}
+          className="gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Créer un outil
+        </Button>
       </div>
 
-      {toolId === "ai_tool" && (
-        <AIToolBuilder
-          toolConfig={toolConfig}
-          onChange={(newConfig) => onChange(toolId, newConfig)}
-        />
-      )}
-
-      {toolId === "custom_code" && (
+      {/* Library Mode */}
+      {mode === "library" && (
         <div className="space-y-4">
-          <div>
-            <Label>Titre de l'outil (optionnel)</Label>
-            <Input
-              placeholder="Ex: Calculateur de calories, Quiz interactif..."
-              value={toolConfig.title || ""}
-              onChange={(e) =>
-                onChange(toolId, { ...toolConfig, title: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <Label>Code HTML/CSS/JS</Label>
-            <Textarea
-              className="font-mono text-sm min-h-[300px]"
-              placeholder="Collez votre code HTML complet ici (incluant <style> et <script>)..."
-              value={toolConfig.htmlCode || ""}
-              onChange={(e) =>
-                onChange(toolId, { ...toolConfig, htmlCode: e.target.value })
-              }
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Collez du code HTML autonome avec CSS et JavaScript intégrés. Le code sera affiché dans une iframe sandboxée.
-            </p>
-          </div>
-          
-          {toolConfig.htmlCode && (
-            <div className="space-y-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowPreview(!showPreview)}
-                className="gap-2"
-              >
-                {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                {showPreview ? "Masquer l'aperçu" : "Voir l'aperçu"}
-              </Button>
-              
-              {showPreview && (
-                <div className="border rounded-lg overflow-hidden bg-white">
-                  <div className="bg-muted px-3 py-2 text-xs font-medium flex items-center gap-2 border-b">
-                    <Code className="h-3 w-3" />
-                    Aperçu du code personnalisé
-                  </div>
-                  <iframe
-                    srcDoc={toolConfig.htmlCode}
-                    className="w-full min-h-[400px] border-0"
-                    sandbox="allow-scripts allow-forms"
-                    title="Aperçu du code personnalisé"
-                  />
-                </div>
-              )}
+          {toolsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : tools && tools.length > 0 ? (
+            <div className="grid gap-3">
+              {tools.map((tool) => {
+                const IconComponent = getToolIcon(tool.tool_type);
+                const isSelected = toolConfig && JSON.stringify(toolConfig) === JSON.stringify(tool.config);
+                return (
+                  <Card
+                    key={tool.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      isSelected ? "ring-2 ring-primary border-primary" : ""
+                    }`}
+                    onClick={() => handleSelectFromLibrary(tool)}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                        <IconComponent className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{tool.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {TOOL_TYPES.find(t => t.id === tool.tool_type)?.label || tool.tool_type}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+                          Sélectionné
+                        </span>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteToolMutation.mutate(tool.id);
+                        }}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="py-8 text-center">
+                <Library className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                <p className="text-muted-foreground mb-4">
+                  Aucun outil dans votre bibliothèque
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMode("create")}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Créer votre premier outil
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Current tool preview if selected */}
+          {toolId && toolConfig && (
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium">Outil actuellement configuré</p>
+                <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" size="sm" className="gap-2">
+                      <Save className="h-4 w-4" />
+                      Sauvegarder dans la bibliothèque
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Sauvegarder l'outil</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <Label>Nom de l'outil</Label>
+                        <Input
+                          placeholder="Ex: Calculateur de calories, Quiz module 1..."
+                          value={toolNameToSave}
+                          onChange={(e) => setToolNameToSave(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Annuler</Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        onClick={handleSaveToLibrary}
+                        disabled={saveToolMutation.isPending}
+                      >
+                        {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                        Sauvegarder
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Type: {TOOL_TYPES.find(t => t.id === toolId)?.label || toolId}
+              </p>
             </div>
           )}
         </div>
       )}
 
-      {toolId === "custom_embed" && (
-        <div>
-          <Label>URL à intégrer</Label>
-          <Input
-            type="url"
-            placeholder="https://notion.so/... ou typeform.com/..."
-            value={toolConfig.embed_url || ""}
-            onChange={(e) =>
-              onChange(toolId, { ...toolConfig, embed_url: e.target.value })
-            }
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Supporte Notion, Typeform, Google Forms, Loom, etc.
-          </p>
+      {/* Create Mode */}
+      {mode === "create" && (
+        <div className="space-y-4">
+          <div>
+            <Label>Type d'outil</Label>
+            <Select
+              value={newToolType}
+              onValueChange={(v) => {
+                setNewToolType(v);
+                setNewToolConfig(getDefaultConfig(v));
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un type" />
+              </SelectTrigger>
+              <SelectContent>
+                {TOOL_TYPES.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tool-specific editors */}
+          {newToolType === "ai_tool" && (
+            <AIToolBuilder
+              toolConfig={newToolConfig}
+              onChange={(config) => {
+                setNewToolConfig(config);
+                onChange("ai_tool", config);
+              }}
+            />
+          )}
+
+          {newToolType === "custom_code" && (
+            <CustomCodeEditor
+              config={newToolConfig}
+              onChange={(config) => {
+                setNewToolConfig(config);
+                onChange("custom_code", config);
+              }}
+            />
+          )}
+
+          {newToolType === "custom_embed" && (
+            <div>
+              <Label>URL à intégrer</Label>
+              <Input
+                type="url"
+                placeholder="https://notion.so/... ou typeform.com/..."
+                value={newToolConfig.embed_url || ""}
+                onChange={(e) => {
+                  const config = { ...newToolConfig, embed_url: e.target.value };
+                  setNewToolConfig(config);
+                  onChange("custom_embed", config);
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Supporte Notion, Typeform, Google Forms, Loom, etc.
+              </p>
+            </div>
+          )}
+
+          {newToolType === "rich_content" && (
+            <div>
+              <Label>Contenu enrichi</Label>
+              <RichTextEditor
+                content={newToolConfig.html_content || ""}
+                onChange={(html) => {
+                  const config = { ...newToolConfig, html_content: html };
+                  setNewToolConfig(config);
+                  onChange("rich_content", config);
+                }}
+                placeholder="Écrivez votre contenu enrichi..."
+              />
+            </div>
+          )}
+
+          {newToolType === "quiz" && (
+            <QuizEditor
+              config={newToolConfig}
+              onChange={(config) => {
+                setNewToolConfig(config);
+                onChange("quiz", config);
+              }}
+            />
+          )}
         </div>
       )}
+    </div>
+  );
+}
 
-      {toolId === "rich_content" && (
-        <div>
-          <Label>Contenu enrichi</Label>
-          <RichTextEditor
-            content={toolConfig.html_content || ""}
-            onChange={(html) =>
-              onChange(toolId, { ...toolConfig, html_content: html })
-            }
-            placeholder="Écrivez votre contenu enrichi..."
-          />
-        </div>
-      )}
+// Extracted Custom Code Editor component
+function CustomCodeEditor({ config, onChange }: { config: any; onChange: (config: any) => void }) {
+  const [showPreview, setShowPreview] = useState(false);
 
-      {toolId === "quiz" && (
-        <QuizEditor
-          config={toolConfig}
-          onChange={(newConfig) => onChange(toolId, newConfig)}
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Titre de l'outil (optionnel)</Label>
+        <Input
+          placeholder="Ex: Calculateur de calories, Quiz interactif..."
+          value={config.title || ""}
+          onChange={(e) => onChange({ ...config, title: e.target.value })}
         />
+      </div>
+      <div>
+        <Label>Code HTML/CSS/JS</Label>
+        <Textarea
+          className="font-mono text-sm min-h-[300px]"
+          placeholder="Collez votre code HTML complet ici (incluant <style> et <script>)..."
+          value={config.htmlCode || ""}
+          onChange={(e) => onChange({ ...config, htmlCode: e.target.value })}
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          Collez du code HTML autonome avec CSS et JavaScript intégrés.
+        </p>
+      </div>
+
+      {config.htmlCode && (
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPreview(!showPreview)}
+            className="gap-2"
+          >
+            {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPreview ? "Masquer l'aperçu" : "Voir l'aperçu"}
+          </Button>
+
+          {showPreview && (
+            <div className="border rounded-lg overflow-hidden bg-white">
+              <div className="bg-muted px-3 py-2 text-xs font-medium flex items-center gap-2 border-b">
+                <Code className="h-3 w-3" />
+                Aperçu du code personnalisé
+              </div>
+              <iframe
+                srcDoc={config.htmlCode}
+                className="w-full min-h-[400px] border-0"
+                sandbox="allow-scripts allow-forms"
+                title="Aperçu du code personnalisé"
+              />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

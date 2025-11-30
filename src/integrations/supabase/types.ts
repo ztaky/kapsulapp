@@ -232,6 +232,47 @@ export type Database = {
         }
         Relationships: []
       }
+      interactive_tools: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          tool_type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          tool_type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          tool_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactive_tools_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_pages: {
         Row: {
           clone_source_url: string | null
