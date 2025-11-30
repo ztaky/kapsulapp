@@ -50,14 +50,20 @@ Tu es expert en :
 - Optimisation des pages de vente
 - Tarification et monétisation
 
-${context?.courseId ? `Le coach travaille actuellement sur un cours (ID: ${context.courseId})` : ''}
+${context?.studioContext ? `\n--- CONTEXTE DE L'ACADÉMIE DU COACH ---\n${context.studioContext}\n--- FIN DU CONTEXTE ---\n` : ''}
+${context?.organizationName ? `Le coach gère l'académie "${context.organizationName}".` : ''}
+${context?.coursesCount !== undefined ? `Il a ${context.coursesCount} cours, ${context.lessonsCount || 0} leçons et ${context.studentsCount || 0} étudiants.` : ''}
 
-Règles :
+INSTRUCTIONS IMPORTANTES:
+- Utilise le contexte de l'académie pour personnaliser tes réponses
+- Fais référence aux cours existants du coach quand c'est pertinent
+- Propose des améliorations concrètes basées sur ses cours actuels
+- Si le coach n'a pas de cours, aide-le à démarrer
 - Réponds de manière claire, concise et actionnable
-- Utilise des exemples concrets et applicables
+- Utilise des exemples concrets et applicables à sa situation
 - Propose des templates et structures quand c'est pertinent
 - Sois encourageant et positif
-- Maximum 250 mots sauf si une liste détaillée est demandée`,
+- Maximum 300 mots sauf si une liste détaillée est demandée`,
 
     support: `Tu es l'assistant support de Kapsul, une plateforme SaaS de création de formations en ligne.
 
@@ -100,6 +106,9 @@ serve(async (req) => {
     const systemPrompt = getSystemPrompt(mode as ChatMode, context);
     
     console.log(`[unified-chat] Mode: ${mode}, Context keys: ${Object.keys(context).join(', ')}`);
+    if (mode === 'studio' && context.studioContext) {
+      console.log(`[unified-chat] Studio context length: ${context.studioContext.length} chars`);
+    }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
