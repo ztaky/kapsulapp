@@ -154,10 +154,15 @@ export default function LessonEditor() {
             </div>
 
             <Tabs
-              value={formData.type}
-              onValueChange={(v) =>
-                setFormData({ ...formData, type: v as "video" | "interactive_tool" })
-              }
+              value={formData.type === "video" && formData.content_text && !formData.video_url ? "text" : formData.type}
+              onValueChange={(v) => {
+                // "text" is not a real type, it's just a UI tab - we save as "video" with content_text
+                if (v === "text") {
+                  setFormData({ ...formData, type: "video" });
+                } else {
+                  setFormData({ ...formData, type: v as "video" | "interactive_tool" });
+                }
+              }}
             >
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="video">Vidéo</TabsTrigger>
