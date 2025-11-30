@@ -58,6 +58,47 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          content: string
+          context: Json | null
+          conversation_id: string
+          created_at: string
+          id: string
+          mode: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          context?: Json | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          mode?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          context?: Json | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          mode?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_design_preferences: {
         Row: {
           created_at: string
