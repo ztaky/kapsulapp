@@ -664,7 +664,7 @@ export default function StudioBranding() {
                       </h4>
                       <p className="text-sm text-slate-600 mb-4">
                         En connectant votre compte Stripe, vos clients peuvent payer directement et l'argent arrive sur votre compte bancaire. 
-                        Kapsul prélève une commission de 10% sur chaque vente.
+                        Sur le plan gratuit, Kapsul prélève une commission de 8% sur chaque vente.
                       </p>
                       <ul className="space-y-2 text-sm text-slate-600">
                         <li className="flex items-center gap-2">
