@@ -384,6 +384,67 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
               }}
             />
           )}
+
+          {/* Save & Return buttons */}
+          {(newToolConfig.htmlCode || newToolConfig.generatedCode || newToolConfig.embed_url || newToolConfig.html_content || (newToolConfig.questions && newToolConfig.questions.length > 0)) && (
+            <div className="flex gap-3 pt-4 border-t">
+              <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button type="button" variant="default" className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Sauvegarder dans la bibliothèque
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sauvegarder l'outil</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div>
+                      <Label>Nom de l'outil</Label>
+                      <Input
+                        placeholder="Ex: Calculateur de calories, Quiz module 1..."
+                        value={toolNameToSave}
+                        onChange={(e) => setToolNameToSave(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Annuler</Button>
+                    </DialogClose>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (!toolNameToSave.trim()) {
+                          toast.error("Veuillez entrer un nom pour l'outil");
+                          return;
+                        }
+                        saveToolMutation.mutate({
+                          name: toolNameToSave,
+                          type: newToolType,
+                          config: newToolConfig,
+                        });
+                      }}
+                      disabled={saveToolMutation.isPending}
+                    >
+                      {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                      Sauvegarder
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMode("library")}
+                className="gap-2"
+              >
+                <Library className="h-4 w-4" />
+                Retour à la bibliothèque
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

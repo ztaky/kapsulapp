@@ -41,40 +41,44 @@ export function LessonPreview({
       </h1>
 
       {/* Content based on type */}
-      {type === "video" ? (
-        <div className="space-y-6">
-          {videoUrl && <VideoPlayer url={videoUrl} />}
+      <div className="space-y-6">
+        {/* Video section (for video type or if video exists) */}
+        {type === "video" && videoUrl && <VideoPlayer url={videoUrl} />}
 
-          {contentText && (
-            <div className="prose prose-lg max-w-none p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-sm">
-              <div
-                className="text-slate-700 leading-relaxed rich-text-content"
-                dangerouslySetInnerHTML={{ __html: contentText }}
-              />
-            </div>
-          )}
-
-          {!videoUrl && !contentText && (
-            <div className="p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400">
-              Ajoutez une vidéo ou du contenu textuel pour voir l'aperçu
-            </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          {toolId && toolConfig ? (
-            <InteractiveToolContainer
-              lessonId="preview"
-              toolId={toolId}
-              toolConfig={toolConfig}
+        {/* Text content (shown for both types if present) */}
+        {contentText && (
+          <div className="prose prose-lg max-w-none p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-sm">
+            <div
+              className="text-slate-700 leading-relaxed rich-text-content"
+              dangerouslySetInnerHTML={{ __html: contentText }}
             />
-          ) : (
-            <div className="p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400">
-              Configurez un outil interactif pour voir l'aperçu
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+
+        {/* Interactive tool section */}
+        {type === "interactive_tool" && (
+          <div>
+            {toolId && toolConfig ? (
+              <InteractiveToolContainer
+                lessonId="preview"
+                toolId={toolId}
+                toolConfig={toolConfig}
+              />
+            ) : (
+              <div className="p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400">
+                Configurez un outil interactif pour voir l'aperçu
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Empty state for video type without content */}
+        {type === "video" && !videoUrl && !contentText && (
+          <div className="p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400">
+            Ajoutez une vidéo ou du contenu textuel pour voir l'aperçu
+          </div>
+        )}
+      </div>
 
       {/* Resources */}
       {resources && resources.length > 0 && (
