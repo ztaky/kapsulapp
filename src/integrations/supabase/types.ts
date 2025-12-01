@@ -605,7 +605,10 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_founder_plan: boolean | null
           logo_url: string | null
+          max_coaches: number | null
+          max_students: number | null
           name: string
           onboarding_completed: boolean | null
           payment_methods_enabled: string[] | null
@@ -625,7 +628,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_founder_plan?: boolean | null
           logo_url?: string | null
+          max_coaches?: number | null
+          max_students?: number | null
           name: string
           onboarding_completed?: boolean | null
           payment_methods_enabled?: string[] | null
@@ -645,7 +651,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_founder_plan?: boolean | null
           logo_url?: string | null
+          max_coaches?: number | null
+          max_students?: number | null
           name?: string
           onboarding_completed?: boolean | null
           payment_methods_enabled?: string[] | null
@@ -998,6 +1007,22 @@ export type Database = {
       }
     }
     Functions: {
+      check_coach_limit: {
+        Args: { _organization_id: string }
+        Returns: {
+          can_add: boolean
+          current_count: number
+          max_allowed: number
+        }[]
+      }
+      check_student_limit: {
+        Args: { _organization_id: string }
+        Returns: {
+          can_add: boolean
+          current_count: number
+          max_allowed: number
+        }[]
+      }
       create_notification: {
         Args: {
           _link?: string

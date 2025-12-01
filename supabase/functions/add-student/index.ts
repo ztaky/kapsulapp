@@ -69,6 +69,32 @@ serve(async (req) => {
       }
     }
 
+    // Check student limit before adding
+    const { data: limitCheck, error: limitError } = await supabase
+      .rpc("check_student_limit", { _organization_id: organizationId });
+
+    if (limitError) {
+      console.error("Error checking student limit:", limitError);
+      return new Response(JSON.stringify({ error: "Erreur lors de la vérification des limites" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const limit = limitCheck?.[0];
+    if (limit && !limit.can_add) {
+      console.log(`Student limit reached for org ${organizationId}: ${limit.current_count}/${limit.max_allowed}`);
+      return new Response(JSON.stringify({ 
+        error: `Limite d'étudiants atteinte (${limit.current_count}/${limit.max_allowed}). Passez à un plan supérieur pour ajouter plus d'étudiants.`,
+        limitReached: true,
+        currentCount: limit.current_count,
+        maxAllowed: limit.max_allowed
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check if user already exists by email
     const { data: existingProfile } = await supabase
       .from("profiles")
@@ -146,7 +172,13 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Student ${email} added to organization ${organizationId} by ${requestingUser.email}`);
+    // Get updated count for response
+    const { data: updatedLimit } = await supabase
+      .rpc("check_student_limit", { _organization_id: organizationId });
+
+    const newLimit = updatedLimit?.[0];
+
+    console.log(`Student ${email} added to organization ${organizationId} by ${requestingUser.email}. Count: ${newLimit?.current_count}/${newLimit?.max_allowed || 'unlimited'}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -154,7 +186,9 @@ serve(async (req) => {
       userId,
       message: isNewUser 
         ? "Étudiant créé et ajouté avec succès" 
-        : "Étudiant ajouté avec succès"
+        : "Étudiant ajouté avec succès",
+      studentCount: newLimit?.current_count,
+      maxStudents: newLimit?.max_allowed
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
