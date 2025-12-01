@@ -24,7 +24,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
         </h2>
 
         {/* Stats */}
-        <div className="flex flex-col md:flex-row gap-8 justify-center items-center mb-12 mt-16">
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-center mb-16 mt-20">
           {content.stats.map((stat, index) => (
             <div key={index} className="text-center">
               <div 

@@ -137,7 +137,7 @@ export function Program({ content }: ProgramProps) {
                     key={dayIndex}
                     className="p-6 rounded-2xl"
                     style={{ 
-                      backgroundColor: `${theme.colors.textLight}08`,
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
                       border: `1px solid ${theme.colors.textLight}15`
                     }}
                   >
@@ -172,20 +172,21 @@ export function Program({ content }: ProgramProps) {
             Ce que tu auras créé :
           </h3>
           <ul className="space-y-4 max-w-3xl mx-auto">
-            {content.deliverables.map((deliverable, index) => (
-              <li key={index} className="flex items-start gap-4">
-                <CheckCircle2 
-                  className="w-6 h-6 flex-shrink-0 mt-1" 
-                  style={{ color: theme.colors.accentGreen }}
-                />
-                <span 
-                  className="text-lg md:text-xl"
-                  style={{ color: theme.colors.textLight }}
-                >
-                  {deliverable}
-                </span>
-              </li>
-            ))}
+            {content.deliverables.map((deliverable, index) => {
+              const emojis = ['🎯', '📊', '🤖', '🚀', '💡', '🔧'];
+              const emoji = emojis[index % emojis.length];
+              return (
+                <li key={index} className="flex items-start gap-4">
+                  <span className="text-2xl flex-shrink-0">{emoji}</span>
+                  <span 
+                    className="text-lg md:text-xl"
+                    style={{ color: theme.colors.textLight }}
+                  >
+                    {deliverable}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
