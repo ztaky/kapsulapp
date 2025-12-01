@@ -97,42 +97,42 @@ const AdminRevenue = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Revenus</h1>
-        <p className="text-slate-400">Suivez les ventes de la plateforme</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Revenus</h1>
+        <p className="text-muted-foreground">Suivez les ventes de la plateforme</p>
       </div>
 
       {/* Stats cards */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Revenus totaux</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Revenus totaux</CardTitle>
             <div className="p-2 rounded-lg bg-orange-600">
               <DollarSign className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">{totalRevenue.toFixed(2)}€</div>
+            <div className="text-3xl font-bold text-foreground">{totalRevenue.toFixed(2)}€</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Nombre de ventes</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Nombre de ventes</CardTitle>
             <div className="p-2 rounded-lg bg-green-600">
               <TrendingUp className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">{purchases.length}</div>
+            <div className="text-3xl font-bold text-foreground">{purchases.length}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Chart */}
       {chartData.length > 0 && (
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white">Évolution des revenus</CardTitle>
+            <CardTitle>Évolution des revenus</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -144,12 +144,12 @@ const AdminRevenue = () => {
                       <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="month" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="month" className="text-muted-foreground" />
+                  <YAxis className="text-muted-foreground" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
-                    labelStyle={{ color: "#f8fafc" }}
+                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
+                    labelStyle={{ color: "hsl(var(--foreground))" }}
                     formatter={(value: number) => [`${value.toFixed(2)}€`, "Revenus"]}
                   />
                   <Area type="monotone" dataKey="revenue" stroke="#f97316" fillOpacity={1} fill="url(#colorRevenue)" />
@@ -162,29 +162,29 @@ const AdminRevenue = () => {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Rechercher une vente..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
+          className="pl-10"
         />
       </div>
 
       {/* Purchases table */}
       {loading ? (
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardContent className="p-6">
-            <Skeleton className="h-6 w-48 bg-slate-800 mb-4" />
-            <Skeleton className="h-4 w-full bg-slate-800 mb-2" />
-            <Skeleton className="h-4 w-full bg-slate-800 mb-2" />
-            <Skeleton className="h-4 w-full bg-slate-800" />
+            <Skeleton className="h-6 w-48 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full" />
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-orange-500" />
               Historique des ventes
             </CardTitle>
@@ -193,7 +193,7 @@ const AdminRevenue = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-sm text-slate-500">
+                  <tr className="border-b text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">Client</th>
                     <th className="pb-3 font-medium">Formation</th>
                     <th className="pb-3 font-medium">Montant</th>
@@ -203,34 +203,34 @@ const AdminRevenue = () => {
                 </thead>
                 <tbody>
                   {filteredPurchases.map((purchase) => (
-                    <tr key={purchase.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                    <tr key={purchase.id} className="border-b hover:bg-muted/50 transition-colors">
                       <td className="py-4">
                         <div>
-                          <p className="font-semibold text-white">{purchase.profile.full_name || "Sans nom"}</p>
-                          <p className="text-sm text-slate-500">{purchase.profile.email}</p>
+                          <p className="font-semibold text-foreground">{purchase.profile.full_name || "Sans nom"}</p>
+                          <p className="text-sm text-muted-foreground">{purchase.profile.email}</p>
                         </div>
                       </td>
-                      <td className="py-4 text-slate-300">{purchase.course.title}</td>
+                      <td className="py-4 text-foreground">{purchase.course.title}</td>
                       <td className="py-4">
-                        <span className="text-white font-semibold">{Number(purchase.amount).toFixed(2)}€</span>
+                        <span className="text-foreground font-semibold">{Number(purchase.amount).toFixed(2)}€</span>
                       </td>
                       <td className="py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           purchase.status === "completed" 
-                            ? "bg-green-500/20 text-green-400" 
-                            : "bg-yellow-500/20 text-yellow-400"
+                            ? "bg-green-100 text-green-700" 
+                            : "bg-yellow-100 text-yellow-700"
                         }`}>
                           {purchase.status === "completed" ? "Complété" : purchase.status}
                         </span>
                       </td>
-                      <td className="py-4 text-sm text-slate-400">
+                      <td className="py-4 text-sm text-muted-foreground">
                         {new Date(purchase.purchased_at).toLocaleDateString("fr-FR")}
                       </td>
                     </tr>
                   ))}
                   {filteredPurchases.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500">
+                      <td colSpan={5} className="py-8 text-center text-muted-foreground">
                         Aucune vente trouvée
                       </td>
                     </tr>

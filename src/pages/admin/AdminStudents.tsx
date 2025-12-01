@@ -112,28 +112,28 @@ const AdminStudents = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Étudiants</h1>
-        <p className="text-slate-400">Tous les apprenants de la plateforme</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Étudiants</h1>
+        <p className="text-muted-foreground">Tous les apprenants de la plateforme</p>
       </div>
 
       <div className="flex gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher un étudiant..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
+            className="pl-10"
           />
         </div>
         <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-          <SelectTrigger className="w-64 bg-slate-900 border-slate-800 text-white">
+          <SelectTrigger className="w-64">
             <SelectValue placeholder="Filtrer par académie" />
           </SelectTrigger>
-          <SelectContent className="bg-slate-900 border-slate-800">
-            <SelectItem value="all" className="text-white hover:bg-slate-800">Toutes les académies</SelectItem>
+          <SelectContent>
+            <SelectItem value="all">Toutes les académies</SelectItem>
             {organizations.map((org) => (
-              <SelectItem key={org.id} value={org.id} className="text-white hover:bg-slate-800">
+              <SelectItem key={org.id} value={org.id}>
                 {org.name}
               </SelectItem>
             ))}
@@ -144,18 +144,18 @@ const AdminStudents = () => {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-slate-900 border-slate-800">
+            <Card key={i}>
               <CardContent className="p-6">
-                <Skeleton className="h-6 w-48 bg-slate-800 mb-2" />
-                <Skeleton className="h-4 w-32 bg-slate-800" />
+                <Skeleton className="h-6 w-48 mb-2" />
+                <Skeleton className="h-4 w-32" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-cyan-500" />
               {filteredStudents.length} étudiant{filteredStudents.length !== 1 && "s"}
             </CardTitle>
@@ -164,7 +164,7 @@ const AdminStudents = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-sm text-slate-500">
+                  <tr className="border-b text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">Étudiant</th>
                     <th className="pb-3 font-medium">Académie</th>
                     <th className="pb-3 font-medium">Formations achetées</th>
@@ -173,7 +173,7 @@ const AdminStudents = () => {
                 </thead>
                 <tbody>
                   {filteredStudents.map((student) => (
-                    <tr key={student.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                    <tr key={student.id} className="border-b hover:bg-muted/50 transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center">
@@ -182,28 +182,28 @@ const AdminStudents = () => {
                             </span>
                           </div>
                           <div>
-                            <p className="font-semibold text-white">{student.profile.full_name || "Sans nom"}</p>
-                            <p className="text-sm text-slate-500">{student.profile.email}</p>
+                            <p className="font-semibold text-foreground">{student.profile.full_name || "Sans nom"}</p>
+                            <p className="text-sm text-muted-foreground">{student.profile.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                           {student.organization.name}
                         </span>
                       </td>
                       <td className="py-4">
-                        <span className="text-white font-semibold">{student.purchases_count}</span>
-                        <span className="text-slate-500 ml-1">formation{student.purchases_count !== 1 && "s"}</span>
+                        <span className="text-foreground font-semibold">{student.purchases_count}</span>
+                        <span className="text-muted-foreground ml-1">formation{student.purchases_count !== 1 && "s"}</span>
                       </td>
-                      <td className="py-4 text-sm text-slate-400">
+                      <td className="py-4 text-sm text-muted-foreground">
                         {new Date(student.created_at).toLocaleDateString("fr-FR")}
                       </td>
                     </tr>
                   ))}
                   {filteredStudents.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
+                      <td colSpan={4} className="py-8 text-center text-muted-foreground">
                         Aucun étudiant trouvé
                       </td>
                     </tr>
