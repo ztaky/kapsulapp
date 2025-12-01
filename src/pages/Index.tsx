@@ -1,12 +1,47 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play } from "lucide-react";
+import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import CountdownTimer from "@/components/landing/CountdownTimer";
 import kapsulLogo from "@/assets/kapsul-logo.png";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  // Handle payment canceled
+  useEffect(() => {
+    if (searchParams.get("payment_canceled") === "true") {
+      toast.error("Paiement annulé. Vous pouvez réessayer quand vous voulez.");
+      // Clean URL
+      window.history.replaceState({}, "", "/");
+    }
+  }, [searchParams]);
+
+  const handleFounderCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-founder-checkout");
+      
+      if (error) {
+        throw new Error(error.message || "Erreur lors de la création du paiement");
+      }
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("URL de paiement non reçue");
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue";
+      toast.error(errorMessage);
+      setCheckoutLoading(false);
+    }
+  };
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -47,9 +82,15 @@ const Index = () => {
               <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground px-2 sm:px-4">
                 Connexion
               </Button>
-              <Button variant="gradient" size="sm" onClick={() => navigate("/start")} className="shadow-lg shadow-[#DD2476]/25 text-xs sm:text-sm px-3 sm:px-4 whitespace-nowrap">
-                <span className="hidden sm:inline">Profiter de l'offre Fondateur</span>
-                <span className="sm:hidden">Offre Fondateur</span>
+              <Button variant="gradient" size="sm" onClick={handleFounderCheckout} disabled={checkoutLoading} className="shadow-lg shadow-[#DD2476]/25 text-xs sm:text-sm px-3 sm:px-4 whitespace-nowrap">
+                {checkoutLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">Profiter de l'offre Fondateur</span>
+                    <span className="sm:hidden">Offre Fondateur</span>
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -83,7 +124,10 @@ const Index = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" variant="gradient" onClick={() => navigate("/start")} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
+            <Button size="lg" variant="gradient" onClick={handleFounderCheckout} disabled={checkoutLoading} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
+              {checkoutLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : null}
               Profiter de l'offre Fondateur
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={() => scrollToSection("demo")}>
@@ -433,7 +477,10 @@ const Index = () => {
                         </li>)}
                     </ul>
 
-                    <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/50 hover:shadow-2xl hover:shadow-[#DD2476]/60 transition-all" onClick={() => navigate("/start")}>
+                    <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/50 hover:shadow-2xl hover:shadow-[#DD2476]/60 transition-all" onClick={handleFounderCheckout} disabled={checkoutLoading}>
+                      {checkoutLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      ) : null}
                       Devenir fondateur - 297€
                     </Button>
 
@@ -498,7 +545,10 @@ const Index = () => {
           </div>
 
           <div>
-            <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/start")}>
+            <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={handleFounderCheckout} disabled={checkoutLoading}>
+              {checkoutLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : null}
               Je deviens fondateur maintenant
             </Button>
           </div>

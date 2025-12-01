@@ -53,3 +53,9 @@ verify_jwt = false
 
 [functions.generate-interactive-tool]
 verify_jwt = false
+
+[functions.create-founder-checkout]
+verify_jwt = false
+
+[functions.verify-founder-payment]
+verify_jwt = false

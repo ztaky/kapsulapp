@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, CheckCircle, PartyPopper } from "lucide-react";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 
 // Helper function to translate Supabase auth errors to French
-const getAuthErrorMessage = (error: any): string => {
-  const errorMessage = error?.message?.toLowerCase() || "";
+const getAuthErrorMessage = (error: unknown): string => {
+  const errorMessage = (error as { message?: string })?.message?.toLowerCase() || "";
   
   if (errorMessage.includes("user already registered") || errorMessage.includes("already been registered")) {
     return "Un compte existe déjà avec cet email. Essayez de vous connecter.";
@@ -32,7 +32,7 @@ const getAuthErrorMessage = (error: any): string => {
     return "Erreur de connexion. Vérifiez votre connexion internet.";
   }
   
-  return error?.message || "Une erreur est survenue lors de l'inscription.";
+  return (error as { message?: string })?.message || "Une erreur est survenue lors de l'inscription.";
 };
 
 // Password validation
@@ -64,8 +64,16 @@ const GoogleIcon = () => (
   </svg>
 );
 
+interface PaymentData {
+  verified: boolean;
+  email: string | null;
+  name: string | null;
+  amountPaid: number | null;
+}
+
 export default function CoachSignup() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -76,6 +84,57 @@ export default function CoachSignup() {
     password: "",
   });
   const [passwordError, setPasswordError] = useState("");
+  
+  // Payment verification state
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+
+  // Check for payment success on mount
+  useEffect(() => {
+    const paymentSuccess = searchParams.get("payment_success");
+    const sessionId = searchParams.get("session_id");
+
+    if (paymentSuccess === "true" && sessionId) {
+      verifyPayment(sessionId);
+    }
+  }, [searchParams]);
+
+  const verifyPayment = async (sessionId: string) => {
+    setVerifyingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-founder-payment", {
+        body: { sessionId },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data?.verified) {
+        setPaymentVerified(true);
+        setPaymentData(data);
+        
+        // Pre-fill form with payment data
+        if (data.email) {
+          setFormData(prev => ({ ...prev, email: data.email }));
+        }
+        if (data.name) {
+          setFormData(prev => ({ ...prev, fullName: data.name }));
+        }
+        
+        toast.success("🎉 Paiement confirmé ! Finalisez votre inscription.");
+      } else {
+        toast.error("Le paiement n'a pas pu être vérifié. Contactez le support.");
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erreur de vérification";
+      console.error("Payment verification error:", errorMessage);
+      toast.error("Erreur lors de la vérification du paiement.");
+    } finally {
+      setVerifyingPayment(false);
+    }
+  };
 
   const generateUniqueSlug = async (baseName: string): Promise<string> => {
     const baseSlug = baseName
@@ -121,8 +180,11 @@ export default function CoachSignup() {
 
     setGoogleLoading(true);
     
-    // Store academy name in localStorage for after OAuth redirect
+    // Store academy name and payment info in localStorage for after OAuth redirect
     localStorage.setItem("pending_academy_name", formData.academyName);
+    if (paymentVerified) {
+      localStorage.setItem("founder_payment_verified", "true");
+    }
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -158,6 +220,7 @@ export default function CoachSignup() {
         options: {
           data: {
             full_name: formData.fullName,
+            is_founder: paymentVerified,
           },
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
@@ -187,13 +250,14 @@ export default function CoachSignup() {
       const slug = await generateUniqueSlug(formData.academyName);
 
       // 3. Call edge function to create organization
-      const { data: orgData, error: orgError } = await supabase.functions.invoke(
+      const { error: orgError } = await supabase.functions.invoke(
         "create-coach-academy",
         {
           body: {
             academyName: formData.academyName,
             slug,
             userId: authData.user.id,
+            isFounder: paymentVerified,
           },
         }
       );
@@ -204,12 +268,25 @@ export default function CoachSignup() {
 
       toast.success("🎉 Votre académie a été créée avec succès !");
       navigate(`/school/${slug}/studio`);
-    } catch (error: any) {
-      toast.error(error.message || "Une erreur est survenue lors de l'inscription");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  // Loading state while verifying payment
+  if (verifyingPayment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FEF7F0] via-white to-[#FEF7F0] flex flex-col items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-orange-500 mx-auto mb-4" />
+          <p className="text-lg font-medium text-slate-700">Vérification du paiement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FEF7F0] via-white to-[#FEF7F0] flex flex-col items-center justify-center p-4">
@@ -226,15 +303,35 @@ export default function CoachSignup() {
       {/* Main Card */}
       <Card className="w-full max-w-md border-slate-200 shadow-2xl bg-white/95 backdrop-blur">
         <CardHeader className="space-y-3 text-center pb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-500 mx-auto mb-2">
-            <span className="text-3xl">🚀</span>
-          </div>
-          <CardTitle className="text-2xl font-bold text-slate-900">
-            Lancez votre académie en ligne
-          </CardTitle>
-          <CardDescription className="text-base text-slate-600">
-            Créez, vendez et enseignez vos formations en 5 minutes
-          </CardDescription>
+          {paymentVerified ? (
+            <>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 mx-auto mb-2">
+                <CheckCircle className="w-8 h-8 text-white" />
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold mx-auto">
+                <PartyPopper className="w-4 h-4" />
+                FONDATEUR
+              </div>
+              <CardTitle className="text-2xl font-bold text-slate-900">
+                Paiement confirmé !
+              </CardTitle>
+              <CardDescription className="text-base text-slate-600">
+                Finalisez la création de votre académie
+              </CardDescription>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-500 mx-auto mb-2">
+                <span className="text-3xl">🚀</span>
+              </div>
+              <CardTitle className="text-2xl font-bold text-slate-900">
+                Lancez votre académie en ligne
+              </CardTitle>
+              <CardDescription className="text-base text-slate-600">
+                Créez, vendez et enseignez vos formations en 5 minutes
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
 
         <CardContent>
@@ -308,9 +405,12 @@ export default function CoachSignup() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
-                disabled={loading}
+                disabled={loading || (paymentVerified && !!paymentData?.email)}
                 className="h-11 border-slate-300 focus:border-orange-500 focus:ring-orange-500"
               />
+              {paymentVerified && paymentData?.email && (
+                <p className="text-xs text-green-600">✓ Email vérifié via le paiement</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -356,6 +456,10 @@ export default function CoachSignup() {
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Création en cours...
                 </>
+              ) : paymentVerified ? (
+                <>
+                  🎉 Finaliser mon académie
+                </>
               ) : (
                 <>
                   🎯 Créer mon académie maintenant
@@ -373,15 +477,31 @@ export default function CoachSignup() {
 
           {/* Trust Indicators */}
           <div className="flex items-center justify-center gap-6 mt-6 pt-6 border-t border-slate-200">
-            <div className="flex items-center gap-1 text-xs text-slate-600">
-              <span className="text-green-600">✓</span> Gratuit
-            </div>
-            <div className="flex items-center gap-1 text-xs text-slate-600">
-              <span className="text-green-600">✓</span> Sans CB
-            </div>
-            <div className="flex items-center gap-1 text-xs text-slate-600">
-              <span className="text-green-600">✓</span> En 2 minutes
-            </div>
+            {paymentVerified ? (
+              <>
+                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                  <span>✓</span> Paiement OK
+                </div>
+                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                  <span>✓</span> Accès Lifetime
+                </div>
+                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                  <span>✓</span> Badge Fondateur
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-1 text-xs text-slate-600">
+                  <span className="text-green-600">✓</span> Gratuit
+                </div>
+                <div className="flex items-center gap-1 text-xs text-slate-600">
+                  <span className="text-green-600">✓</span> Sans CB
+                </div>
+                <div className="flex items-center gap-1 text-xs text-slate-600">
+                  <span className="text-green-600">✓</span> En 2 minutes
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
