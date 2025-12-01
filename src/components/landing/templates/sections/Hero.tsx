@@ -51,15 +51,15 @@ export function Hero({ content }: HeroProps) {
           </p>
 
           {/* Main Headline */}
-          <h1 className="space-y-3">
+          <h1 className="space-y-2 md:space-y-3">
             <div 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
               style={{ color: theme.colors.textDark }}
             >
               {content.headline.line1}
             </div>
             <div 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
               style={{ 
                 background: gradientStyle,
                 WebkitBackgroundClip: 'text',
@@ -70,7 +70,7 @@ export function Hero({ content }: HeroProps) {
               {content.headline.line2}
             </div>
             <div 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
               style={{ color: theme.colors.textDark }}
             >
               {content.headline.line3}
