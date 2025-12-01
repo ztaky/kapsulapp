@@ -1186,6 +1186,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_leads: {
+        Row: {
+          conversation: Json
+          converted: boolean | null
+          created_at: string | null
+          email: string | null
+          first_question: string | null
+          id: string
+          session_id: string
+          source_page: string | null
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          conversation?: Json
+          converted?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          first_question?: string | null
+          id?: string
+          session_id: string
+          source_page?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          conversation?: Json
+          converted?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          first_question?: string | null
+          id?: string
+          session_id?: string
+          source_page?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sequence_enrollments: {
         Row: {
           completed_at: string | null

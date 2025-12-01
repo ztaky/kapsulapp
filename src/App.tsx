@@ -51,6 +51,7 @@ import AdminPricing from "./pages/admin/AdminPricing";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminLeads from "./pages/admin/AdminLeads";
 import FAQ from "./pages/FAQ";
 import Roadmap from "./pages/Roadmap";
 import TestLandingPage from "./pages/TestLandingPage";
@@ -111,6 +112,7 @@ const App = () => (
             <Route path="logs" element={<AdminLogs />} />
             <Route path="support/*" element={<AdminSupport />} />
             <Route path="faq" element={<AdminFAQ />} />
+            <Route path="leads" element={<AdminLeads />} />
             <Route path="emails" element={<AdminEmails />} />
             <Route path="roadmap" element={<AdminRoadmap />} />
             <Route path="pricing" element={<AdminPricing />} />
