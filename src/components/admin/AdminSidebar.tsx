@@ -14,7 +14,9 @@ import {
   HelpCircle,
   Mail,
   Map,
-  CreditCard
+  CreditCard,
+  BarChart3,
+  Wallet
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +42,16 @@ const navItems = [
     title: "Vue d'ensemble",
     url: "",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Analytics",
+    url: "/analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Paiements",
+    url: "/payments",
+    icon: Wallet,
   },
   {
     title: "Académies",
