@@ -130,6 +130,13 @@ export function AIAssistantChat({
           toast.error("Trop de requêtes, veuillez patienter...");
         } else if (response.status === 402) {
           toast.error("Limite de crédits atteinte");
+        } else if (response.status === 403) {
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.code === 'AI_CREDITS_LIMIT_REACHED') {
+            toast.error("Limite de crédits IA atteinte pour ce mois. Revenez le mois prochain !");
+          } else {
+            toast.error("Accès refusé");
+          }
         }
         throw new Error("Failed to start stream");
       }

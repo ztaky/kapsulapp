@@ -1,9 +1,45 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper function to track AI credits
+async function trackAICredits(organizationId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const { data, error } = await supabase.rpc('increment_ai_credits', {
+      _organization_id: organizationId,
+      _month_year: monthYear,
+      _amount: 1
+    });
+
+    if (error) {
+      console.error('[unified-chat] Error tracking AI credits:', error);
+      return { success: false, error: error.message };
+    }
+
+    const result = data?.[0];
+    if (result && !result.success) {
+      console.log(`[unified-chat] AI credits limit reached for org ${organizationId}`);
+      return { success: false, error: 'AI_CREDITS_LIMIT_REACHED' };
+    }
+
+    console.log(`[unified-chat] AI credits tracked: ${result?.new_count}/${result?.credits_limit || 'unlimited'}`);
+    return { success: true };
+  } catch (error) {
+    console.error('[unified-chat] Error in trackAICredits:', error);
+    return { success: false, error: 'Internal error' };
+  }
+}
 
 type ChatMode = 'tutor' | 'student' | 'studio' | 'support';
 
@@ -192,11 +228,25 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, mode = 'student', ...context } = await req.json();
+    const { messages, mode = 'student', organizationId, ...context } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Track AI credits if organizationId is provided (studio mode)
+    if (organizationId && mode === 'studio') {
+      const creditsResult = await trackAICredits(organizationId);
+      if (!creditsResult.success && creditsResult.error === 'AI_CREDITS_LIMIT_REACHED') {
+        return new Response(JSON.stringify({ 
+          error: 'AI credits limit reached',
+          code: 'AI_CREDITS_LIMIT_REACHED'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const systemPrompt = getSystemPrompt(mode as ChatMode, context);

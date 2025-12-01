@@ -4,8 +4,9 @@ import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useFounderStatus } from "@/hooks/useFounderStatus";
 import { useStudentLimit } from "@/hooks/useStudentLimit";
+import { useAICredits } from "@/hooks/useAICredits";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight } from "lucide-react";
+import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
@@ -22,6 +23,7 @@ export default function StudioDashboard() {
   const currentOrg = organizations.find((org) => org.slug === slug);
   const { isFounder } = useFounderStatus();
   const { data: studentLimit } = useStudentLimit(currentOrg?.id);
+  const { data: aiCredits } = useAICredits(currentOrg?.id);
 
   const [showWizard, setShowWizard] = useState(false);
   const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
@@ -220,7 +222,7 @@ export default function StudioDashboard() {
       )}
 
       {/* Stats Grid - Neutral style */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Formations"
           value={stats?.totalCourses || 0}
@@ -260,6 +262,53 @@ export default function StudioDashboard() {
                     </p>
                   )}
                   {studentLimit.isAtLimit && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Limite atteinte
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        {/* AI Credits Card */}
+        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
+          <div className="flex items-start gap-4">
+            <div className="rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 text-violet-600 p-3 w-11 h-11 flex items-center justify-center">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground mb-1">Crédits IA</p>
+              <p className="text-2xl font-bold tracking-tight">
+                {aiCredits?.creditsLimit ? (
+                  <>
+                    {aiCredits.remaining?.toLocaleString('fr-FR')}
+                    <span className="text-sm font-normal text-muted-foreground ml-1">
+                      / {aiCredits.creditsLimit.toLocaleString('fr-FR')}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-lg">∞</span>
+                )}
+              </p>
+              {aiCredits?.creditsLimit && (
+                <div className="mt-2">
+                  <Progress 
+                    value={aiCredits.percentage} 
+                    className={`h-1.5 ${
+                      aiCredits.isAtLimit 
+                        ? "[&>div]:bg-red-500" 
+                        : aiCredits.isNearLimit 
+                          ? "[&>div]:bg-amber-500" 
+                          : "[&>div]:bg-violet-500"
+                    }`}
+                  />
+                  {aiCredits.isNearLimit && !aiCredits.isAtLimit && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      {aiCredits.remaining?.toLocaleString('fr-FR')} restants
+                    </p>
+                  )}
+                  {aiCredits.isAtLimit && (
                     <p className="text-xs text-red-600 mt-1">
                       Limite atteinte
                     </p>
