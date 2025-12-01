@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { NotificationBell } from "@/components/NotificationBell";
+import { FounderBadge } from "@/components/shared/FounderBadge";
+import { useFounderStatus } from "@/hooks/useFounderStatus";
 import {
   Sidebar,
   SidebarContent,
@@ -74,6 +76,7 @@ const navItems = [
 export function StudioSidebar({ organization }: StudioSidebarProps) {
   const { open } = useSidebar();
   const navigate = useNavigate();
+  const { isFounder } = useFounderStatus();
   const baseUrl = `/school/${organization.slug}/studio`;
 
   const handleSignOut = async () => {
@@ -87,9 +90,12 @@ export function StudioSidebar({ organization }: StudioSidebarProps) {
       className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-100`} 
       collapsible="icon"
     >
-      <SidebarHeader className="flex flex-row items-center justify-between p-4 border-b border-slate-100">
-        {open && <NotificationBell variant="light" />}
-        <SidebarTrigger className="text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg" />
+      <SidebarHeader className="flex flex-col gap-3 p-4 border-b border-slate-100">
+        <div className="flex items-center justify-between">
+          {open && <NotificationBell variant="light" />}
+          <SidebarTrigger className="text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg" />
+        </div>
+        {isFounder && open && <FounderBadge size="sm" />}
       </SidebarHeader>
 
       <SidebarContent className="bg-transparent px-3 py-4">

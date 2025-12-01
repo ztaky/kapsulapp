@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useFounderStatus } from "@/hooks/useFounderStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,12 +11,14 @@ import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
 import { StatCard } from "@/components/shared/StatCard";
+import { FounderBadge } from "@/components/shared/FounderBadge";
 
 export default function StudioDashboard() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
+  const { isFounder } = useFounderStatus();
 
   const [showWizard, setShowWizard] = useState(false);
   const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
@@ -192,11 +194,14 @@ export default function StudioDashboard() {
       />
 
       {/* Hero Header */}
-      <DashboardHeader
-        title="Tableau de bord"
-        subtitle="Vue d'ensemble de votre académie"
-        highlight={currentOrg?.name}
-      />
+      <div className="flex items-start justify-between">
+        <DashboardHeader
+          title="Tableau de bord"
+          subtitle="Vue d'ensemble de votre académie"
+          highlight={currentOrg?.name}
+        />
+        {isFounder && <FounderBadge className="mt-2" />}
+      </div>
 
       {/* Onboarding Checklist - Show if not completed */}
       {!onboardingCompleted && (
