@@ -3,10 +3,13 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Workflow, History } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Mail, Workflow, History, AlertTriangle } from "lucide-react";
 import { EmailTemplatesList } from "@/components/emails/EmailTemplatesList";
 import { EmailSequencesList } from "@/components/emails/EmailSequencesList";
 import { EmailHistoryList } from "@/components/emails/EmailHistoryList";
+import { useEmailQuota } from "@/hooks/useEmailQuota";
 
 export default function StudioEmails() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,6 +29,8 @@ export default function StudioEmails() {
     enabled: !!slug,
   });
 
+  const { data: emailQuota } = useEmailQuota(organization?.id);
+
   if (!organization) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -36,11 +41,61 @@ export default function StudioEmails() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Emails</h1>
-        <p className="text-slate-500 mt-1">
-          Gérez vos templates d'emails et séquences automatisées
-        </p>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Emails</h1>
+          <p className="text-muted-foreground mt-1">
+            Gérez vos templates d'emails et séquences automatisées
+          </p>
+        </div>
+
+        {/* Email Quota Card */}
+        {emailQuota && emailQuota.emailsLimit && (
+          <Card className="w-full md:w-80">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Quota Emails du mois
+                {emailQuota.isNearLimit && !emailQuota.isAtLimit && (
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                )}
+                {emailQuota.isAtLimit && (
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {emailQuota.emailsSent.toLocaleString()} / {emailQuota.totalAvailable?.toLocaleString()} emails
+                </span>
+                <span className={`font-medium ${
+                  emailQuota.isAtLimit ? "text-destructive" : 
+                  emailQuota.isNearLimit ? "text-amber-500" : "text-foreground"
+                }`}>
+                  {emailQuota.percentage}%
+                </span>
+              </div>
+              <Progress 
+                value={emailQuota.percentage} 
+                className={`h-2 ${
+                  emailQuota.isAtLimit ? "[&>div]:bg-destructive" : 
+                  emailQuota.isNearLimit ? "[&>div]:bg-amber-500" : ""
+                }`}
+              />
+              {emailQuota.bonusEmails > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  dont {emailQuota.bonusEmails.toLocaleString()} bonus
+                </p>
+              )}
+              {emailQuota.isAtLimit && (
+                <p className="text-xs text-destructive font-medium">
+                  Quota atteint ! Les emails ne seront plus envoyés.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
