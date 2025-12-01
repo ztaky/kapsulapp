@@ -37,20 +37,20 @@ export function KapsulFooter() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a 
-                  href="#features" 
+                <Link 
+                  to="/#features" 
                   className="text-white/60 hover:text-white transition-colors"
                 >
                   Fonctionnalités
-                </a>
+                </Link>
               </li>
               <li>
-                <a 
-                  href="#pricing" 
+                <Link 
+                  to="/#pricing" 
                   className="text-white/60 hover:text-white transition-colors"
                 >
                   Tarifs
-                </a>
+                </Link>
               </li>
               <li>
                 <Link 
