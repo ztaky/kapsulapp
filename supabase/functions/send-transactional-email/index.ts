@@ -10,8 +10,8 @@ const corsHeaders = {
 };
 
 interface TransactionalEmailRequest {
-  type: "welcome_purchase" | "invoice" | "course_reminder";
-  organizationId: string;
+  type: "welcome_purchase" | "invoice" | "course_reminder" | "founder_welcome";
+  organizationId?: string;
   recipientEmail: string;
   recipientName?: string;
   courseName?: string;
@@ -19,6 +19,8 @@ interface TransactionalEmailRequest {
   purchaseDate?: string;
   paymentId?: string;
   courseUrl?: string;
+  // Founder specific
+  amount?: number;
 }
 
 interface OrganizationBranding {
@@ -290,6 +292,145 @@ function generateInvoiceEmailHtml(
   `;
 }
 
+function generateFounderWelcomeEmailHtml(
+  recipientName: string,
+  amount: number
+): string {
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenue dans la famille Fondateurs Kapsul</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef7f0;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #fef7f0;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);">
+          <!-- Header with gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #f97316 0%, #ec4899 100%); padding: 50px 40px 40px; border-radius: 16px 16px 0 0; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700;">Bienvenue, Fondateur !</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 16px 0 0; font-size: 16px;">Vous faites partie des premiers à nous faire confiance</p>
+            </td>
+          </tr>
+          
+          <!-- Founder Badge -->
+          <tr>
+            <td align="center" style="padding: 0;">
+              <div style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ec4899 100%); color: white; padding: 12px 32px; border-radius: 50px; font-weight: 700; font-size: 14px; letter-spacing: 1px; margin-top: -20px; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);">
+                ✨ FONDATEUR ✨
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <p style="color: #334155; font-size: 16px; line-height: 1.7; margin: 0 0 24px;">
+                Bonjour${recipientName ? ` <strong>${recipientName}</strong>` : ''} !
+              </p>
+              <p style="color: #334155; font-size: 16px; line-height: 1.7; margin: 0 0 24px;">
+                Merci infiniment pour votre confiance ! En rejoignant Kapsul en tant que <strong style="color: #f97316;">Fondateur</strong>, vous bénéficiez d'avantages exclusifs et permanents.
+              </p>
+              
+              <!-- Benefits Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fff7ed 0%, #fdf2f8 100%); border-radius: 12px; margin-bottom: 30px; border: 1px solid #fed7aa;">
+                <tr>
+                  <td style="padding: 28px;">
+                    <h2 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 0 0 20px;">🎁 Vos avantages Fondateur à vie</h2>
+                    
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">⚡</span>
+                          <span style="color: #334155; font-size: 15px;"><strong>Accès lifetime</strong> à Kapsul</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">👑</span>
+                          <span style="color: #334155; font-size: 15px;"><strong>0% de commission</strong> sur vos ventes, à vie</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">🎯</span>
+                          <span style="color: #334155; font-size: 15px;"><strong>Support prioritaire</strong></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">✨</span>
+                          <span style="color: #334155; font-size: 15px;"><strong>Badge Fondateur exclusif</strong></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">🚀</span>
+                          <span style="color: #334155; font-size: 15px;"><strong>Accès anticipé</strong> aux nouvelles fonctionnalités</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td align="center">
+                    <a href="https://kapsul.app/start" style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ec4899 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);">
+                      🚀 Créer mon académie
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Payment confirmation -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="color: #64748b; font-size: 14px;">Montant payé</td>
+                        <td style="text-align: right; color: #334155; font-size: 18px; font-weight: 700;">${amount.toFixed(2)} €</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #64748b; font-size: 14px; padding-top: 8px;">Type</td>
+                        <td style="text-align: right; color: #f97316; font-size: 14px; font-weight: 600; padding-top: 8px;">Paiement unique - Accès à vie</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
+                Des questions ? Écrivez-nous à <a href="mailto:hello@kapsul.app" style="color: #f97316; text-decoration: none;">hello@kapsul.app</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 24px 40px; border-radius: 0 0 16px 16px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="color: #94a3b8; font-size: 13px; margin: 0;">
+                © ${new Date().getFullYear()} Kapsul • Merci de faire partie de l'aventure ! 🧡
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
 // Helper function to darken/lighten a hex color
 function adjustColor(hex: string, percent: number): string {
   const num = parseInt(hex.replace("#", ""), 16);
@@ -319,11 +460,44 @@ serve(async (req) => {
     const request: TransactionalEmailRequest = await req.json();
     console.log("Received transactional email request:", request);
 
-    // Fetch organization branding
+    // Handle founder_welcome separately (no organization required)
+    if (request.type === "founder_welcome") {
+      const subject = "🎉 Bienvenue dans la famille Fondateurs Kapsul !";
+      const html = generateFounderWelcomeEmailHtml(
+        request.recipientName || "",
+        request.amount || 297
+      );
+
+      console.log(`Sending founder_welcome email to ${request.recipientEmail}`);
+
+      const emailResponse = await resend.emails.send({
+        from: "Kapsul <noreply@kapsulapp.io>",
+        reply_to: "hello@kapsul.app",
+        to: [request.recipientEmail],
+        subject: subject,
+        html: html,
+      });
+
+      console.log("Founder welcome email sent successfully:", emailResponse);
+
+      return new Response(
+        JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // For other email types, fetch organization branding
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    if (!request.organizationId) {
+      return new Response(
+        JSON.stringify({ error: "Organization ID required for this email type" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const { data: org, error: orgError } = await supabaseAdmin
       .from("organizations")

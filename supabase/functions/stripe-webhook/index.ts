@@ -83,7 +83,62 @@ serve(async (req) => {
       const session = event.data.object as Stripe.Checkout.Session;
 
       console.log("Checkout session completed:", session.id);
+      console.log("Session metadata:", session.metadata);
 
+      // Check if this is a founder payment
+      if (session.metadata?.offer === "founder_lifetime") {
+        console.log("Processing founder payment");
+
+        const customerEmail = session.customer_email || session.customer_details?.email;
+        const customerName = session.customer_details?.name;
+        const amountTotal = session.amount_total ? session.amount_total / 100 : 297;
+
+        if (!customerEmail) {
+          console.error("No customer email found in founder session");
+          return new Response(
+            JSON.stringify({ received: true, warning: "No customer email" }),
+            { status: 200, headers: corsHeaders }
+          );
+        }
+
+        // Send founder welcome email
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        try {
+          console.log("Sending founder welcome email to:", customerEmail);
+          const welcomeResponse = await fetch(
+            `${supabaseUrl}/functions/v1/send-transactional-email`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              },
+              body: JSON.stringify({
+                type: "founder_welcome",
+                recipientEmail: customerEmail,
+                recipientName: customerName || undefined,
+                amount: amountTotal,
+              }),
+            }
+          );
+
+          if (!welcomeResponse.ok) {
+            const errorText = await welcomeResponse.text();
+            console.error("Founder welcome email failed:", errorText);
+          } else {
+            console.log("Founder welcome email sent successfully");
+          }
+        } catch (emailError) {
+          console.error("Error sending founder welcome email:", emailError);
+        }
+
+        return new Response(
+          JSON.stringify({ received: true, type: "founder_payment" }),
+          { status: 200, headers: corsHeaders }
+        );
+      }
+
+      // Regular course purchase flow
       const userId = session.client_reference_id;
       const courseId = session.metadata?.course_id;
       const amountTotal = session.amount_total
