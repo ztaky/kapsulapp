@@ -143,6 +143,14 @@ export function AIAssistantChat({
 
       if (!response.body) throw new Error("No response body");
 
+      // Check for near limit warning in response header
+      const nearLimit = response.headers.get('X-AI-Credits-Near-Limit') === 'true';
+      if (nearLimit) {
+        toast.warning("Attention : vous approchez de votre limite de crédits IA (80%)", {
+          duration: 5000,
+        });
+      }
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";

@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // Helper function to track AI credits
-async function trackAICredits(organizationId: string): Promise<{ success: boolean; error?: string }> {
+async function trackAICredits(organizationId: string): Promise<{ success: boolean; error?: string; nearLimit?: boolean }> {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -33,8 +33,13 @@ async function trackAICredits(organizationId: string): Promise<{ success: boolea
       return { success: false, error: 'AI_CREDITS_LIMIT_REACHED' };
     }
 
-    console.log(`[unified-chat] AI credits tracked: ${result?.new_count}/${result?.credits_limit || 'unlimited'}`);
-    return { success: true };
+    // Check if near limit (>= 80%)
+    const creditsUsed = result?.new_count || 0;
+    const creditsLimit = result?.credits_limit || null;
+    const nearLimit = creditsLimit ? (creditsUsed / creditsLimit) >= 0.8 : false;
+
+    console.log(`[unified-chat] AI credits tracked: ${creditsUsed}/${creditsLimit || 'unlimited'} (nearLimit: ${nearLimit})`);
+    return { success: true, nearLimit };
   } catch (error) {
     console.error('[unified-chat] Error in trackAICredits:', error);
     return { success: false, error: 'Internal error' };
@@ -236,6 +241,7 @@ serve(async (req) => {
     }
 
     // Track AI credits if organizationId is provided (studio mode)
+    let nearLimit = false;
     if (organizationId && mode === 'studio') {
       const creditsResult = await trackAICredits(organizationId);
       if (!creditsResult.success && creditsResult.error === 'AI_CREDITS_LIMIT_REACHED') {
@@ -247,6 +253,7 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      nearLimit = creditsResult.nearLimit || false;
     }
 
     const systemPrompt = getSystemPrompt(mode as ChatMode, context);
@@ -300,7 +307,11 @@ serve(async (req) => {
     }
 
     return new Response(response.body, {
-      headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'text/event-stream',
+        'X-AI-Credits-Near-Limit': nearLimit ? 'true' : 'false'
+      },
     });
   } catch (error) {
     console.error('unified-chat error:', error);
