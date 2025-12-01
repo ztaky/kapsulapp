@@ -10,11 +10,14 @@ import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Star, Award, Clock, Qu
 import { generateDynamicPalette } from "@/lib/color-utils";
 import { LandingPageTemplate } from "@/components/landing/templates/LandingPageTemplate";
 import { LandingPageConfig } from "@/config/landingPageSchema";
+import { CookieConsentBanner } from "@/components/shared/CookieConsentBanner";
+import { TrackingScripts } from "@/components/shared/TrackingScripts";
 
 export default function LandingPageView() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [landingPage, setLandingPage] = useState<any>(null);
+  const [organization, setOrganization] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,6 +81,19 @@ export default function LandingPageView() {
 
       if (error) throw error;
       setLandingPage(data);
+
+      // Fetch organization for tracking IDs
+      if (data?.organization_id) {
+        const { data: orgData } = await supabase
+          .from("organizations")
+          .select("facebook_pixel_id, gtm_container_id")
+          .eq("id", data.organization_id)
+          .single();
+        
+        if (orgData) {
+          setOrganization(orgData);
+        }
+      }
     } catch (error) {
       console.error("Error fetching landing page:", error);
     } finally {
@@ -166,7 +182,16 @@ export default function LandingPageView() {
     // Get enabled sections from design_config
     const enabledSections = (landingPage.design_config as any)?.enabledSections;
     
-    return <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} enabledSections={enabledSections} landingSlug={slug} />;
+    return (
+      <>
+        <TrackingScripts 
+          gtmContainerId={organization?.gtm_container_id} 
+          facebookPixelId={organization?.facebook_pixel_id} 
+        />
+        <CookieConsentBanner />
+        <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} enabledSections={enabledSections} landingSlug={slug} />
+      </>
+    );
   }
 
   // Legacy format - keep old renderer for backwards compatibility
@@ -186,7 +211,13 @@ export default function LandingPageView() {
     : { backgroundColor: palette.primary };
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: bodyFont, backgroundColor: palette.background, color: palette.bodyText }}>
+    <>
+      <TrackingScripts 
+        gtmContainerId={organization?.gtm_container_id} 
+        facebookPixelId={organization?.facebook_pixel_id} 
+      />
+      <CookieConsentBanner />
+      <div className="min-h-screen" style={{ fontFamily: bodyFont, backgroundColor: palette.background, color: palette.bodyText }}>
       
       {/* SECTION A: HERO - Fond clair épuré avec image optionnelle */}
       <section
@@ -752,5 +783,6 @@ export default function LandingPageView() {
         </div>
       </section>
     </div>
+    </>
   );
 }
