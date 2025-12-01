@@ -19,8 +19,8 @@ const AdminLayout = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -31,7 +31,7 @@ const AdminLayout = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-slate-950">
+      <div className="min-h-screen flex w-full bg-muted/30">
         <AdminSidebar />
         <main className="flex-1 overflow-auto">
           <div className="p-8">
