@@ -59,3 +59,12 @@ verify_jwt = false
 
 [functions.verify-founder-payment]
 verify_jwt = false
+
+[functions.process-email-sequences]
+verify_jwt = false
+
+[functions.add-student]
+verify_jwt = false
+
+[functions.create-credits-checkout]
+verify_jwt = false

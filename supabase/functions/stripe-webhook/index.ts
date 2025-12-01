@@ -12,7 +12,7 @@ const corsHeaders = {
 async function sendOutgoingWebhook(
   webhookUrl: string,
   event: string,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ) {
   if (!webhookUrl) return;
 
@@ -35,6 +35,96 @@ async function sendOutgoingWebhook(
   } catch (error) {
     console.error(`Error sending webhook ${event}:`, error);
     // Don't throw - we don't want webhook failures to affect the main flow
+  }
+}
+
+// Helper function to enroll user in email sequences
+async function enrollInSequences(
+  supabaseAdmin: any,
+  userId: string,
+  organizationId: string,
+  courseId: string,
+  triggerEvent: string
+) {
+  try {
+    console.log(`Checking for sequences to enroll: trigger=${triggerEvent}, orgId=${organizationId}, courseId=${courseId}`);
+
+    // Find active sequences matching the trigger
+    const { data: sequences, error: seqError } = await supabaseAdmin
+      .from("email_sequences")
+      .select("id, name, trigger_course_id")
+      .eq("organization_id", organizationId)
+      .eq("trigger_event", triggerEvent)
+      .eq("is_active", true);
+
+    if (seqError) {
+      console.error("Error fetching sequences:", seqError);
+      return;
+    }
+
+    if (!sequences || sequences.length === 0) {
+      console.log("No active sequences found for this trigger");
+      return;
+    }
+
+    for (const sequence of sequences as any[]) {
+      // Check if sequence is for specific course or all courses
+      if (sequence.trigger_course_id && sequence.trigger_course_id !== courseId) {
+        console.log(`Sequence ${sequence.name} is for different course, skipping`);
+        continue;
+      }
+
+      // Check if user is already enrolled in this sequence
+      const { data: existingEnrollment } = await supabaseAdmin
+        .from("sequence_enrollments")
+        .select("id")
+        .eq("sequence_id", sequence.id)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (existingEnrollment) {
+        console.log(`User already enrolled in sequence ${sequence.name}`);
+        continue;
+      }
+
+      // Get the first step to determine initial delay
+      const { data: firstStep } = await supabaseAdmin
+        .from("email_sequence_steps")
+        .select("step_order, delay_hours")
+        .eq("sequence_id", sequence.id)
+        .order("step_order", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (!firstStep) {
+        console.log(`No steps found for sequence ${sequence.name}, skipping enrollment`);
+        continue;
+      }
+
+      // Calculate next email time based on first step's delay
+      const step = firstStep as any;
+      const nextEmailAt = new Date(Date.now() + step.delay_hours * 60 * 60 * 1000);
+
+      // Create enrollment
+      const { error: enrollError } = await supabaseAdmin
+        .from("sequence_enrollments")
+        .insert({
+          sequence_id: sequence.id,
+          user_id: userId,
+          course_id: courseId,
+          current_step: step.step_order,
+          next_email_at: nextEmailAt.toISOString(),
+          is_active: true,
+        });
+
+      if (enrollError) {
+        console.error(`Error enrolling in sequence ${sequence.name}:`, enrollError);
+      } else {
+        console.log(`Successfully enrolled user in sequence ${sequence.name}, first email at ${nextEmailAt.toISOString()}`);
+      }
+    }
+  } catch (error) {
+    console.error("Error in enrollInSequences:", error);
   }
 }
 
@@ -340,6 +430,15 @@ serve(async (req) => {
         } else {
           console.log("Student added to organization successfully");
         }
+
+        // Enroll user in relevant email sequences
+        await enrollInSequences(
+          supabaseAdmin,
+          userId,
+          course.organization_id,
+          courseId,
+          "purchase_completed"
+        );
 
         // Fetch user info for emails and webhooks
         const { data: user, error: userError } = await supabaseAdmin

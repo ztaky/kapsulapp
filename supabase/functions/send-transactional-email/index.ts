@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 interface TransactionalEmailRequest {
-  type: "welcome_purchase" | "invoice" | "course_reminder" | "founder_welcome";
+  type: "welcome_purchase" | "invoice" | "course_reminder" | "founder_welcome" | "onboarding_day_1" | "onboarding_day_3" | "onboarding_day_7" | "coach_welcome" | "custom";
   organizationId?: string;
   recipientEmail: string;
   recipientName?: string;
@@ -21,6 +21,10 @@ interface TransactionalEmailRequest {
   courseUrl?: string;
   // Founder specific
   amount?: number;
+  // For sequence emails
+  sequenceStepId?: string;
+  templateId?: string;
+  customVariables?: Record<string, string>;
 }
 
 interface OrganizationBranding {
@@ -30,6 +34,122 @@ interface OrganizationBranding {
   contact_email: string | null;
   slug: string;
 }
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  html_content: string;
+  variables: string[] | null;
+  email_type: string;
+}
+
+// ============ DATABASE TEMPLATE FUNCTIONS ============
+
+async function getTemplateFromDB(
+  supabaseAdmin: any,
+  emailType: string,
+  organizationId?: string
+): Promise<EmailTemplate | null> {
+  console.log(`Looking for template: type=${emailType}, orgId=${organizationId}`);
+  
+  // First, try organization-specific template
+  if (organizationId) {
+    const { data: orgTemplate, error: orgError } = await supabaseAdmin
+      .from("email_templates")
+      .select("id, name, subject, html_content, variables, email_type")
+      .eq("organization_id", organizationId)
+      .eq("email_type", emailType)
+      .eq("is_active", true)
+      .maybeSingle();
+    
+    if (!orgError && orgTemplate) {
+      console.log(`Found organization template: ${(orgTemplate as any).name}`);
+      return orgTemplate as EmailTemplate;
+    }
+  }
+  
+  // Fallback to global default template
+  const { data: defaultTemplate, error: defaultError } = await supabaseAdmin
+    .from("email_templates")
+    .select("id, name, subject, html_content, variables, email_type")
+    .is("organization_id", null)
+    .eq("email_type", emailType)
+    .eq("is_default", true)
+    .eq("is_active", true)
+    .maybeSingle();
+  
+  if (!defaultError && defaultTemplate) {
+    console.log(`Found default template: ${(defaultTemplate as any).name}`);
+    return defaultTemplate as EmailTemplate;
+  }
+  
+  console.log("No DB template found, using hardcoded fallback");
+  return null;
+}
+
+function substituteVariables(
+  html: string,
+  subject: string,
+  variables: Record<string, string>
+): { html: string; subject: string } {
+  let processedHtml = html;
+  let processedSubject = subject;
+  
+  for (const [key, value] of Object.entries(variables)) {
+    const placeholder = `{{${key}}}`;
+    processedHtml = processedHtml.split(placeholder).join(value || "");
+    processedSubject = processedSubject.split(placeholder).join(value || "");
+  }
+  
+  return { html: processedHtml, subject: processedSubject };
+}
+
+async function logEmailSend(
+  supabaseAdmin: any,
+  data: {
+    organizationId?: string;
+    templateId?: string;
+    sequenceStepId?: string;
+    recipientEmail: string;
+    recipientUserId?: string;
+    subject: string;
+    status: "pending" | "sent" | "failed";
+    errorMessage?: string;
+    metadata?: Record<string, unknown>;
+  }
+): Promise<string | null> {
+  try {
+    const { data: emailSend, error } = await supabaseAdmin
+      .from("email_sends")
+      .insert({
+        organization_id: data.organizationId || null,
+        template_id: data.templateId || null,
+        sequence_step_id: data.sequenceStepId || null,
+        recipient_email: data.recipientEmail,
+        recipient_user_id: data.recipientUserId || null,
+        subject: data.subject,
+        status: data.status,
+        error_message: data.errorMessage || null,
+        sent_at: data.status === "sent" ? new Date().toISOString() : null,
+        metadata: data.metadata || {},
+      })
+      .select("id")
+      .single();
+    
+    if (error) {
+      console.error("Error logging email send:", error);
+      return null;
+    }
+    
+    return (emailSend as any)?.id || null;
+  } catch (err) {
+    console.error("Error logging email send:", err);
+    return null;
+  }
+}
+
+// ============ HARDCODED HTML TEMPLATES ============
 
 function generateWelcomeEmailHtml(
   branding: OrganizationBranding,
@@ -82,80 +202,6 @@ function generateWelcomeEmailHtml(
                     <a href="${courseUrl}" style="display: inline-block; background: linear-gradient(135deg, ${brandColor} 0%, ${adjustColor(brandColor, -20)} 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px ${brandColor}40;">
                       🚀 Commencer ma formation
                     </a>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Next Steps Section -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 24px;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <h2 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 0 0 16px;">📋 Vos prochaines étapes</h2>
-                    
-                    <!-- Step 1 -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
-                      <tr>
-                        <td width="40" valign="top">
-                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">1</div>
-                        </td>
-                        <td style="padding-left: 12px;">
-                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Accédez à votre espace apprenant</p>
-                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Connectez-vous et découvrez le programme complet de la formation.</p>
-                        </td>
-                      </tr>
-                    </table>
-                    
-                    <!-- Step 2 -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
-                      <tr>
-                        <td width="40" valign="top">
-                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">2</div>
-                        </td>
-                        <td style="padding-left: 12px;">
-                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Commencez par le premier module</p>
-                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Suivez les leçons dans l'ordre pour une progression optimale.</p>
-                        </td>
-                      </tr>
-                    </table>
-                    
-                    <!-- Step 3 -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
-                      <tr>
-                        <td width="40" valign="top">
-                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">3</div>
-                        </td>
-                        <td style="padding-left: 12px;">
-                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Utilisez l'assistant IA</p>
-                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Notre tuteur virtuel est là pour répondre à toutes vos questions.</p>
-                        </td>
-                      </tr>
-                    </table>
-                    
-                    <!-- Step 4 -->
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td width="40" valign="top">
-                          <div style="width: 28px; height: 28px; background: ${brandColor}; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 600; font-size: 14px;">4</div>
-                        </td>
-                        <td style="padding-left: 12px;">
-                          <p style="color: #334155; font-size: 15px; margin: 0; font-weight: 600;">Pratiquez et progressez</p>
-                          <p style="color: #64748b; font-size: 14px; margin: 4px 0 0;">Appliquez ce que vous apprenez et suivez votre avancement.</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Tips Section -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, ${brandColor}10 0%, ${brandColor}05 100%); border-radius: 12px; border-left: 4px solid ${brandColor};">
-                <tr>
-                  <td style="padding: 20px;">
-                    <p style="color: ${brandColor}; font-size: 14px; font-weight: 700; margin: 0 0 8px;">💡 Conseil pour réussir</p>
-                    <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0;">
-                      Réservez des créneaux réguliers dans votre agenda pour suivre la formation. 
-                      Même 20 minutes par jour peuvent faire une grande différence !
-                    </p>
                   </td>
                 </tr>
               </table>
@@ -339,48 +385,6 @@ function generateFounderWelcomeEmailHtml(
                 Merci infiniment pour votre confiance ! En rejoignant Kapsul en tant que <strong style="color: #f97316;">Fondateur</strong>, vous bénéficiez d'avantages exclusifs et permanents.
               </p>
               
-              <!-- Benefits Box -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fff7ed 0%, #fdf2f8 100%); border-radius: 12px; margin-bottom: 30px; border: 1px solid #fed7aa;">
-                <tr>
-                  <td style="padding: 28px;">
-                    <h2 style="color: #1e293b; font-size: 18px; font-weight: 700; margin: 0 0 20px;">🎁 Vos avantages Fondateur à vie</h2>
-                    
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="padding: 10px 0;">
-                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">⚡</span>
-                          <span style="color: #334155; font-size: 15px;"><strong>Accès lifetime</strong> à Kapsul</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0;">
-                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">👑</span>
-                          <span style="color: #334155; font-size: 15px;"><strong>0% de commission</strong> sur vos ventes, à vie</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0;">
-                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">🎯</span>
-                          <span style="color: #334155; font-size: 15px;"><strong>Support prioritaire</strong></span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0;">
-                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">✨</span>
-                          <span style="color: #334155; font-size: 15px;"><strong>Badge Fondateur exclusif</strong></span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0;">
-                          <span style="color: #f97316; font-size: 18px; margin-right: 12px;">🚀</span>
-                          <span style="color: #334155; font-size: 15px;"><strong>Accès anticipé</strong> aux nouvelles fonctionnalités</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              
               <!-- CTA Button -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
                 <tr>
@@ -472,10 +476,17 @@ function generateLegalFooter(isKapsulEmail: boolean = false): string {
   `;
 }
 
+// ============ MAIN HANDLER ============
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
 
   try {
     const request: TransactionalEmailRequest = await req.json();
@@ -491,28 +502,45 @@ serve(async (req) => {
 
       console.log(`Sending founder_welcome email to ${request.recipientEmail}`);
 
-      const emailResponse = await resend.emails.send({
-        from: "Kapsul <noreply@kapsulapp.io>",
-        reply_to: "hello@kapsul.app",
-        to: [request.recipientEmail],
-        subject: subject,
-        html: html,
-      });
+      try {
+        const emailResponse = await resend.emails.send({
+          from: "Kapsul <noreply@kapsulapp.io>",
+          reply_to: "hello@kapsul.app",
+          to: [request.recipientEmail],
+          subject: subject,
+          html: html,
+        });
 
-      console.log("Founder welcome email sent successfully:", emailResponse);
+        console.log("Founder welcome email sent successfully:", emailResponse);
 
-      return new Response(
-        JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        // Log to email_sends
+        await logEmailSend(supabaseAdmin, {
+          recipientEmail: request.recipientEmail,
+          subject,
+          status: "sent",
+          metadata: { type: "founder_welcome" },
+        });
+
+        return new Response(
+          JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (sendError) {
+        console.error("Error sending founder welcome email:", sendError);
+        
+        await logEmailSend(supabaseAdmin, {
+          recipientEmail: request.recipientEmail,
+          subject,
+          status: "failed",
+          errorMessage: sendError instanceof Error ? sendError.message : "Unknown error",
+          metadata: { type: "founder_welcome" },
+        });
+
+        throw sendError;
+      }
     }
 
     // For other email types, fetch organization branding
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     if (!request.organizationId) {
       return new Response(
         JSON.stringify({ error: "Organization ID required for this email type" }),
@@ -537,50 +565,84 @@ serve(async (req) => {
     const branding: OrganizationBranding = org;
     console.log("Organization branding:", branding);
 
+    // Try to get template from DB first
+    const dbTemplate = await getTemplateFromDB(supabaseAdmin, request.type, request.organizationId);
+    
     let subject: string;
     let html: string;
+    let templateId: string | undefined;
 
-    const siteUrl = Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", "") || "https://kapsulapp.io";
+    const siteUrl = "https://lovable.dev";
     const courseUrl = request.courseUrl || `${siteUrl}/school/${branding.slug}/learning`;
+    const loginUrl = `${siteUrl}/school/${branding.slug}/auth`;
 
-    switch (request.type) {
-      case "welcome_purchase":
-        subject = `🎉 Bienvenue dans "${request.courseName}" !`;
-        html = generateWelcomeEmailHtml(
-          branding,
-          request.recipientName || "",
-          request.courseName || "votre formation",
-          courseUrl
-        );
-        break;
+    // Prepare variables for substitution
+    const variables: Record<string, string> = {
+      student_name: request.recipientName || "",
+      student_email: request.recipientEmail,
+      course_name: request.courseName || "votre formation",
+      academy_name: branding.name,
+      coach_name: branding.name,
+      course_url: courseUrl,
+      login_url: loginUrl,
+      support_email: branding.contact_email || `contact@${branding.slug}.kapsulapp.io`,
+      purchase_amount: request.coursePrice ? `${request.coursePrice.toFixed(2)} €` : "",
+      purchase_date: request.purchaseDate || new Date().toLocaleDateString("fr-FR"),
+      payment_id: request.paymentId || "",
+      brand_color: branding.brand_color || "#d97706",
+      logo_url: branding.logo_url || "",
+      ...request.customVariables,
+    };
 
-      case "invoice":
-        subject = `Confirmation de paiement - ${request.courseName}`;
-        html = generateInvoiceEmailHtml(
-          branding,
-          request.recipientName || "",
-          request.courseName || "Formation",
-          request.coursePrice || 0,
-          request.purchaseDate || new Date().toLocaleDateString("fr-FR"),
-          request.paymentId || "N/A"
-        );
-        break;
+    if (dbTemplate) {
+      // Use DB template with variable substitution
+      const processed = substituteVariables(dbTemplate.html_content, dbTemplate.subject, variables);
+      subject = processed.subject;
+      html = processed.html;
+      templateId = dbTemplate.id;
+      console.log(`Using DB template: ${dbTemplate.name}`);
+    } else {
+      // Fallback to hardcoded templates
+      switch (request.type) {
+        case "welcome_purchase":
+          subject = `🎉 Bienvenue dans "${request.courseName}" !`;
+          html = generateWelcomeEmailHtml(
+            branding,
+            request.recipientName || "",
+            request.courseName || "votre formation",
+            courseUrl
+          );
+          break;
 
-      case "course_reminder":
-        subject = `N'oubliez pas votre formation "${request.courseName}" !`;
-        html = generateWelcomeEmailHtml(
-          branding,
-          request.recipientName || "",
-          request.courseName || "votre formation",
-          courseUrl
-        );
-        break;
+        case "invoice":
+          subject = `Confirmation de paiement - ${request.courseName}`;
+          html = generateInvoiceEmailHtml(
+            branding,
+            request.recipientName || "",
+            request.courseName || "Formation",
+            request.coursePrice || 0,
+            request.purchaseDate || new Date().toLocaleDateString("fr-FR"),
+            request.paymentId || "N/A"
+          );
+          break;
 
-      default:
-        return new Response(
-          JSON.stringify({ error: "Invalid email type" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        case "course_reminder":
+          subject = `N'oubliez pas votre formation "${request.courseName}" !`;
+          html = generateWelcomeEmailHtml(
+            branding,
+            request.recipientName || "",
+            request.courseName || "votre formation",
+            courseUrl
+          );
+          break;
+
+        default:
+          // For custom types without DB template, return error
+          return new Response(
+            JSON.stringify({ error: `No template found for email type: ${request.type}` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+      }
     }
 
     // Send email with branded "From" and "Reply-To"
@@ -590,20 +652,52 @@ serve(async (req) => {
     console.log(`Sending ${request.type} email to ${request.recipientEmail}`);
     console.log(`From: ${fromName}, Reply-To: ${replyTo}`);
 
-    const emailResponse = await resend.emails.send({
-      from: `${fromName} <noreply@kapsulapp.io>`,
-      reply_to: replyTo,
-      to: [request.recipientEmail],
-      subject: subject,
-      html: html,
-    });
+    try {
+      const emailResponse = await resend.emails.send({
+        from: `${fromName} <noreply@kapsulapp.io>`,
+        reply_to: replyTo,
+        to: [request.recipientEmail],
+        subject: subject,
+        html: html,
+      });
 
-    console.log("Email sent successfully:", emailResponse);
+      console.log("Email sent successfully:", emailResponse);
 
-    return new Response(
-      JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      // Log successful send
+      await logEmailSend(supabaseAdmin, {
+        organizationId: request.organizationId,
+        templateId,
+        sequenceStepId: request.sequenceStepId,
+        recipientEmail: request.recipientEmail,
+        subject,
+        status: "sent",
+        metadata: {
+          type: request.type,
+          resendId: emailResponse.data?.id,
+        },
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (sendError) {
+      console.error("Error sending email:", sendError);
+
+      // Log failed send
+      await logEmailSend(supabaseAdmin, {
+        organizationId: request.organizationId,
+        templateId,
+        sequenceStepId: request.sequenceStepId,
+        recipientEmail: request.recipientEmail,
+        subject,
+        status: "failed",
+        errorMessage: sendError instanceof Error ? sendError.message : "Unknown error",
+        metadata: { type: request.type },
+      });
+
+      throw sendError;
+    }
   } catch (error) {
     console.error("Error in send-transactional-email:", error);
     return new Response(
