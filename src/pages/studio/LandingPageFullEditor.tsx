@@ -571,6 +571,7 @@ export default function LandingPageFullEditor() {
                 onApplySuggestion={handleAISuggestion}
                 onApplyDesignChange={handleDesignChange}
                 currentSection={activeSection}
+                organizationId={landingPage?.organization_id}
               />
             </div>
           )}

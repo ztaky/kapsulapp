@@ -31,6 +31,7 @@ interface LandingPageAIChatProps {
   onApplySuggestion: (section: string, data: any) => void;
   onApplyDesignChange?: (designKey: string, newValue: any) => void;
   currentSection?: string;
+  organizationId?: string;
 }
 
 const QUICK_ACTIONS = [
@@ -51,6 +52,7 @@ export function LandingPageAIChat({
   onApplySuggestion,
   onApplyDesignChange,
   currentSection,
+  organizationId,
 }: LandingPageAIChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -85,12 +87,29 @@ export function LandingPageAIChat({
           pageContent: content,
           trainerInfo,
           designConfig,
+          organizationId,
         }
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        // Check for AI credits limit error
+        if (response.error.message?.includes('403') || response.error.code === 'AI_CREDITS_LIMIT_REACHED') {
+          toast.error("Limite de crédits IA atteinte pour ce mois");
+          throw new Error('AI_CREDITS_LIMIT_REACHED');
+        }
+        throw response.error;
+      }
 
       const { message, suggestion } = response.data;
+
+      // Check for error in response data
+      if (response.data?.error) {
+        if (response.data?.code === 'AI_CREDITS_LIMIT_REACHED') {
+          toast.error("Limite de crédits IA atteinte pour ce mois");
+          throw new Error('AI_CREDITS_LIMIT_REACHED');
+        }
+        throw new Error(response.data.error);
+      }
 
       const assistantMessage: Message = {
         role: "assistant",
@@ -99,16 +118,21 @@ export function LandingPageAIChat({
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI chat error:", error);
+      const errorMessage = error.message === 'AI_CREDITS_LIMIT_REACHED' 
+        ? "Limite de crédits IA atteinte. Réessayez le mois prochain !"
+        : "Désolé, une erreur s'est produite. Veuillez réessayer.";
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Désolé, une erreur s'est produite. Veuillez réessayer.",
+          content: errorMessage,
         },
       ]);
-      toast.error("Erreur de communication avec l'assistant");
+      if (error.message !== 'AI_CREDITS_LIMIT_REACHED') {
+        toast.error("Erreur de communication avec l'assistant");
+      }
     } finally {
       setIsLoading(false);
     }

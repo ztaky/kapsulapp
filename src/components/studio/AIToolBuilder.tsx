@@ -14,6 +14,7 @@ interface AIToolBuilderProps {
     generatedAt?: string;
   };
   onChange: (config: any) => void;
+  organizationId?: string;
 }
 
 const EXAMPLE_PROMPTS = [
@@ -24,7 +25,7 @@ const EXAMPLE_PROMPTS = [
   "Un calculateur d'IMC avec interprétation des résultats",
 ];
 
-export function AIToolBuilder({ toolConfig, onChange }: AIToolBuilderProps) {
+export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBuilderProps) {
   const [description, setDescription] = useState(toolConfig.description || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -39,13 +40,17 @@ export function AIToolBuilder({ toolConfig, onChange }: AIToolBuilderProps) {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-interactive-tool', {
-        body: { description },
+        body: { description, organizationId },
       });
 
       if (error) throw error;
 
       if (data.error) {
-        toast.error(data.error);
+        if (data.code === 'AI_CREDITS_LIMIT_REACHED') {
+          toast.error('Limite de crédits IA atteinte pour ce mois');
+        } else {
+          toast.error(data.error);
+        }
         return;
       }
 

@@ -68,12 +68,21 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
           {
             body: { 
               mode: "single-section",
-              prompt: prompt
+              prompt: prompt,
+              organizationId: currentOrg.id
             }
           }
         );
         
         if (error) throw error;
+        
+        // Check for AI credits limit error
+        if (responseData?.error) {
+          if (responseData?.code === 'AI_CREDITS_LIMIT_REACHED') {
+            throw new Error('AI_CREDITS_LIMIT_REACHED');
+          }
+          throw new Error(responseData.error);
+        }
         
         console.log("Réponse brute de l'IA:", responseData.content);
         
@@ -241,8 +250,16 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
       }, 1000);
     } catch (err: any) {
       console.error("Generation error:", err);
-      setError(err.message || "Une erreur est survenue lors de la génération");
-      toast.error("Erreur lors de la génération");
+      const isCreditsError = err.message?.includes('AI_CREDITS_LIMIT_REACHED') || 
+                            err.message?.includes('403') ||
+                            err.message?.includes('credits');
+      if (isCreditsError) {
+        setError("Limite de crédits IA atteinte pour ce mois. Réessayez le mois prochain !");
+        toast.error("Limite de crédits IA atteinte");
+      } else {
+        setError(err.message || "Une erreur est survenue lors de la génération");
+        toast.error("Erreur lors de la génération");
+      }
     } finally {
       setIsGenerating(false);
     }
