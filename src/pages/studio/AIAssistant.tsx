@@ -16,14 +16,6 @@ interface ActionData {
   data: any;
 }
 
-const SUGGESTIONS = [
-  "Comment structurer mon premier cours ?",
-  "Génère un quiz de 5 questions sur le marketing digital",
-  "Propose une structure de modules pour un cours sur React",
-  "Conseils pour engager mes étudiants",
-  "Comment fixer le prix de ma formation ?",
-];
-
 const WELCOME_MESSAGE = "Bonjour ! Je suis votre assistant expert en création de formations. Je peux vous aider à structurer vos cours, et même **générer des quiz** ou **proposer des modules** que vous pourrez ajouter directement. Comment puis-je vous aider ?";
 
 // Parse tool calls from streamed response
@@ -257,9 +249,6 @@ export default function AIAssistant() {
     sendMessage(input);
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    sendMessage(suggestion);
-  };
 
   const handleLoadDraft = (draft: any) => {
     // Parse draft and create a message with the loaded data
@@ -284,7 +273,7 @@ export default function AIAssistant() {
 
   if (studioContext.isLoading || isLoadingHistory) {
     return (
-      <div className="flex flex-col h-[calc(100vh-8rem)] items-center justify-center">
+      <div className="flex flex-col h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
         <p className="text-sm text-slate-500 mt-2">Chargement du contexte...</p>
       </div>
@@ -292,17 +281,17 @@ export default function AIAssistant() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] space-y-6">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-orange-50/50 p-8 border border-slate-100 shadow-premium">
+    <div className="flex flex-col h-full">
+      {/* Header compact */}
+      <div className="shrink-0 relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-orange-50/50 p-4 border border-slate-100 shadow-sm">
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-orange-100 text-orange-600 p-3 w-14 h-14 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="h-7 w-7" />
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-orange-100 text-orange-600 p-2 w-10 h-10 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">Assistant IA</h1>
-              <p className="text-base text-slate-600 leading-relaxed">
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">Assistant IA</h1>
+              <p className="text-sm text-slate-600">
                 Génère des quiz, structure des modules, et plus encore
               </p>
             </div>
@@ -340,55 +329,24 @@ export default function AIAssistant() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <Tabs defaultValue="chat" className="flex-1 flex flex-col">
-          <div className="px-6 pt-4">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-              <TabsTrigger value="chat" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Conversation
-              </TabsTrigger>
-              <TabsTrigger value="drafts" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Brouillons
-              </TabsTrigger>
-            </TabsList>
-          </div>
+      <Tabs defaultValue="chat" className="flex-1 flex flex-col min-h-0 mt-4">
+        <div className="shrink-0 px-6">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Conversation
+            </TabsTrigger>
+            <TabsTrigger value="drafts" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Brouillons
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-          <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
-            <div className="flex-1 overflow-y-auto">
-              <div className="max-w-4xl mx-auto space-y-6 p-6">
-                {messages.length <= 1 && (
-                  <Card className="p-10 text-center bg-white border border-slate-100 rounded-3xl shadow-premium">
-                    <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-3 text-slate-900 tracking-tight">
-                      Bienvenue ! Comment puis-je vous aider ?
-                    </h3>
-                    <p className="text-base text-slate-600 leading-relaxed mb-4 max-w-2xl mx-auto">
-                      Je peux créer des <span className="font-semibold text-orange-600">quiz</span>, proposer des <span className="font-semibold text-orange-600">structures de modules</span>, générer des <span className="font-semibold text-orange-600">cours complets</span>, et vous conseiller sur vos formations.
-                    </p>
-                    {studioContext.courses.length > 0 && (
-                      <p className="text-sm text-orange-600 mb-6">
-                        📚 Je connais vos {studioContext.courses.length} cours et {studioContext.totalLessons} leçons. Vos brouillons sauvegardés sont dans l'onglet "Brouillons".
-                      </p>
-                    )}
-                    <div className="grid gap-3 max-w-xl mx-auto">
-                      {SUGGESTIONS.map((suggestion, idx) => (
-                        <Button
-                          key={idx}
-                          variant="outline"
-                          className="justify-start text-left h-auto py-4 px-5 rounded-xl border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 text-sm font-medium"
-                          onClick={() => handleSuggestionClick(suggestion)}
-                        >
-                          <Sparkles className="h-4 w-4 mr-3 shrink-0 text-orange-600" />
-                          <span className="text-slate-900">{suggestion}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </Card>
-                )}
+        <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 mt-4">
+          {/* Messages scrollable area */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="max-w-4xl mx-auto space-y-6 p-6">
 
                 {messages.slice(1).map((message, idx) => {
                   const actualIndex = idx + 1; // Account for the slice(1)
@@ -457,50 +415,44 @@ export default function AIAssistant() {
                   </div>
                 )}
 
-                <div ref={messagesEndRef} />
-              </div>
+              <div ref={messagesEndRef} />
             </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="drafts" className="flex-1 mt-0">
-            <ScrollArea className="h-full">
-              <div className="max-w-4xl mx-auto p-6">
-                <DraftsList
-                  organizationId={studioContext.organizationId || ""}
-                  onLoadDraft={handleLoadDraft}
+          {/* Input fixed at bottom */}
+          <div className="shrink-0 border-t bg-white p-4">
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+              <div className="flex gap-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Posez votre question..."
+                  disabled={isLoading}
+                  className="flex-1"
                 />
+                <Button type="submit" disabled={isLoading || !input.trim()}>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+            </form>
+          </div>
+        </TabsContent>
 
-        <div className="p-6 border-t border-slate-200">
-          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-            <div className="flex gap-3">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Demandez un quiz, une structure de modules, ou posez votre question..."
-                disabled={isLoading}
-                className="flex-1 rounded-xl border-slate-200 h-12"
+        <TabsContent value="drafts" className="flex-1 min-h-0 mt-4">
+          <ScrollArea className="h-full">
+            <div className="max-w-4xl mx-auto p-6">
+              <DraftsList
+                organizationId={studioContext.organizationId || ""}
+                onLoadDraft={handleLoadDraft}
               />
-              <Button 
-                type="submit" 
-                disabled={isLoading || !input.trim()}
-                variant="gradient"
-                size="lg"
-                className="shadow-lg h-12 px-6"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
             </div>
-          </form>
-        </div>
-      </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
