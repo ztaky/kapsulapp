@@ -141,8 +141,8 @@ const AdminSuperAdmins = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Super Admins</h1>
-          <p className="text-slate-400">Gérez les administrateurs de la plateforme</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Super Admins</h1>
+          <p className="text-muted-foreground">Gérez les administrateurs de la plateforme</p>
         </div>
 
         <Dialog open={promoteDialogOpen} onOpenChange={setPromoteDialogOpen}>
@@ -152,24 +152,23 @@ const AdminSuperAdmins = () => {
               Promouvoir
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-slate-900 border-slate-800">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-white">Promouvoir un super admin</DialogTitle>
-              <DialogDescription className="text-slate-400">
+              <DialogTitle>Promouvoir un super admin</DialogTitle>
+              <DialogDescription>
                 Entrez l'email de l'utilisateur à promouvoir
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handlePromote}>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="email" className="text-slate-300">Email de l'utilisateur</Label>
+                  <Label htmlFor="email">Email de l'utilisateur</Label>
                   <Input
                     id="email"
                     type="email"
                     value={promoteEmail}
                     onChange={(e) => setPromoteEmail(e.target.value)}
                     placeholder="user@example.com"
-                    className="bg-slate-800 border-slate-700 text-white"
                     required
                   />
                 </div>
@@ -185,30 +184,30 @@ const AdminSuperAdmins = () => {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Rechercher un super admin..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
+          className="pl-10"
         />
       </div>
 
       {loading ? (
         <div className="space-y-4">
           {[1, 2].map((i) => (
-            <Card key={i} className="bg-slate-900 border-slate-800">
+            <Card key={i}>
               <CardContent className="p-6">
-                <Skeleton className="h-6 w-48 bg-slate-800 mb-2" />
-                <Skeleton className="h-4 w-32 bg-slate-800" />
+                <Skeleton className="h-6 w-48 mb-2" />
+                <Skeleton className="h-4 w-32" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-purple-500" />
               {filteredAdmins.length} super admin{filteredAdmins.length !== 1 && "s"}
             </CardTitle>
@@ -217,7 +216,7 @@ const AdminSuperAdmins = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-sm text-slate-500">
+                  <tr className="border-b text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">Utilisateur</th>
                     <th className="pb-3 font-medium">Email</th>
                     <th className="pb-3 font-medium">Promu le</th>
@@ -226,7 +225,7 @@ const AdminSuperAdmins = () => {
                 </thead>
                 <tbody>
                   {filteredAdmins.map((admin) => (
-                    <tr key={admin.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                    <tr key={admin.id} className="border-b hover:bg-muted/50 transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
@@ -234,11 +233,11 @@ const AdminSuperAdmins = () => {
                               {admin.profile.full_name?.charAt(0).toUpperCase() || admin.profile.email.charAt(0).toUpperCase()}
                             </span>
                           </div>
-                          <p className="font-semibold text-white">{admin.profile.full_name || "Sans nom"}</p>
+                          <p className="font-semibold text-foreground">{admin.profile.full_name || "Sans nom"}</p>
                         </div>
                       </td>
-                      <td className="py-4 text-slate-400">{admin.profile.email}</td>
-                      <td className="py-4 text-sm text-slate-400">
+                      <td className="py-4 text-muted-foreground">{admin.profile.email}</td>
+                      <td className="py-4 text-sm text-muted-foreground">
                         {new Date(admin.created_at).toLocaleDateString("fr-FR")}
                       </td>
                       <td className="py-4">
@@ -246,7 +245,7 @@ const AdminSuperAdmins = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRevoke(admin.id, admin.profile.email)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-100"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Révoquer
@@ -256,7 +255,7 @@ const AdminSuperAdmins = () => {
                   ))}
                   {filteredAdmins.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
+                      <td colSpan={4} className="py-8 text-center text-muted-foreground">
                         Aucun super admin trouvé
                       </td>
                     </tr>

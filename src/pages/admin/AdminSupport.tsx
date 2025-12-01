@@ -40,10 +40,10 @@ function AdminSupportList() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
+        <h2 className="text-3xl font-bold text-foreground tracking-tight mb-2">
           Support
         </h2>
-        <p className="text-base text-slate-600 leading-relaxed">
+        <p className="text-base text-muted-foreground leading-relaxed">
           Gérez les tickets de support et analysez les performances
         </p>
       </div>

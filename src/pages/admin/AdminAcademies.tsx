@@ -110,8 +110,8 @@ const AdminAcademies = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Académies</h1>
-          <p className="text-slate-400">Gérez toutes les académies de la plateforme</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Académies</h1>
+          <p className="text-muted-foreground">Gérez toutes les académies de la plateforme</p>
         </div>
 
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -121,46 +121,43 @@ const AdminAcademies = () => {
               Créer une académie
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-slate-900 border-slate-800">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-white">Créer une nouvelle académie</DialogTitle>
-              <DialogDescription className="text-slate-400">
+              <DialogTitle>Créer une nouvelle académie</DialogTitle>
+              <DialogDescription>
                 Créez une nouvelle école pour un formateur
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateOrg}>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name" className="text-slate-300">Nom de l'académie</Label>
+                  <Label htmlFor="name">Nom de l'académie</Label>
                   <Input
                     id="name"
                     value={newOrg.name}
                     onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
                     placeholder="Zahed Academy"
-                    className="bg-slate-800 border-slate-700 text-white"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="slug" className="text-slate-300">Slug (URL)</Label>
+                  <Label htmlFor="slug">Slug (URL)</Label>
                   <Input
                     id="slug"
                     value={newOrg.slug}
                     onChange={(e) => setNewOrg({ ...newOrg, slug: e.target.value })}
                     placeholder="zahed-academy"
-                    className="bg-slate-800 border-slate-700 text-white"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="owner" className="text-slate-300">Email du propriétaire</Label>
+                  <Label htmlFor="owner">Email du propriétaire</Label>
                   <Input
                     id="owner"
                     type="email"
                     value={newOrg.ownerEmail}
                     onChange={(e) => setNewOrg({ ...newOrg, ownerEmail: e.target.value })}
                     placeholder="owner@example.com"
-                    className="bg-slate-800 border-slate-700 text-white"
                     required
                   />
                 </div>
@@ -176,30 +173,30 @@ const AdminAcademies = () => {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Rechercher une académie..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
+          className="pl-10"
         />
       </div>
 
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-slate-900 border-slate-800">
+            <Card key={i}>
               <CardContent className="p-6">
-                <Skeleton className="h-6 w-48 bg-slate-800 mb-2" />
-                <Skeleton className="h-4 w-32 bg-slate-800" />
+                <Skeleton className="h-6 w-48 mb-2" />
+                <Skeleton className="h-4 w-32" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <Card className="bg-slate-900 border-slate-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               {filteredOrgs.length} académie{filteredOrgs.length !== 1 && "s"}
             </CardTitle>
@@ -208,7 +205,7 @@ const AdminAcademies = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-sm text-slate-500">
+                  <tr className="border-b text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">Académie</th>
                     <th className="pb-3 font-medium">Propriétaire</th>
                     <th className="pb-3 font-medium">Créée le</th>
@@ -218,24 +215,24 @@ const AdminAcademies = () => {
                 </thead>
                 <tbody>
                   {filteredOrgs.map((org) => (
-                    <tr key={org.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                    <tr key={org.id} className="border-b hover:bg-muted/50 transition-colors">
                       <td className="py-4">
                         <div>
-                          <p className="font-semibold text-white">{org.name}</p>
-                          <p className="text-sm text-slate-500">/{org.slug}</p>
+                          <p className="font-semibold text-foreground">{org.name}</p>
+                          <p className="text-sm text-muted-foreground">/{org.slug}</p>
                         </div>
                       </td>
                       <td className="py-4">
                         <div>
-                          <p className="text-sm font-medium text-slate-300">{org.owner_name}</p>
-                          <p className="text-xs text-slate-500">{org.owner_email}</p>
+                          <p className="text-sm font-medium text-foreground">{org.owner_name}</p>
+                          <p className="text-xs text-muted-foreground">{org.owner_email}</p>
                         </div>
                       </td>
-                      <td className="py-4 text-sm text-slate-400">
+                      <td className="py-4 text-sm text-muted-foreground">
                         {new Date(org.created_at).toLocaleDateString("fr-FR")}
                       </td>
                       <td className="py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                           {org.courses_count} cours
                         </span>
                       </td>
@@ -244,7 +241,6 @@ const AdminAcademies = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => navigate(`/school/${org.slug}/studio`)}
-                          className="text-slate-400 hover:text-white hover:bg-slate-800"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Voir
@@ -254,7 +250,7 @@ const AdminAcademies = () => {
                   ))}
                   {filteredOrgs.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500">
+                      <td colSpan={5} className="py-8 text-center text-muted-foreground">
                         Aucune académie trouvée
                       </td>
                     </tr>

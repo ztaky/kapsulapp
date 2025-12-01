@@ -50,8 +50,8 @@ const AdminSettings = () => {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Paramètres</h1>
-          <p className="text-slate-400">Configuration de la plateforme</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Paramètres</h1>
+          <p className="text-muted-foreground">Configuration de la plateforme</p>
         </div>
         <Skeleton className="h-96 w-full" />
       </div>
@@ -61,21 +61,21 @@ const AdminSettings = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Paramètres</h1>
-        <p className="text-slate-400">Configuration de la plateforme Kapsul</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Paramètres</h1>
+        <p className="text-muted-foreground">Configuration de la plateforme Kapsul</p>
       </div>
 
       <Tabs defaultValue="legal" className="space-y-6">
-        <TabsList className="bg-slate-800 border-slate-700">
-          <TabsTrigger value="legal" className="data-[state=active]:bg-slate-700">
+        <TabsList>
+          <TabsTrigger value="legal">
             <FileText className="h-4 w-4 mr-2" />
             Pages légales
           </TabsTrigger>
-          <TabsTrigger value="tracking" className="data-[state=active]:bg-slate-700">
+          <TabsTrigger value="tracking">
             <BarChart3 className="h-4 w-4 mr-2" />
             Tracking
           </TabsTrigger>
-          <TabsTrigger value="security" className="data-[state=active]:bg-slate-700">
+          <TabsTrigger value="security">
             <Shield className="h-4 w-4 mr-2" />
             Sécurité
           </TabsTrigger>
@@ -84,12 +84,12 @@ const AdminSettings = () => {
         {/* Legal Pages Tab */}
         <TabsContent value="legal" className="space-y-6">
           {/* Mentions Légales */}
-          <Card className="bg-slate-900 border-slate-800">
+          <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white">Mentions Légales</CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardTitle>Mentions Légales</CardTitle>
+                  <CardDescription>
                     Informations légales obligatoires
                   </CardDescription>
                 </div>
@@ -103,22 +103,21 @@ const AdminSettings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-slate-300">Titre</Label>
+                <Label>Titre</Label>
                 <Input
                   value={legalMentions?.title || ""}
                   onChange={(e) => setLegalMentions(prev => ({ ...prev!, title: e.target.value }))}
                   placeholder="Mentions Légales"
-                  className="bg-slate-800 border-slate-700 text-white"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-300">Contenu (Markdown)</Label>
+                <Label>Contenu (Markdown)</Label>
                 <Textarea
                   value={legalMentions?.content || ""}
                   onChange={(e) => setLegalMentions(prev => ({ ...prev!, content: e.target.value }))}
                   placeholder="# Mentions Légales..."
                   rows={12}
-                  className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                  className="font-mono text-sm"
                 />
               </div>
               <Button
@@ -136,12 +135,12 @@ const AdminSettings = () => {
           </Card>
 
           {/* Politique de Confidentialité */}
-          <Card className="bg-slate-900 border-slate-800">
+          <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white">Politique de Confidentialité</CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardTitle>Politique de Confidentialité</CardTitle>
+                  <CardDescription>
                     RGPD et protection des données
                   </CardDescription>
                 </div>
@@ -155,21 +154,20 @@ const AdminSettings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-slate-300">Titre</Label>
+                <Label>Titre</Label>
                 <Input
                   value={privacyPolicy?.title || ""}
                   onChange={(e) => setPrivacyPolicy(prev => ({ ...prev!, title: e.target.value }))}
                   placeholder="Politique de Confidentialité"
-                  className="bg-slate-800 border-slate-700 text-white"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-300">Contenu (Markdown)</Label>
+                <Label>Contenu (Markdown)</Label>
                 <Textarea
                   value={privacyPolicy?.content || ""}
                   onChange={(e) => setPrivacyPolicy(prev => ({ ...prev!, content: e.target.value }))}
                   rows={12}
-                  className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                  className="font-mono text-sm"
                 />
               </div>
               <Button
@@ -187,12 +185,12 @@ const AdminSettings = () => {
           </Card>
 
           {/* CGV */}
-          <Card className="bg-slate-900 border-slate-800">
+          <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white">Conditions Générales de Vente</CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardTitle>Conditions Générales de Vente</CardTitle>
+                  <CardDescription>
                     Conditions commerciales
                   </CardDescription>
                 </div>
@@ -206,21 +204,20 @@ const AdminSettings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-slate-300">Titre</Label>
+                <Label>Titre</Label>
                 <Input
                   value={termsOfService?.title || ""}
                   onChange={(e) => setTermsOfService(prev => ({ ...prev!, title: e.target.value }))}
                   placeholder="Conditions Générales de Vente"
-                  className="bg-slate-800 border-slate-700 text-white"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-300">Contenu (Markdown)</Label>
+                <Label>Contenu (Markdown)</Label>
                 <Textarea
                   value={termsOfService?.content || ""}
                   onChange={(e) => setTermsOfService(prev => ({ ...prev!, content: e.target.value }))}
                   rows={12}
-                  className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                  className="font-mono text-sm"
                 />
               </div>
               <Button
@@ -238,12 +235,12 @@ const AdminSettings = () => {
           </Card>
 
           {/* Politique des Cookies */}
-          <Card className="bg-slate-900 border-slate-800">
+          <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white">Politique des Cookies</CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardTitle>Politique des Cookies</CardTitle>
+                  <CardDescription>
                     Informations sur les cookies utilisés
                   </CardDescription>
                 </div>
@@ -257,21 +254,20 @@ const AdminSettings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-slate-300">Titre</Label>
+                <Label>Titre</Label>
                 <Input
                   value={cookiePolicy?.title || ""}
                   onChange={(e) => setCookiePolicy(prev => ({ ...prev!, title: e.target.value }))}
                   placeholder="Politique des Cookies"
-                  className="bg-slate-800 border-slate-700 text-white"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-300">Contenu (Markdown)</Label>
+                <Label>Contenu (Markdown)</Label>
                 <Textarea
                   value={cookiePolicy?.content || ""}
                   onChange={(e) => setCookiePolicy(prev => ({ ...prev!, content: e.target.value }))}
                   rows={12}
-                  className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                  className="font-mono text-sm"
                 />
               </div>
               <Button
@@ -291,43 +287,41 @@ const AdminSettings = () => {
 
         {/* Tracking Tab */}
         <TabsContent value="tracking" className="space-y-6">
-          <Card className="bg-slate-900 border-slate-800">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-white">Scripts de Tracking</CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardTitle>Scripts de Tracking</CardTitle>
+              <CardDescription>
                 Configurez Google Tag Manager et Facebook Pixel pour le site Kapsul.
                 Ces scripts ne seront chargés qu'après consentement des utilisateurs.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-slate-300">Google Tag Manager Container ID</Label>
+                <Label>Google Tag Manager Container ID</Label>
                 <Input
                   value={tracking?.gtm_container_id || ""}
                   onChange={(e) => setTracking(prev => ({ ...prev!, gtm_container_id: e.target.value }))}
                   placeholder="GTM-XXXXXXX"
-                  className="bg-slate-800 border-slate-700 text-white"
                 />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Format: GTM-XXXXXXX. Trouvez-le dans Google Tag Manager → Admin → Container ID
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-300">Facebook Pixel ID</Label>
+                <Label>Facebook Pixel ID</Label>
                 <Input
                   value={tracking?.facebook_pixel_id || ""}
                   onChange={(e) => setTracking(prev => ({ ...prev!, facebook_pixel_id: e.target.value }))}
                   placeholder="123456789012345"
-                  className="bg-slate-800 border-slate-700 text-white"
                 />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   ID numérique à 15 chiffres. Trouvez-le dans Meta Business Suite → Pixels
                 </p>
               </div>
 
-              <div className="p-4 rounded-lg bg-blue-900/20 border border-blue-800/50">
-                <p className="text-sm text-blue-300">
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-sm text-blue-700">
                   <strong>Note :</strong> Les scripts de tracking ne sont chargés que si l'utilisateur accepte les cookies correspondants (Analytics pour GTM, Marketing pour Facebook Pixel).
                 </p>
               </div>
@@ -349,15 +343,15 @@ const AdminSettings = () => {
 
         {/* Security Tab */}
         <TabsContent value="security" className="space-y-6">
-          <Card className="bg-slate-900 border-slate-800">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-white">Paramètres de Sécurité</CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardTitle>Paramètres de Sécurité</CardTitle>
+              <CardDescription>
                 Configuration avancée de la sécurité
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-slate-500 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Bientôt disponible : configuration des sessions, 2FA obligatoire, logs de sécurité...
               </p>
             </CardContent>
