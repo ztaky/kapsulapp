@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTrackEvent } from "@/components/shared/TrackingScripts";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [verifying, setVerifying] = useState(true);
+  const { trackPurchase } = useTrackEvent();
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -22,16 +24,20 @@ const PaymentSuccess = () => {
           body: { sessionId },
         });
 
-        if (error || !data?.success) {
+        if (error || !data?.verified) {
           navigate("/");
           return;
         }
 
+        // Track Purchase conversion
+        const amountInEuros = data.amountPaid ? data.amountPaid / 100 : 297;
+        trackPurchase(amountInEuros, "EUR", data.paymentIntentId || sessionId);
+
         // Store for /start page
         localStorage.setItem("founder_payment_verified", "true");
         localStorage.setItem("founder_session_id", sessionId);
-        if (data.customerEmail) {
-          localStorage.setItem("founder_email", data.customerEmail);
+        if (data.email) {
+          localStorage.setItem("founder_email", data.email);
         }
 
         // Redirect to auth with success parameter
@@ -44,7 +50,7 @@ const PaymentSuccess = () => {
     };
 
     verifyPayment();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, trackPurchase]);
 
   if (verifying) {
     return (

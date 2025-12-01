@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, ArrowLeft, CheckCircle, Sparkles } from "lucide-react";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 import confetti from "canvas-confetti";
+import { useTrackEvent } from "@/components/shared/TrackingScripts";
 
 // Helper function to translate Supabase auth errors to French
 const getAuthErrorMessage = (error: any): string => {
@@ -105,6 +106,7 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const { trackLead } = useTrackEvent();
 
   useEffect(() => {
     // Check for payment success parameter
@@ -175,6 +177,8 @@ const Auth = () => {
       const friendlyMessage = getAuthErrorMessage(error);
       toast.error(friendlyMessage);
     } else {
+      // Track Lead conversion on successful signup
+      trackLead(email);
       toast.success("Inscription réussie ! Vous pouvez maintenant vous connecter.");
     }
     setLoading(false);

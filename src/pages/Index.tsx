@@ -8,10 +8,12 @@ import CountdownTimer from "@/components/landing/CountdownTimer";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTrackEvent } from "@/components/shared/TrackingScripts";
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const { trackAddToCart, trackInitiateCheckout } = useTrackEvent();
 
   // Handle payment canceled
   useEffect(() => {
@@ -21,7 +23,12 @@ const Index = () => {
       window.history.replaceState({}, "", "/");
     }
   }, [searchParams]);
+  
   const handleFounderCheckout = async () => {
+    // Track AddToCart + InitiateCheckout before redirecting to Stripe
+    trackAddToCart("Offre Fondateur", 297, "EUR");
+    trackInitiateCheckout("Offre Fondateur", 297, "EUR");
+    
     setCheckoutLoading(true);
     try {
       const {
