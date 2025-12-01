@@ -54,6 +54,13 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
         return;
       }
 
+      // Check for near limit warning
+      if (data.nearLimit) {
+        toast.warning("Attention : vous approchez de votre limite de crédits IA (80%)", {
+          duration: 5000,
+        });
+      }
+
       onChange({
         description,
         generatedCode: data.code,

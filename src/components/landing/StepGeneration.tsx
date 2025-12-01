@@ -61,6 +61,9 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
     setCurrentStep(0);
 
     try {
+      // Track if we've shown the near limit warning
+      let nearLimitWarningShown = false;
+      
       // Helper function pour appeler l'IA via l'edge function
       const callAI = async (prompt: string): Promise<any> => {
         const { data: responseData, error } = await supabase.functions.invoke(
@@ -82,6 +85,14 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
             throw new Error('AI_CREDITS_LIMIT_REACHED');
           }
           throw new Error(responseData.error);
+        }
+        
+        // Check for near limit warning (only show once)
+        if (responseData?.nearLimit && !nearLimitWarningShown) {
+          nearLimitWarningShown = true;
+          toast.warning("Attention : vous approchez de votre limite de crédits IA (80%)", {
+            duration: 5000,
+          });
         }
         
         console.log("Réponse brute de l'IA:", responseData.content);

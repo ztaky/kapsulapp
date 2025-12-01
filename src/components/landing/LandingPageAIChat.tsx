@@ -100,7 +100,7 @@ export function LandingPageAIChat({
         throw response.error;
       }
 
-      const { message, suggestion } = response.data;
+      const { message, suggestion, nearLimit } = response.data;
 
       // Check for error in response data
       if (response.data?.error) {
@@ -109,6 +109,13 @@ export function LandingPageAIChat({
           throw new Error('AI_CREDITS_LIMIT_REACHED');
         }
         throw new Error(response.data.error);
+      }
+
+      // Check for near limit warning
+      if (nearLimit) {
+        toast.warning("Attention : vous approchez de votre limite de crédits IA (80%)", {
+          duration: 5000,
+        });
       }
 
       const assistantMessage: Message = {

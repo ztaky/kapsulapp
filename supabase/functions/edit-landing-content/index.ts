@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // Helper function to track AI credits
-async function trackAICredits(organizationId: string): Promise<{ success: boolean; error?: string }> {
+async function trackAICredits(organizationId: string): Promise<{ success: boolean; error?: string; nearLimit?: boolean }> {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -32,8 +32,12 @@ async function trackAICredits(organizationId: string): Promise<{ success: boolea
       return { success: false, error: 'AI_CREDITS_LIMIT_REACHED' };
     }
 
-    console.log(`[edit-landing-content] AI credits: ${result?.new_count}/${result?.credits_limit || 'unlimited'}`);
-    return { success: true };
+    const creditsUsed = result?.new_count || 0;
+    const creditsLimit = result?.credits_limit || null;
+    const nearLimit = creditsLimit ? (creditsUsed / creditsLimit) >= 0.8 : false;
+
+    console.log(`[edit-landing-content] AI credits: ${creditsUsed}/${creditsLimit || 'unlimited'} (nearLimit: ${nearLimit})`);
+    return { success: true, nearLimit };
   } catch (error) {
     console.error('[edit-landing-content] Error in trackAICredits:', error);
     return { success: false, error: 'Internal error' };
@@ -55,6 +59,7 @@ serve(async (req) => {
     }
 
     // Track AI credits if organizationId is provided
+    let nearLimit = false;
     if (organizationId) {
       const creditsResult = await trackAICredits(organizationId);
       if (!creditsResult.success && creditsResult.error === 'AI_CREDITS_LIMIT_REACHED') {
@@ -63,6 +68,7 @@ serve(async (req) => {
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+      nearLimit = creditsResult.nearLimit || false;
     }
 
     // Handle image generation
@@ -279,7 +285,7 @@ RAPPEL CRITIQUE: Réponds UNIQUEMENT en JSON valide, rien d'autre avant ou aprè
       }
 
       return new Response(
-        JSON.stringify(parsedResponse),
+        JSON.stringify({ ...parsedResponse, nearLimit }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
