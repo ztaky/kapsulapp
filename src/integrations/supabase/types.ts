@@ -58,6 +58,41 @@ export type Database = {
           },
         ]
       }
+      ai_credits: {
+        Row: {
+          created_at: string
+          credits_used: number
+          id: string
+          month_year: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits_used?: number
+          id?: string
+          month_year: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits_used?: number
+          id?: string
+          month_year?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_credits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -1034,6 +1069,13 @@ export type Database = {
         }
         Returns: string
       }
+      get_ai_credits_usage: {
+        Args: { _month_year: string; _organization_id: string }
+        Returns: {
+          credits_limit: number
+          credits_used: number
+        }[]
+      }
       get_public_organization: {
         Args: { org_slug: string }
         Returns: {
@@ -1084,6 +1126,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_ai_credits: {
+        Args: {
+          _amount?: number
+          _month_year: string
+          _organization_id: string
+        }
+        Returns: {
+          credits_limit: number
+          new_count: number
+          success: boolean
+        }[]
       }
       increment_faq_helpful: { Args: { faq_id: string }; Returns: undefined }
       increment_faq_views: { Args: { faq_id: string }; Returns: undefined }
