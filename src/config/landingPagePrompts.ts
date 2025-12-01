@@ -23,6 +23,11 @@ RÈGLES COPYWRITING :
 - Zéro jargon technique
 - Émotions : frustration → espoir → action
 
+PROGRESSION CTAs (VARIER les textes pour éviter répétition) :
+- Sections 1-3 : Style découverte → "Découvre la formation", "Explore le programme"
+- Sections 4-6 : Style transformation → "Je transforme mon business", "Je passe à l'action"
+- Sections 7+ : Style urgence → "Je réserve ma place", "Je sécurise mon accès Founder"
+
 IMPORTANT : Retourne UNIQUEMENT un objet JSON valide, sans markdown, sans commentaires.
 `;
 }
@@ -58,7 +63,7 @@ STRUCTURE JSON EXACTE (copie cette structure) :
     "Bénéfice 3. Max 15 mots."
   ],
   "cta": {
-    "text": "Action immédiate. Max 6 mots.",
+    "text": "CTA de découverte. Style: Découvre la formation / Explore le programme. Max 5 mots.",
     "price": "497€"
   },
   "testimonialSnippet": {
@@ -83,7 +88,7 @@ EXEMPLE DE RÉPONSE VALIDE :
     "Méthode testée par 300+ formateurs"
   ],
   "cta": {
-    "text": "Je crée mon système maintenant",
+    "text": "Découvre la formation",
     "price": "497€"
   },
   "testimonialSnippet": {
@@ -314,7 +319,7 @@ STRUCTURE JSON ATTENDUE :
     }
     // ... 5 autres
   ],
-  "cta": "Je rejoins les entrepreneurs qui ont changé leur quotidien avec l'IA"
+  "cta": "CTA de transformation. Style: Je transforme mon business / Je passe à l'action. Max 6 mots."
 }
 
 LES 6 TÉMOIGNAGES DOIVENT TRAITER :
@@ -349,7 +354,7 @@ STRUCTURE JSON ATTENDUE :
       "answer": "Réponse rassurante et argumentée (2-3 phrases)"
     }
   ],
-  "cta": "Je suis prêt(e) à gagner 20h/semaine avec l'IA"
+  "cta": "CTA de réservation urgente. Style: Je réserve ma place / Je sécurise mon accès. Max 5 mots."
 }
 
 LES 8 THÈMES À TRAITER (formule comme objection client) :
@@ -393,7 +398,7 @@ STRUCTURE JSON ATTENDUE :
     }
     // ... 3 autres
   ],
-  "cta": "J'accède à la formation + 4 bonus"
+  "cta": "CTA de réservation avec bonus. Style: Je réserve + mes bonus / J'accède maintenant. Max 6 mots."
 }
 
 LES 4 BONUS DOIVENT ÊTRE :
@@ -485,7 +490,7 @@ STRUCTURE JSON ATTENDUE :
         "Support pendant 60 jours",
         "+ 4 bonus offerts (valeur 738€)"
       ],
-      "cta": "Je choisis la formation"
+      "cta": "CTA final urgent. Style: Je réserve ma place Founder / Je m'inscris maintenant. Max 6 mots."
     }
   ]
 }
