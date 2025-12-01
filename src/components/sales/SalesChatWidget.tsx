@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,7 +22,9 @@ const QUICK_SUGGESTIONS = [
   "Il y a une offre en ce moment ?",
 ];
 
-const AUTO_WELCOME_MESSAGE = "Hey ! 👋 Une question sur Kapsul ? Je suis là";
+const EMAIL_ASK_MESSAGE = "Au fait, si vous voulez que je vous envoie un récap de nos échanges ou qu'on puisse reprendre cette conversation plus tard, laissez-moi votre email ! 📧 (Promis, zéro spam)";
+
+const EMAIL_REGEX = /[\w.-]+@[\w.-]+\.\w+/;
 
 export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,19 +32,23 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const [autoMessageShown, setAutoMessageShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Check sessionStorage for previous interaction
-  useEffect(() => {
-    const interacted = sessionStorage.getItem("kapsul_chat_interacted");
-    if (interacted) {
-      setHasInteracted(true);
-      setAutoMessageShown(true);
+  // Session tracking for lead capture
+  const [sessionId] = useState(() => {
+    let id = sessionStorage.getItem('kapsul_chat_session');
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem('kapsul_chat_session', id);
     }
-  }, []);
+    return id;
+  });
+  
+  const [leadId, setLeadId] = useState<string | null>(null);
+  const [userMessageCount, setUserMessageCount] = useState(0);
+  const [emailAsked, setEmailAsked] = useState(false);
+  const [emailCaptured, setEmailCaptured] = useState(false);
 
   // Show widget with pulse after 5 seconds
   useEffect(() => {
@@ -50,20 +57,6 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
     }, 5000);
     return () => clearTimeout(timer);
   }, []);
-
-  // Auto welcome message after 10 seconds of inactivity
-  useEffect(() => {
-    if (hasInteracted || autoMessageShown || isOpen) return;
-
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-      setAutoMessageShown(true);
-      setShowPulse(false);
-      setMessages([{ role: "assistant", content: AUTO_WELCOME_MESSAGE }]);
-    }, 10000);
-
-    return () => clearTimeout(timer);
-  }, [hasInteracted, autoMessageShown, isOpen]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -79,17 +72,75 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
     }
   }, [isOpen]);
 
-  const markAsInteracted = () => {
-    if (!hasInteracted) {
-      setHasInteracted(true);
-      sessionStorage.setItem("kapsul_chat_interacted", "true");
+  // Check if email is in conversation
+  const hasEmailInConversation = () => {
+    return messages.some(msg => msg.role === "user" && EMAIL_REGEX.test(msg.content));
+  };
+
+  // Extract email from text
+  const extractEmail = (text: string): string | null => {
+    const match = text.match(EMAIL_REGEX);
+    return match ? match[0] : null;
+  };
+
+  // Save or update lead in database
+  const saveOrUpdateLead = async (updatedMessages: Message[], detectedEmail?: string) => {
+    try {
+      const firstUserMessage = updatedMessages.find(m => m.role === "user");
+      const conversationData = updatedMessages.map(({ role, content }) => ({ role, content }));
+
+      if (leadId) {
+        // Update existing lead
+        await supabase
+          .from('sales_leads')
+          .update({
+            conversation: conversationData,
+            email: detectedEmail || undefined,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', leadId);
+      } else {
+        // Create new lead
+        const { data, error } = await supabase
+          .from('sales_leads')
+          .insert({
+            session_id: sessionId,
+            conversation: conversationData,
+            first_question: firstUserMessage?.content || null,
+            email: detectedEmail || null,
+            source_page: window.location.pathname,
+          })
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('Error saving lead:', error);
+        } else if (data) {
+          setLeadId(data.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error in saveOrUpdateLead:', error);
     }
   };
 
   const streamChat = async (userMessage: string) => {
     setIsLoading(true);
+    
+    // Increment user message count
+    setUserMessageCount(prev => prev + 1);
+    
+    // Check for email in user message
+    const detectedEmail = extractEmail(userMessage);
+    if (detectedEmail && !emailCaptured) {
+      setEmailCaptured(true);
+    }
+
     const newMessages = [...messages, { role: "user" as const, content: userMessage }];
     setMessages(newMessages);
+
+    // Save lead after user message
+    await saveOrUpdateLead(newMessages, detectedEmail || undefined);
 
     try {
       const response = await fetch(
@@ -151,6 +202,21 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
           }
         }
       }
+
+      // After AI response, check if we should ask for email
+      const finalMessages: Message[] = [...newMessages, { role: "assistant" as const, content: assistantMessage }];
+      
+      if (userMessageCount >= 2 && !emailAsked && !emailCaptured && !hasEmailInConversation()) {
+        // Add email request message
+        const emailRequestMessage: Message = { role: "assistant" as const, content: EMAIL_ASK_MESSAGE };
+        const messagesWithEmailAsk: Message[] = [...finalMessages, emailRequestMessage];
+        setMessages(messagesWithEmailAsk);
+        setEmailAsked(true);
+        await saveOrUpdateLead(messagesWithEmailAsk);
+      } else {
+        await saveOrUpdateLead(finalMessages);
+      }
+      
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) => [
@@ -168,7 +234,6 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    markAsInteracted();
     const message = input.trim();
     setInput("");
     streamChat(message);
@@ -176,8 +241,18 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
 
   const handleSuggestionClick = (suggestion: string) => {
     if (isLoading) return;
-    markAsInteracted();
     streamChat(suggestion);
+  };
+
+  const handleFounderClick = async () => {
+    // Mark as converted in database
+    if (leadId) {
+      await supabase
+        .from('sales_leads')
+        .update({ converted: true })
+        .eq('id', leadId);
+    }
+    onFounderClick();
   };
 
   return (
@@ -214,8 +289,8 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-white">Kapsul AI</h3>
-              <p className="text-white/80 text-xs">Je réponds à vos questions</p>
+              <h3 className="font-bold text-white">Hugo - Kapsul</h3>
+              <p className="text-white/80 text-xs">Conseiller Kapsul</p>
             </div>
           </div>
           <button
@@ -231,7 +306,7 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
           {messages.length === 0 ? (
             <div className="space-y-4">
               <p className="text-muted-foreground text-sm text-center">
-                👋 Bonjour ! Je suis là pour répondre à toutes vos questions sur Kapsul.
+                👋 Bonjour ! Je suis Hugo. Posez-moi vos questions sur Kapsul.
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {QUICK_SUGGESTIONS.map((suggestion) => (
@@ -298,7 +373,7 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
         {/* CTA Button */}
         <div className="p-3 pt-0">
           <Button
-            onClick={onFounderClick}
+            onClick={handleFounderClick}
             variant="outline"
             className="w-full border-[#DD2476]/30 hover:bg-[#DD2476]/10 text-foreground"
           >

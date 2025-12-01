@@ -17,7 +17,8 @@ import {
   Map,
   CreditCard,
   BarChart3,
-  Wallet
+  Wallet,
+  UserRoundSearch
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -108,6 +109,11 @@ const navItems = [
     title: "FAQ",
     url: "/faq",
     icon: HelpCircle,
+  },
+  {
+    title: "Leads Sales",
+    url: "/leads",
+    icon: UserRoundSearch,
   },
   {
     title: "Emails",
