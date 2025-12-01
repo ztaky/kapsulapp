@@ -39,20 +39,24 @@ export default function CourseSalesPage() {
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch course without org join (RLS allows public view of published courses)
+      const { data: courseData, error: courseError } = await supabase
         .from("courses")
-        .select(`
-          *,
-          organizations (
-            name,
-            logo_url
-          )
-        `)
+        .select("*")
         .eq("id", courseId)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (courseError) throw courseError;
+
+      // Fetch organization using secure function (returns only safe fields)
+      let organization = null;
+      if (courseData?.organization_id) {
+        const { data: orgData } = await supabase
+          .rpc("get_public_organization_by_id", { org_id: courseData.organization_id });
+        organization = orgData?.[0] || null;
+      }
+
+      return { ...courseData, organizations: organization };
     },
   });
 
