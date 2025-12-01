@@ -239,11 +239,11 @@ const Index = () => {
             {/* Card 3 */}
             <div className="bg-card rounded-3xl p-8 border border-border shadow-card hover:shadow-elevated transition-all group">
               <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Infinity className="w-8 h-8 text-muted-foreground" strokeWidth={1.5} />
+                <CreditCard className="w-8 h-8 text-muted-foreground" strokeWidth={1.5} />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-3">Tout Illimité</h3>
+              <h3 className="text-xl font-bold text-foreground mb-3">0% Commission</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Pas de limite d'élèves, d'emails ou de stockage. Scaler sans frein.
+                Gardez 100% de vos revenus. Seuls les frais Stripe standards s'appliquent.
               </p>
             </div>
           </div>
