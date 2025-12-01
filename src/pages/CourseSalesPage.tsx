@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function CourseSalesPage() {
   const { slug, courseId } = useParams();
   const navigate = useNavigate();
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [cgvAccepted, setCgvAccepted] = useState(false);
 
   // Handle sticky bar on scroll
   useEffect(() => {
@@ -98,6 +100,11 @@ export default function CourseSalesPage() {
   });
 
   const handleBuyClick = () => {
+    if (!cgvAccepted) {
+      toast.error("Veuillez accepter les CGV pour continuer");
+      return;
+    }
+
     if (!course?.payment_link_url) {
       toast.error("Lien de paiement non configuré");
       return;
@@ -357,10 +364,32 @@ export default function CourseSalesPage() {
             <p className="text-xl text-slate-600 mb-8">
               Rejoignez la formation dès aujourd'hui et transformez vos compétences
             </p>
+            
+            {/* CGV Checkbox */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <Checkbox 
+                id="cgv-accept-final" 
+                checked={cgvAccepted} 
+                onCheckedChange={(checked) => setCgvAccepted(checked === true)}
+                className="border-slate-400 data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600"
+              />
+              <label htmlFor="cgv-accept-final" className="text-sm text-slate-600 cursor-pointer text-left">
+                J'accepte les{" "}
+                <Link to="/cgv" className="text-orange-600 hover:underline" target="_blank">
+                  CGV
+                </Link>{" "}
+                et la{" "}
+                <Link to="/confidentialite" className="text-orange-600 hover:underline" target="_blank">
+                  Politique de Confidentialité
+                </Link>
+              </label>
+            </div>
+
             <Button
               size="lg"
               onClick={handleBuyClick}
-              className="text-xl px-12 py-8 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-2xl hover:shadow-3xl transition-all"
+              disabled={!cgvAccepted}
+              className="text-xl px-12 py-8 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Acheter maintenant - {course.price}€
               <ArrowRight className="ml-2 h-6 w-6" />
@@ -372,9 +401,23 @@ export default function CourseSalesPage() {
       {/* Sticky Mobile Bar */}
       {showStickyBar && !hasPurchased && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white/95 backdrop-blur-lg border-t border-slate-200 shadow-2xl lg:hidden">
+          {!cgvAccepted && (
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Checkbox 
+                id="cgv-accept-mobile" 
+                checked={cgvAccepted} 
+                onCheckedChange={(checked) => setCgvAccepted(checked === true)}
+                className="border-slate-400 data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600"
+              />
+              <label htmlFor="cgv-accept-mobile" className="text-xs text-slate-600 cursor-pointer">
+                J'accepte les <Link to="/cgv" className="text-orange-600 underline" target="_blank">CGV</Link>
+              </label>
+            </div>
+          )}
           <Button
             onClick={handleBuyClick}
-            className="w-full text-lg py-6 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-lg"
+            disabled={!cgvAccepted}
+            className="w-full text-lg py-6 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Acheter maintenant - {course.price}€
           </Button>
