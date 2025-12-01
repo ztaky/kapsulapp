@@ -15,13 +15,13 @@ interface SalesChatWidgetProps {
 }
 
 const QUICK_SUGGESTIONS = [
-  "Quelles sont les fonctionnalités ?",
-  "Quel est le prix ?",
-  "Pourquoi Kapsul vs Kajabi ?",
-  "Comment ça marche ?",
+  "C'est quoi Kapsul en 2 mots ?",
+  "Je débute, c'est fait pour moi ?",
+  "Ça coûte combien ?",
+  "Il y a une offre en ce moment ?",
 ];
 
-const AUTO_WELCOME_MESSAGE = "👋 Bonjour ! Je vois que vous explorez Kapsul. Avez-vous des questions sur notre plateforme de formation ? Je suis là pour vous aider !";
+const AUTO_WELCOME_MESSAGE = "Hey ! 👋 Une question sur Kapsul ? Je suis là";
 
 export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
