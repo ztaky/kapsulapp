@@ -85,6 +85,95 @@ serve(async (req) => {
       console.log("Checkout session completed:", session.id);
       console.log("Session metadata:", session.metadata);
 
+      // Check if this is an AI credits purchase
+      if (session.metadata?.type === "ai_credits") {
+        console.log("Processing AI credits purchase");
+        
+        const organizationId = session.metadata.organization_id;
+        const creditsAmount = parseInt(session.metadata.credits_amount || "0", 10);
+        const packType = session.metadata.pack;
+        const userId = session.metadata.user_id;
+        const amountPaid = session.amount_total ? session.amount_total / 100 : 0;
+
+        if (!organizationId || !creditsAmount) {
+          console.error("Missing organization_id or credits_amount in metadata");
+          return new Response(
+            JSON.stringify({ error: "Missing metadata" }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        // Create Supabase admin client
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        // Get current month
+        const now = new Date();
+        const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+        // Add bonus credits
+        const { data: creditsResult, error: creditsError } = await supabaseAdmin.rpc(
+          "add_bonus_credits",
+          {
+            _organization_id: organizationId,
+            _credits_amount: creditsAmount,
+            _month_year: monthYear,
+          }
+        );
+
+        if (creditsError) {
+          console.error("Error adding bonus credits:", creditsError);
+          return new Response(
+            JSON.stringify({ error: "Failed to add credits" }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        console.log("Bonus credits added:", creditsResult);
+
+        // Record the purchase
+        const { error: purchaseError } = await supabaseAdmin
+          .from("ai_credits_purchases")
+          .insert({
+            organization_id: organizationId,
+            pack_type: packType,
+            credits_amount: creditsAmount,
+            price_paid: amountPaid,
+            stripe_session_id: session.id,
+            stripe_payment_id: session.payment_intent as string,
+          });
+
+        if (purchaseError) {
+          console.error("Error recording purchase:", purchaseError);
+          // Don't fail - credits are already added
+        } else {
+          console.log("Purchase recorded successfully");
+        }
+
+        // Send notification to the coach
+        if (userId) {
+          try {
+            await supabaseAdmin.rpc("create_notification", {
+              _user_id: userId,
+              _title: "Crédits IA ajoutés !",
+              _message: `${creditsAmount.toLocaleString("fr-FR")} crédits IA ont été ajoutés à votre compte.`,
+              _type: "credits",
+              _metadata: { pack: packType, credits: creditsAmount },
+            });
+            console.log("Notification sent to user");
+          } catch (notifError) {
+            console.error("Error sending notification:", notifError);
+          }
+        }
+
+        return new Response(
+          JSON.stringify({ received: true, type: "ai_credits", credits_added: creditsAmount }),
+          { status: 200, headers: corsHeaders }
+        );
+      }
+
       // Check if this is a founder payment
       if (session.metadata?.offer === "founder_lifetime") {
         console.log("Processing founder payment");

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useFounderStatus } from "@/hooks/useFounderStatus";
 import { useStudentLimit } from "@/hooks/useStudentLimit";
 import { useAICredits } from "@/hooks/useAICredits";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight, Sparkles, Plus } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { OnboardingPopup } from "@/components/onboarding/OnboardingPopup";
@@ -15,17 +15,23 @@ import { DashboardHeader } from "@/components/shared/DashboardHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { FounderBadge } from "@/components/shared/FounderBadge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { AICreditsShop } from "@/components/credits/AICreditsShop";
+import { toast } from "sonner";
 
 export default function StudioDashboard() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
   const { isFounder } = useFounderStatus();
   const { data: studentLimit } = useStudentLimit(currentOrg?.id);
-  const { data: aiCredits } = useAICredits(currentOrg?.id);
+  const { data: aiCredits, refetch: refetchCredits } = useAICredits(currentOrg?.id);
 
   const [showWizard, setShowWizard] = useState(false);
+  const [showCreditsShop, setShowCreditsShop] = useState(false);
   const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
 
   const {
@@ -40,6 +46,24 @@ export default function StudioDashboard() {
     completeOnboarding,
     refetch: refetchOnboarding,
   } = useOnboarding(currentOrg?.id);
+
+  // Handle credits purchase success from URL params
+  useEffect(() => {
+    const creditsPurchase = searchParams.get("credits_purchase");
+    const pack = searchParams.get("pack");
+    
+    if (creditsPurchase === "success" && pack) {
+      toast.success("Crédits IA ajoutés avec succès !");
+      refetchCredits();
+      // Clean URL
+      searchParams.delete("credits_purchase");
+      searchParams.delete("pack");
+      setSearchParams(searchParams);
+    } else if (creditsPurchase === "cancelled") {
+      searchParams.delete("credits_purchase");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams, refetchCredits]);
 
   // Auto-open wizard for new coaches
   useEffect(() => {
@@ -187,7 +211,7 @@ export default function StudioDashboard() {
     );
   }
 
-  return (
+    return (
     <div className="space-y-8 animate-fade-in">
       {/* Onboarding Popup */}
       <OnboardingPopup
@@ -197,6 +221,16 @@ export default function StudioDashboard() {
         organizationName={currentOrg?.name || ""}
         onStepAction={handleStepAction}
       />
+
+      {/* AI Credits Shop Modal */}
+      {currentOrg?.id && (
+        <AICreditsShop
+          open={showCreditsShop}
+          onOpenChange={setShowCreditsShop}
+          organizationId={currentOrg.id}
+          organizationSlug={slug || ""}
+        />
+      )}
 
       {/* Hero Header */}
       <div className="flex items-start justify-between">
@@ -278,20 +312,38 @@ export default function StudioDashboard() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-muted-foreground mb-1">Crédits IA</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Crédits IA</p>
+                {aiCredits?.creditsLimit && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs text-violet-600 hover:text-violet-700 hover:bg-violet-50"
+                    onClick={() => setShowCreditsShop(true)}
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Acheter
+                  </Button>
+                )}
+              </div>
               <p className="text-2xl font-bold tracking-tight">
-                {aiCredits?.creditsLimit ? (
+                {aiCredits?.totalAvailable ? (
                   <>
                     {aiCredits.remaining?.toLocaleString('fr-FR')}
                     <span className="text-sm font-normal text-muted-foreground ml-1">
-                      / {aiCredits.creditsLimit.toLocaleString('fr-FR')}
+                      / {aiCredits.totalAvailable.toLocaleString('fr-FR')}
                     </span>
                   </>
                 ) : (
                   <span className="text-lg">∞</span>
                 )}
               </p>
-              {aiCredits?.creditsLimit && (
+              {aiCredits?.bonusCredits && aiCredits.bonusCredits > 0 && (
+                <p className="text-xs text-violet-600 mt-0.5">
+                  dont {aiCredits.bonusCredits.toLocaleString('fr-FR')} bonus
+                </p>
+              )}
+              {aiCredits?.totalAvailable && (
                 <div className="mt-2">
                   <Progress 
                     value={aiCredits.percentage} 

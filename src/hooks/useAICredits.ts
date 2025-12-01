@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 interface AICreditsData {
   creditsUsed: number;
   creditsLimit: number | null;
+  bonusCredits: number;
+  totalAvailable: number | null;
   percentage: number;
   isNearLimit: boolean;
   isAtLimit: boolean;
@@ -34,18 +36,24 @@ export function useAICredits(organizationId: string | undefined) {
       const result = data?.[0];
       const creditsUsed = result?.credits_used || 0;
       const creditsLimit = result?.credits_limit || null;
+      const bonusCredits = result?.bonus_credits || 0;
 
-      // Calculate percentage (0 if unlimited)
-      const percentage = creditsLimit ? Math.round((creditsUsed / creditsLimit) * 100) : 0;
+      // Total available = monthly limit + bonus (if there's a limit)
+      const totalAvailable = creditsLimit ? creditsLimit + bonusCredits : null;
+      
+      // Calculate percentage based on total available (monthly + bonus)
+      const percentage = totalAvailable ? Math.round((creditsUsed / totalAvailable) * 100) : 0;
       
       // Near limit if > 80%, at limit if >= 100%
-      const isNearLimit = creditsLimit ? percentage >= 80 : false;
-      const isAtLimit = creditsLimit ? creditsUsed >= creditsLimit : false;
-      const remaining = creditsLimit ? Math.max(0, creditsLimit - creditsUsed) : null;
+      const isNearLimit = totalAvailable ? percentage >= 80 : false;
+      const isAtLimit = totalAvailable ? creditsUsed >= totalAvailable : false;
+      const remaining = totalAvailable ? Math.max(0, totalAvailable - creditsUsed) : null;
 
       return {
         creditsUsed,
         creditsLimit,
+        bonusCredits,
+        totalAvailable,
         percentage,
         isNearLimit,
         isAtLimit,
