@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2 } from "lucide-react";
+import { KapsulFooter } from "@/components/landing/KapsulFooter";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import CountdownTimer from "@/components/landing/CountdownTimer";
@@ -543,24 +544,7 @@ const Index = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="py-12 px-6 border-t border-border">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <img src={kapsulLogo} alt="Kapsul" className="h-8 w-8" />
-              <span className="font-bold text-foreground">KAPSUL</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">CGV</a>
-              <a href="#" className="hover:text-foreground transition-colors">Confidentialité</a>
-              <a href="#" className="hover:text-foreground transition-colors">Contact</a>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              © 2025 Kapsul. Tous droits réservés.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <KapsulFooter />
     </div>;
 };
 
@@ -983,4 +967,5 @@ const GuaranteeSection = () => {
       </div>
     </section>;
 };
+
 export default Index;

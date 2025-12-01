@@ -639,6 +639,8 @@ export type Database = {
           contact_email: string | null
           created_at: string
           description: string | null
+          facebook_pixel_id: string | null
+          gtm_container_id: string | null
           id: string
           is_founder_plan: boolean | null
           logo_url: string | null
@@ -662,6 +664,8 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           description?: string | null
+          facebook_pixel_id?: string | null
+          gtm_container_id?: string | null
           id?: string
           is_founder_plan?: boolean | null
           logo_url?: string | null
@@ -685,6 +689,8 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           description?: string | null
+          facebook_pixel_id?: string | null
+          gtm_container_id?: string | null
           id?: string
           is_founder_plan?: boolean | null
           logo_url?: string | null
@@ -704,6 +710,38 @@ export type Database = {
           webhook_url?: string | null
         }
         Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1179,7 +1217,11 @@ export type Database = {
     Enums: {
       app_role: "super_admin" | "user"
       landing_page_status: "draft" | "published"
-      legal_page_type: "mentions_legales" | "politique_confidentialite" | "cgv"
+      legal_page_type:
+        | "mentions_legales"
+        | "politique_confidentialite"
+        | "cgv"
+        | "cookies"
       lesson_type: "video" | "interactive_tool"
       org_role: "coach" | "student"
       ticket_priority: "low" | "medium" | "high" | "urgent"
@@ -1318,7 +1360,12 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "user"],
       landing_page_status: ["draft", "published"],
-      legal_page_type: ["mentions_legales", "politique_confidentialite", "cgv"],
+      legal_page_type: [
+        "mentions_legales",
+        "politique_confidentialite",
+        "cgv",
+        "cookies",
+      ],
       lesson_type: ["video", "interactive_tool"],
       org_role: ["coach", "student"],
       ticket_priority: ["low", "medium", "high", "urgent"],
