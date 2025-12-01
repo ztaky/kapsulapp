@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Save, Mail, Send, Eye, Webhook, Zap, CheckCircle2, CreditCard, AlertCircle, ExternalLink, Loader2, Unlink } from "lucide-react";
+import { Save, Mail, Send, Eye, Webhook, Zap, CheckCircle2, CreditCard, AlertCircle, ExternalLink, Loader2, Unlink, BarChart3 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
@@ -46,6 +46,8 @@ export default function StudioBranding() {
     webhook_events: ["new_student", "new_purchase"] as string[],
     paypal_email: "",
     paypal_merchant_id: "",
+    facebook_pixel_id: "",
+    gtm_container_id: "",
   });
 
   // Check Stripe Connect status
@@ -82,6 +84,8 @@ export default function StudioBranding() {
         webhook_events: org.webhook_events || ["new_student", "new_purchase"],
         paypal_email: org.paypal_email || "",
         paypal_merchant_id: org.paypal_merchant_id || "",
+        facebook_pixel_id: org.facebook_pixel_id || "",
+        gtm_container_id: org.gtm_container_id || "",
       });
       
       // Check Stripe status when org loads
@@ -182,6 +186,8 @@ export default function StudioBranding() {
           webhook_url: data.webhook_url || null,
           webhook_events: data.webhook_events,
           paypal_merchant_id: data.paypal_merchant_id || null,
+          facebook_pixel_id: data.facebook_pixel_id || null,
+          gtm_container_id: data.gtm_container_id || null,
         } as any)
         .eq("id", currentOrg.id);
 
@@ -939,6 +945,127 @@ export default function StudioBranding() {
                   <Zap className="mr-2 h-4 w-4" />
                   {isTestingWebhook ? "Envoi en cours..." : "Envoyer un webhook test"}
                 </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Analytics & Tracking Card */}
+        <Card className="bg-white border border-slate-100 rounded-3xl shadow-premium lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100">
+                <BarChart3 className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-xl font-bold text-[#1e293b] tracking-tight">
+                    Analytics & Tracking
+                  </CardTitle>
+                  <Badge variant="outline" className="text-xs">Avancé</Badge>
+                </div>
+                <CardDescription>
+                  Suivez les performances de vos landing pages avec Google Tag Manager et Facebook Pixel
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gtm_container_id" className="text-slate-900 font-medium text-sm">
+                    Google Tag Manager - Container ID
+                  </Label>
+                  <Input
+                    id="gtm_container_id"
+                    placeholder="GTM-XXXXXXX"
+                    value={formData.gtm_container_id}
+                    onChange={(e) => setFormData({ ...formData, gtm_container_id: e.target.value })}
+                    className="rounded-xl border-slate-200"
+                  />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Trouvable dans Google Tag Manager → Admin → Container ID
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="facebook_pixel_id" className="text-slate-900 font-medium text-sm">
+                    Facebook Pixel ID
+                  </Label>
+                  <Input
+                    id="facebook_pixel_id"
+                    placeholder="123456789012345"
+                    value={formData.facebook_pixel_id}
+                    onChange={(e) => setFormData({ ...formData, facebook_pixel_id: e.target.value })}
+                    className="rounded-xl border-slate-200"
+                  />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Trouvable dans Meta Business Suite → Événements → Pixels
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                  <h4 className="font-semibold text-slate-900 text-sm mb-3">
+                    Pourquoi configurer le tracking ?
+                  </h4>
+                  <ul className="space-y-2 text-sm text-slate-600">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Mesurez les conversions de vos publicités
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Créez des audiences de retargeting
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Optimisez vos campagnes marketing
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Analysez le comportement des visiteurs
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h4 className="font-semibold text-slate-900 text-sm mb-2">
+                    Note importante
+                  </h4>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Les scripts de tracking ne seront chargés que si le visiteur accepte les cookies. 
+                    Un bandeau de consentement s'affichera automatiquement sur vos landing pages.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <h4 className="font-semibold text-slate-900 text-sm mb-2">
+                    Liens utiles
+                  </h4>
+                  <div className="space-y-1">
+                    <a 
+                      href="https://tagmanager.google.com/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Google Tag Manager
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                    <a 
+                      href="https://business.facebook.com/events_manager" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Meta Events Manager
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
