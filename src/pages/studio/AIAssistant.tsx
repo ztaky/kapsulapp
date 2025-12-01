@@ -53,6 +53,8 @@ function getDefaultTextForAction(actionType: string, data: any): string {
       return `J'ai créé un quiz "${data.title}" avec ${data.questions?.length || 0} questions. Vous pouvez le prévisualiser ci-dessous et l'ajouter à une leçon de votre choix.`;
     case "suggest_modules":
       return `Voici une structure de ${data.modules?.length || 0} modules pour votre cours sur "${data.course_topic}". Vous pouvez les ajouter directement à un de vos cours.`;
+    case "create_complete_course":
+      return `J'ai généré un cours complet "${data.course?.title}" avec ${data.modules?.length || 0} modules et tout le contenu pédagogique. Vous pouvez prévisualiser, modifier chaque élément, puis créer le cours en un clic !`;
     default:
       return "Voici le contenu généré :";
   }
@@ -379,6 +381,7 @@ export default function AIAssistant() {
                         type={action.type}
                         data={action.data}
                         organizationId={studioContext.organizationId || ""}
+                        organizationSlug={studioContext.organizationSlug}
                       />
                     </div>
                   )}

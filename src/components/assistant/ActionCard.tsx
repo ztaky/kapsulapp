@@ -5,9 +5,10 @@ import { Plus, Edit2, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import { QuizPreview } from "./QuizPreview";
 import { ModulesPreview } from "./ModulesPreview";
 import { DestinationSelector } from "./DestinationSelector";
+import { CoursePreviewCard } from "./CoursePreviewCard";
 import { useContentActions } from "@/hooks/useContentActions";
 
-export type ActionType = "generate_quiz" | "suggest_modules";
+export type ActionType = "generate_quiz" | "suggest_modules" | "create_complete_course";
 
 interface QuizData {
   title: string;
@@ -27,14 +28,34 @@ interface ModulesData {
   }[];
 }
 
+interface CompleteCourseData {
+  course: {
+    title: string;
+    description: string;
+    target_audience?: string;
+    duration_estimate?: string;
+  };
+  modules: {
+    title: string;
+    description?: string;
+    lessons: {
+      title: string;
+      content: string;
+      has_quiz?: boolean;
+      quiz?: any;
+    }[];
+  }[];
+}
+
 interface ActionCardProps {
   type: ActionType;
-  data: QuizData | ModulesData;
+  data: QuizData | ModulesData | CompleteCourseData;
   organizationId: string;
+  organizationSlug?: string;
   onActionComplete?: () => void;
 }
 
-export function ActionCard({ type, data, organizationId, onActionComplete }: ActionCardProps) {
+export function ActionCard({ type, data, organizationId, organizationSlug, onActionComplete }: ActionCardProps) {
   const [showDestinationSelector, setShowDestinationSelector] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
@@ -74,6 +95,19 @@ export function ActionCard({ type, data, organizationId, onActionComplete }: Act
       setIsAdding(false);
     }
   };
+
+  // If it's a complete course, render the CoursePreviewCard directly
+  if (type === "create_complete_course") {
+    const courseData = data as CompleteCourseData;
+    return (
+      <CoursePreviewCard
+        initialCourse={courseData.course}
+        initialModules={courseData.modules}
+        organizationId={organizationId}
+        organizationSlug={organizationSlug}
+      />
+    );
+  }
 
   const getIcon = () => {
     switch (type) {
