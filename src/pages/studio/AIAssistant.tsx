@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -249,6 +249,15 @@ export default function AIAssistant() {
     sendMessage(input);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() && !isLoading) {
+        sendMessage(input);
+      }
+    }
+  };
+
 
   const handleLoadDraft = (draft: any) => {
     // Parse draft and create a message with the loaded data
@@ -422,15 +431,17 @@ export default function AIAssistant() {
           {/* Input fixed at bottom */}
           <div className="shrink-0 border-t bg-white p-4">
             <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-              <div className="flex gap-2">
-                <Input
+              <div className="flex gap-2 items-end">
+                <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Posez votre question..."
+                  onKeyDown={handleKeyDown}
+                  placeholder="Posez votre question... (Shift+Entrée pour sauter une ligne)"
                   disabled={isLoading}
-                  className="flex-1"
+                  className="flex-1 min-h-[60px] max-h-[200px] resize-none"
+                  rows={2}
                 />
-                <Button type="submit" disabled={isLoading || !input.trim()}>
+                <Button type="submit" disabled={isLoading || !input.trim()} className="h-[60px]">
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
