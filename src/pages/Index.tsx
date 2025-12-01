@@ -749,61 +749,87 @@ const ComparisonTable = () => {
     thrive: "95€+",
     kapsul: "297€ LIFE"
   }];
-  const renderCell = (value: string) => {
+
+  const renderCell = (value: string, isKapsul: boolean = false) => {
     switch (value) {
       case "yes":
-        return <Check className="w-5 h-5 text-green-500 mx-auto" />;
+        return <Check className={`w-6 h-6 mx-auto ${isKapsul ? "text-green-500" : "text-green-500/70"}`} strokeWidth={2.5} />;
       case "no":
-        return <X className="w-5 h-5 text-red-500 mx-auto" />;
+        return <X className="w-6 h-6 text-red-400/70 mx-auto" strokeWidth={2.5} />;
       case "warn":
-        return <AlertTriangle className="w-5 h-5 text-yellow-500 mx-auto" />;
+        return <AlertTriangle className="w-6 h-6 text-yellow-500/70 mx-auto" strokeWidth={2} />;
       case "netflix":
-        return <span className="text-xs font-bold gradient-text">✅ Interactif</span>;
+        return <span className="text-sm font-bold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent">✅ Interactif</span>;
       case "toi":
-        return <span className="text-xs">😤 Toi</span>;
+        return <span className="text-sm text-muted-foreground">😤 Toi</span>;
       case "eux":
-        return <span className="text-xs">🤷 Eux</span>;
+        return <span className="text-sm text-muted-foreground/60">🤷 Eux</span>;
       case "auto":
-        return <span className="text-xs font-bold gradient-text">🎯 Auto</span>;
+        return <span className="text-sm font-bold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent">🎯 Auto</span>;
+      case "297€ LIFE":
+        return <span className="text-sm font-extrabold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent">297€ LIFE</span>;
       default:
-        return <span className={`text-xs ${value === "297€ LIFE" ? "font-bold gradient-text" : ""}`}>{value}</span>;
+        return <span className="text-sm text-muted-foreground">{value}</span>;
     }
   };
-  return <section id="comparison" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">Kapsul vs les outils habituel<span className="gradient-text">outils habituel</span>
+
+  return (
+    <section id="comparison" className="py-24 px-6">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
+          Kapsul vs les <span className="gradient-text">outils habituels</span>
         </h2>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-4 px-4 font-medium text-muted-foreground">Fonctionnalité</th>
-                <th className="py-4 px-4 font-medium text-muted-foreground text-center">WordPress</th>
-                <th className="py-4 px-4 font-medium text-muted-foreground text-center">Kajabi</th>
-                <th className="py-4 px-4 font-medium text-muted-foreground text-center">Systeme.io</th>
-                <th className="py-4 px-4 font-medium text-muted-foreground text-center">Thrivecart</th>
-                <th className="py-4 px-4 font-bold text-foreground text-center bg-gradient-to-b from-[#FF512F]/10 to-[#DD2476]/10 rounded-t-2xl">Kapsul</th>
-              </tr>
-            </thead>
-            <tbody>
-              {features.map((feature, i) => <tr key={i} className={`border-b border-border/50 ${i === features.length - 1 ? "font-bold" : ""}`}>
-                  <td className="py-4 px-4 text-foreground">{feature.name}</td>
-                  <td className="py-4 px-4 text-center">{renderCell(feature.wp)}</td>
-                  <td className="py-4 px-4 text-center">{renderCell(feature.kajabi)}</td>
-                  <td className="py-4 px-4 text-center">{renderCell(feature.systeme)}</td>
-                  <td className="py-4 px-4 text-center">{renderCell(feature.thrive)}</td>
-                  <td className="py-4 px-4 text-center bg-gradient-to-b from-[#FF512F]/10 to-[#DD2476]/10">{renderCell(feature.kapsul)}</td>
-                </tr>)}
-            </tbody>
-          </table>
+          <div className="bg-card rounded-3xl border border-border shadow-card overflow-hidden">
+            <table className="w-full min-w-[700px]">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-5 px-6 font-semibold text-foreground bg-muted/30">Fonctionnalité</th>
+                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">WordPress</th>
+                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">Kajabi</th>
+                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">Systeme.io</th>
+                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">Thrivecart</th>
+                  <th className="py-5 px-4 text-center bg-gradient-to-b from-[#FF512F]/20 to-[#DD2476]/20">
+                    <span className="font-bold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent text-lg">Kapsul</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {features.map((feature, i) => (
+                  <tr 
+                    key={i} 
+                    className={`
+                      border-b border-border/30 transition-colors hover:bg-muted/20
+                      ${i % 2 === 0 ? "bg-background" : "bg-muted/10"}
+                      ${i === features.length - 1 ? "font-bold border-b-0" : ""}
+                    `}
+                  >
+                    <td className="py-5 px-6 text-foreground font-medium">{feature.name}</td>
+                    <td className="py-5 px-4 text-center">{renderCell(feature.wp)}</td>
+                    <td className="py-5 px-4 text-center">{renderCell(feature.kajabi)}</td>
+                    <td className="py-5 px-4 text-center">{renderCell(feature.systeme)}</td>
+                    <td className="py-5 px-4 text-center">{renderCell(feature.thrive)}</td>
+                    <td className="py-5 px-4 text-center bg-gradient-to-b from-[#FF512F]/15 to-[#DD2476]/15">
+                      {renderCell(feature.kapsul, true)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <p className="text-center text-muted-foreground mt-8">
-          <span className="font-semibold text-foreground">Lifetime à 297€ = moins de 2 ans d'abonnement ailleurs.</span> Après, c'est gratuit. À vie.
+        <p className="text-center mt-10">
+          <span className="font-bold text-foreground text-lg">Lifetime à 297€ = moins de 2 ans d'abonnement ailleurs.</span>
+          <br />
+          <span className="text-lg bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent font-semibold">
+            Après, c'est gratuit. À vie.
+          </span>
         </p>
       </div>
-    </section>;
+    </section>
+  );
 };
 
 // QUALIFICATION SECTION COMPONENT
