@@ -471,7 +471,17 @@ const Index = () => {
                     </div>
 
                     <ul className="space-y-3 mb-8">
-                      {["Plateforme complète illimitée", "5 000 crédits IA/mois inclus", "Support priorité fondateurs", "Toutes les futures mises à jour", "Badge \"Fondateur\" dans ton académie"].map((feature, i) => <li key={i} className="flex items-center gap-3">
+                      {[
+                        "Accès PRO à vie (67€/mois value)",
+                        "Formations illimitées",
+                        "Jusqu'à 1 000 étudiants",
+                        "Landing pages IA illimitées",
+                        "0% commission à vie",
+                        "Branding personnalisé",
+                        "Support prioritaire",
+                        "Badge \"Fondateur\" dans ton profil",
+                        "Vote sur la roadmap produit"
+                      ].map((feature, i) => <li key={i} className="flex items-center gap-3">
                           <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
                           <span className="text-white/90">{feature}</span>
                         </li>)}

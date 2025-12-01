@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useFounderStatus } from "@/hooks/useFounderStatus";
+import { useStudentLimit } from "@/hooks/useStudentLimit";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +13,7 @@ import { OnboardingPopup } from "@/components/onboarding/OnboardingPopup";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { FounderBadge } from "@/components/shared/FounderBadge";
+import { Progress } from "@/components/ui/progress";
 
 export default function StudioDashboard() {
   const { slug } = useParams<{ slug: string }>();
@@ -19,6 +21,7 @@ export default function StudioDashboard() {
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
   const { isFounder } = useFounderStatus();
+  const { data: studentLimit } = useStudentLimit(currentOrg?.id);
 
   const [showWizard, setShowWizard] = useState(false);
   const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
@@ -224,12 +227,48 @@ export default function StudioDashboard() {
           icon={BookOpen}
           colorVariant="slate"
         />
-        <StatCard
-          title="Étudiants"
-          value={stats?.totalStudents || 0}
-          icon={Users}
-          colorVariant="slate"
-        />
+        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
+          <div className="flex items-start gap-4">
+            <div className="rounded-xl bg-slate-100 text-slate-600 p-3 w-11 h-11 flex items-center justify-center">
+              <Users className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground mb-1">Étudiants</p>
+              <p className="text-2xl font-bold tracking-tight">
+                {stats?.totalStudents || 0}
+                {studentLimit?.maxAllowed && (
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    / {studentLimit.maxAllowed}
+                  </span>
+                )}
+              </p>
+              {studentLimit?.maxAllowed && (
+                <div className="mt-2">
+                  <Progress 
+                    value={studentLimit.percentage} 
+                    className={`h-1.5 ${
+                      studentLimit.isAtLimit 
+                        ? "[&>div]:bg-red-500" 
+                        : studentLimit.isNearLimit 
+                          ? "[&>div]:bg-amber-500" 
+                          : "[&>div]:bg-emerald-500"
+                    }`}
+                  />
+                  {studentLimit.isNearLimit && !studentLimit.isAtLimit && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      {100 - studentLimit.percentage}% restant
+                    </p>
+                  )}
+                  {studentLimit.isAtLimit && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Limite atteinte
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
         <StatCard
           title="Revenus"
           value={`${stats?.totalRevenue || 0} €`}

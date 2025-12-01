@@ -10,8 +10,16 @@ const corsHeaders = {
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 // Generate welcome email HTML
-function generateWelcomeEmailHTML(coachName: string, academyName: string, academySlug: string, baseUrl: string) {
+function generateWelcomeEmailHTML(coachName: string, academyName: string, academySlug: string, baseUrl: string, isFounder: boolean) {
   const studioUrl = `${baseUrl}/school/${academySlug}/studio`;
+  
+  const founderBadge = isFounder ? `
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(90deg, #f97316, #ec4899); border-radius: 9999px; color: white; font-weight: bold; font-size: 14px;">
+        ✨ FONDATEUR
+      </div>
+    </div>
+  ` : '';
   
   return `
 <!DOCTYPE html>
@@ -40,6 +48,8 @@ function generateWelcomeEmailHTML(coachName: string, academyName: string, academ
               <div style="text-align: center; margin-bottom: 24px;">
                 <span style="font-size: 64px;">🎉</span>
               </div>
+              
+              ${founderBadge}
               
               <!-- Title -->
               <h1 style="margin: 0 0 16px; font-size: 28px; font-weight: 700; color: #1e293b; text-align: center; line-height: 1.3;">
@@ -168,13 +178,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { academyName, slug, userId } = await req.json();
+    const { academyName, slug, userId, isFounder } = await req.json();
 
     if (!academyName || !slug || !userId) {
       throw new Error('Missing required fields: academyName, slug, userId');
     }
 
-    console.log('Creating academy:', { academyName, slug, userId });
+    console.log('Creating academy:', { academyName, slug, userId, isFounder });
 
     // Get user email and name for welcome email
     const { data: profile } = await supabase
@@ -183,13 +193,25 @@ serve(async (req) => {
       .eq('id', userId)
       .single();
 
-    // 1. Create organization
+    // Determine plan limits based on founder status
+    const planConfig = isFounder ? {
+      is_founder_plan: true,
+      max_students: 1000,  // Founders get 1000 students max
+      max_coaches: 1,      // Founders get 1 coach (themselves)
+    } : {
+      is_founder_plan: false,
+      max_students: null,  // Free/future plans - to be defined
+      max_coaches: 1,
+    };
+
+    // 1. Create organization with plan limits
     const { data: organization, error: orgError } = await supabase
       .from('organizations')
       .insert({
         name: academyName,
         slug: slug,
         brand_color: '#ea580c', // Kapsul orange
+        ...planConfig,
       })
       .select()
       .single();
@@ -246,13 +268,16 @@ serve(async (req) => {
           profile.full_name || '',
           academyName,
           slug,
-          origin
+          origin,
+          isFounder || false
         );
 
         const emailResponse = await resend.emails.send({
           from: 'Kapsul <onboarding@resend.dev>',
           to: [profile.email],
-          subject: `🎉 Bienvenue sur Kapsul ! Votre académie "${academyName}" est prête`,
+          subject: isFounder 
+            ? `🎉 Bienvenue Fondateur ! Votre académie "${academyName}" est prête`
+            : `🎉 Bienvenue sur Kapsul ! Votre académie "${academyName}" est prête`,
           html: emailHtml,
         });
 
@@ -263,7 +288,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('Academy creation complete');
+    console.log('Academy creation complete with plan:', planConfig);
 
     return new Response(
       JSON.stringify({ organization, slug }),

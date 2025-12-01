@@ -56,6 +56,9 @@ const Dashboard = () => {
             counter++;
           }
 
+          // Check if this is a founder payment
+          const isFounder = localStorage.getItem("founder_payment_verified") === "true";
+
           // Create organization
           const { error: orgError } = await supabase.functions.invoke(
             "create-coach-academy",
@@ -64,6 +67,7 @@ const Dashboard = () => {
                 academyName: pendingAcademyName,
                 slug,
                 userId: user.id,
+                isFounder,
               },
             }
           );
@@ -71,6 +75,8 @@ const Dashboard = () => {
           if (orgError) throw orgError;
 
           localStorage.removeItem("pending_academy_name");
+          localStorage.removeItem("founder_payment_verified");
+          localStorage.removeItem("founder_payment_verified");
           toast.success("🎉 Votre académie a été créée avec succès !");
           navigate(`/school/${slug}/studio`);
         } catch (error: any) {

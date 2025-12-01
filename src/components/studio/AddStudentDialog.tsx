@@ -65,6 +65,15 @@ export function AddStudentDialog({ organizationId, organizationName }: AddStuden
       const result = await response.json();
 
       if (!response.ok) {
+        // Special handling for limit reached
+        if (result.limitReached) {
+          toast({
+            title: "Limite atteinte",
+            description: `Vous avez atteint votre limite de ${result.maxAllowed} étudiants. Contactez-nous pour passer à un plan supérieur.`,
+            variant: "destructive",
+          });
+          return;
+        }
         throw new Error(result.error || "Erreur lors de l'ajout");
       }
 
@@ -80,8 +89,10 @@ export function AddStudentDialog({ organizationId, organizationName }: AddStuden
       setFullName("");
       setOpen(false);
       
-      // Refresh students list
+      // Refresh students list and limit
       queryClient.invalidateQueries({ queryKey: ["studio-students"] });
+      queryClient.invalidateQueries({ queryKey: ["student-limit"] });
+      queryClient.invalidateQueries({ queryKey: ["studio-stats"] });
     } catch (error) {
       console.error("Error adding student:", error);
       toast({
