@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2, ChevronDown } from "lucide-react";
+import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2, ChevronDown, BookOpen, FileText, Users, Zap, Palette, Award, MessageCircle, LayoutTemplate, TrendingUp, Globe } from "lucide-react";
 import { KapsulFooter } from "@/components/landing/KapsulFooter";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -253,68 +253,201 @@ const Index = () => {
       {/* SCREENSHOT CAROUSEL */}
       <ScreenshotCarousel />
 
-      {/* SECTION FEATURES (Bento Grid) */}
+      {/* FEATURES HIGHLIGHT GRID */}
+      <section className="py-20 px-6 bg-muted/20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+            Tout ce dont vous avez besoin. <span className="gradient-text">Rien de plus.</span>
+          </h2>
+          <p className="text-center text-muted-foreground mb-16 text-lg max-w-3xl mx-auto">
+            Une plateforme complète pour créer, vendre et gérer vos formations en ligne
+          </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { icon: BookOpen, label: "Formations illimitées", desc: "Créez autant de cours que vous voulez" },
+              { icon: Wand2, label: "IA intégrée", desc: "Landing pages, quiz, outils générés" },
+              { icon: Mail, label: "Email marketing", desc: "Séquences automatiques brandées" },
+              { icon: CreditCard, label: "Paiements Stripe", desc: "0% commission plateforme" },
+              { icon: Palette, label: "Branding complet", desc: "Logo, couleurs, domaine perso" },
+              { icon: BarChart3, label: "Analytics temps réel", desc: "Ventes, progression, engagement" },
+              { icon: Award, label: "Certificats", desc: "Diplômes PDF automatiques" },
+              { icon: MessageCircle, label: "Support IA 24/7", desc: "Assistant pour vos élèves" },
+            ].map((feature, i) => (
+              <div key={i} className="bg-card rounded-2xl p-5 border border-border hover:border-border/80 hover:shadow-card transition-all group">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF512F]/10 to-[#DD2476]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <feature.icon className="w-6 h-6 text-[#DD2476]" strokeWidth={1.5} />
+                </div>
+                <h3 className="font-bold text-foreground mb-1">{feature.label}</h3>
+                <p className="text-sm text-muted-foreground">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION FEATURES (Bento Grid) - ENHANCED */}
       <section id="features" className="py-24 px-6 bg-[#0F172A]">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-center text-white mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-center text-white mb-4">
             Votre nouveau <span className="gradient-text">QG.</span>
           </h2>
+          <p className="text-center text-white/60 mb-16 text-lg">
+            Découvrez les piliers de votre future académie
+          </p>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Large Card - Email */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 row-span-2">
-              <h3 className="text-2xl font-bold text-white mb-4">Emailing Intégré</h3>
-              <p className="text-white/70 mb-6">
-                Envoyez des séquences automatiques à vos élèves.
-              </p>
-              {/* Email Mockup */}
-              <div className="bg-white/10 rounded-2xl p-4 border border-white/10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476]"></div>
-                  <div>
-                    <p className="text-white text-sm font-medium">L'Académie des Formateurs</p>
-                    <p className="text-white/50 text-xs">noreply@monecole.com</p>
-                  </div>
+          {/* Main Feature Cards - Row 1 */}
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Course Creation Card */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:border-white/20 transition-all group">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF512F] to-[#DD2476] flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-7 h-7 text-white" />
                 </div>
-                <div className="bg-white/5 rounded-xl p-4">
-                  <p className="text-white font-semibold mb-2">Bienvenue dans la formation ! 🎉</p>
-                  <p className="text-white/60 text-sm">
-                    Salut [Prénom], tu as fait le premier pas vers...
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Créez vos formations</h3>
+                  <p className="text-white/60">
+                    Éditeur drag & drop intuitif. Vidéos, quiz, outils interactifs générés par l'IA.
                   </p>
                 </div>
+              </div>
+              {/* Course Editor Mockup */}
+              <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                <div className="space-y-2">
+                  {["Module 1 : Les fondamentaux", "Module 2 : Stratégies avancées", "Module 3 : Mise en pratique"].map((m, i) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-3 flex items-center gap-3 group-hover:bg-white/10 transition-colors">
+                      <GripVertical className="w-4 h-4 text-white/40" />
+                      <span className="text-white/80 text-sm font-medium flex-1">{m}</span>
+                      <span className="text-white/40 text-xs">{3 + i} leçons</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Landing Pages AI Card */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:border-white/20 transition-all group">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F5AF19] to-[#FF512F] flex items-center justify-center flex-shrink-0">
+                  <LayoutTemplate className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Pages de vente IA</h3>
+                  <p className="text-white/60">
+                    Votre page de vente complète générée en 2 minutes. Design pro, copywriting inclus.
+                  </p>
+                </div>
+              </div>
+              {/* Landing Page Mockup */}
+              <div className="bg-white/5 rounded-2xl p-4 border border-white/10 overflow-hidden">
+                <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-xl h-16 flex items-center justify-center mb-3">
+                  <span className="text-white font-bold">Ma Formation Premium</span>
+                </div>
+                <div className="space-y-2 mb-3">
+                  <div className="bg-white/10 rounded h-2 w-full" />
+                  <div className="bg-white/10 rounded h-2 w-4/5" />
+                  <div className="bg-white/10 rounded h-2 w-3/5" />
+                </div>
+                <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-xl py-2 flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">Acheter maintenant - 297€</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Feature Cards - Row 2 */}
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
+            {/* Email Marketing Card */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#DD2476] to-[#FF512F] flex items-center justify-center mb-4">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Email Marketing</h3>
+              <p className="text-white/60 text-sm mb-4">Séquences automatiques et emails transactionnels brandés.</p>
+              <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476]" />
+                  <span className="text-white/80 text-xs font-medium">Bienvenue ! 🎉</span>
+                </div>
+                <p className="text-white/50 text-xs">Salut [Prénom], tu as fait le premier pas...</p>
               </div>
             </div>
 
             {/* Stripe Card */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-3">Paiement Stripe</h3>
-              <p className="text-white/70 mb-4">0% de commission plateforme.</p>
-              <div className="flex items-center gap-4">
-                <div className="bg-[#635BFF] rounded-xl px-6 py-3 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-white" />
-                  <span className="text-white font-medium">Payer</span>
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-[#635BFF] flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Paiements Stripe</h3>
+              <p className="text-white/60 text-sm mb-4">0% de commission. Argent direct sur votre compte.</p>
+              <div className="flex items-center gap-3">
+                <div className="bg-[#635BFF] rounded-lg px-4 py-2 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-white" />
+                  <span className="text-white text-sm font-medium">Payer</span>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                  <Check className="w-5 h-5 text-white" />
+                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-white" />
                 </div>
               </div>
             </div>
 
-            {/* Webhooks Card */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-3">Webhooks & API</h3>
-              <p className="text-white/70 mb-4">Connectez vos outils favoris.</p>
+            {/* AI Co-pilot Card */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F5AF19] to-[#FF512F] flex items-center justify-center mb-4">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">IA Co-pilote</h3>
+              <p className="text-white/60 text-sm mb-4">Assistant coach + tuteur élèves + quiz automatiques.</p>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full w-1/3 bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-full" />
+                </div>
+                <span className="text-white/50 text-xs">1 650 / 5 000 crédits</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Row - Analytics & Branding */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Analytics Card */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#DD2476] to-[#FF512F] flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Analytics en temps réel</h3>
+                  <p className="text-white/60 text-sm">Ventes, progression élèves, engagement</p>
+                </div>
+              </div>
+              <div className="h-20 flex items-end gap-1">
+                {[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 88, 100].map((h, i) => (
+                  <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t opacity-80" style={{ height: `${h}%` }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Branding & Customization Card */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-3xl p-6 border border-white/10 hover:border-white/20 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F5AF19] to-[#FF512F] flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Votre marque, partout</h3>
+                  <p className="text-white/60 text-sm">Domaine personnalisé, logo, couleurs</p>
+                </div>
+              </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded bg-gradient-to-br from-[#FF512F] to-[#DD2476]"></div>
+                <div className="flex-1 bg-white/5 rounded-xl p-3 flex items-center gap-2 border border-white/10">
+                  <span className="text-green-400">🔒</span>
+                  <span className="text-white/70 text-sm">https://</span>
+                  <span className="text-white font-medium text-sm">mon-academie.com</span>
                 </div>
-                <div className="flex-1 h-0.5 bg-gradient-to-r from-[#FF512F] to-[#DD2476]"></div>
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Webhook className="w-6 h-6 text-[#FF4A00]" />
-                </div>
-                <div className="flex-1 h-0.5 bg-gradient-to-r from-[#DD2476] to-[#FF512F]"></div>
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">API</span>
+                <div className="flex gap-1">
+                  <div className="w-6 h-6 rounded-full bg-[#FF512F]" />
+                  <div className="w-6 h-6 rounded-full bg-[#DD2476]" />
+                  <div className="w-6 h-6 rounded-full bg-[#F5AF19]" />
                 </div>
               </div>
             </div>
