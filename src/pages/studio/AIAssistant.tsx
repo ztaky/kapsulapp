@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap, FileText } from "lucide-react";
+import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap, FileText, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useStudioContext, formatStudioContextForAI } from "@/hooks/useStudioContext";
 import { useChatHistory } from "@/hooks/useChatHistory";
@@ -71,10 +71,12 @@ export default function AIAssistant() {
     userId,
     saveMessage,
     getConversationId,
+    startNewConversation,
   } = useChatHistory({
     mode: 'studio',
     context: { organizationId: studioContext.organizationId },
     welcomeMessage: WELCOME_MESSAGE,
+    loadHistoryOnMount: false,
   });
 
   const [input, setInput] = useState("");
@@ -307,6 +309,18 @@ export default function AIAssistant() {
           </div>
           
           <div className="hidden md:flex items-center gap-6">
+            <Button
+              onClick={() => {
+                startNewConversation();
+                setMessageActions({});
+              }}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nouvelle conversation
+            </Button>
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <BookOpen className="h-4 w-4 text-orange-500" />
               <span className="font-medium">{studioContext.courses.length}</span>
@@ -353,11 +367,11 @@ export default function AIAssistant() {
                       Bienvenue ! Comment puis-je vous aider ?
                     </h3>
                     <p className="text-base text-slate-600 leading-relaxed mb-4 max-w-2xl mx-auto">
-                      Je peux créer des <span className="font-semibold text-orange-600">quiz</span>, proposer des <span className="font-semibold text-orange-600">structures de modules</span>, et vous conseiller sur vos formations.
+                      Je peux créer des <span className="font-semibold text-orange-600">quiz</span>, proposer des <span className="font-semibold text-orange-600">structures de modules</span>, générer des <span className="font-semibold text-orange-600">cours complets</span>, et vous conseiller sur vos formations.
                     </p>
                     {studioContext.courses.length > 0 && (
                       <p className="text-sm text-orange-600 mb-6">
-                        📚 Je connais vos {studioContext.courses.length} cours et {studioContext.totalLessons} leçons
+                        📚 Je connais vos {studioContext.courses.length} cours et {studioContext.totalLessons} leçons. Vos brouillons sauvegardés sont dans l'onglet "Brouillons".
                       </p>
                     )}
                     <div className="grid gap-3 max-w-xl mx-auto">

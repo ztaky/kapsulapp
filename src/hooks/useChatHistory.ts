@@ -12,9 +12,10 @@ interface UseChatHistoryOptions {
   mode: ChatMode;
   context?: Record<string, unknown>;
   welcomeMessage: string;
+  loadHistoryOnMount?: boolean;
 }
 
-export function useChatHistory({ mode, context = {}, welcomeMessage }: UseChatHistoryOptions) {
+export function useChatHistory({ mode, context = {}, welcomeMessage, loadHistoryOnMount = false }: UseChatHistoryOptions) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: welcomeMessage }
   ]);
@@ -34,6 +35,12 @@ export function useChatHistory({ mode, context = {}, welcomeMessage }: UseChatHi
         }
         
         setUserId(user.id);
+
+        // Only load history if explicitly requested
+        if (!loadHistoryOnMount) {
+          setIsLoadingHistory(false);
+          return;
+        }
 
         // Get the most recent conversation for this mode
         const { data: recentMessages, error } = await supabase
@@ -83,7 +90,7 @@ export function useChatHistory({ mode, context = {}, welcomeMessage }: UseChatHi
     };
 
     loadHistory();
-  }, [mode]);
+  }, [mode, loadHistoryOnMount]);
 
   // Save a single message to the database
   const saveMessage = useCallback(async (
