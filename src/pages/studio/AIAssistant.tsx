@@ -4,16 +4,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap, FileText, Plus } from "lucide-react";
+import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap, FileText, Plus, Paperclip, X, Image as ImageIcon, File } from "lucide-react";
 import { toast } from "sonner";
 import { useStudioContext, formatStudioContextForAI } from "@/hooks/useStudioContext";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { ActionCard, ActionType } from "@/components/assistant/ActionCard";
 import { DraftsList } from "@/components/assistant/DraftsList";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ActionData {
   type: ActionType;
   data: any;
+}
+
+interface AttachedFile {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
 }
 
 const WELCOME_MESSAGE = "Bonjour ! Je suis votre assistant expert en création de formations. Je peux vous aider à structurer vos cours, et même **générer des quiz** ou **proposer des modules** que vous pourrez ajouter directement. Comment puis-je vous aider ?";
@@ -73,9 +81,12 @@ export default function AIAssistant() {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   // Store actions separately, keyed by message index
   const [messageActions, setMessageActions] = useState<Record<number, ActionData>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unified-chat`;
 
@@ -87,13 +98,71 @@ export default function AIAssistant() {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async (messageText: string) => {
-    if (!messageText.trim() || isLoading) return;
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const userMessage = { role: "user" as const, content: messageText };
+    setIsUploading(true);
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Check file size (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+          toast.error(`${file.name} est trop volumineux (max 20MB)`);
+          return null;
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from('ai-assistant-uploads')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: urlData } = supabase.storage
+          .from('ai-assistant-uploads')
+          .getPublicUrl(data.path);
+
+        return {
+          name: file.name,
+          url: urlData.publicUrl,
+          type: file.type,
+          size: file.size,
+        };
+      });
+
+      const uploadedFiles = (await Promise.all(uploadPromises)).filter(Boolean) as AttachedFile[];
+      setAttachedFiles((prev) => [...prev, ...uploadedFiles]);
+      toast.success(`${uploadedFiles.length} fichier(s) ajouté(s)`);
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast.error("Erreur lors de l'upload des fichiers");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const sendMessage = async (messageText: string) => {
+    if ((!messageText.trim() && attachedFiles.length === 0) || isLoading) return;
+
+    let messageContent = messageText;
+    if (attachedFiles.length > 0) {
+      messageContent += '\n\nFichiers joints:\n' + attachedFiles.map(f => `- ${f.name} (${f.url})`).join('\n');
+    }
+
+    const userMessage = { role: "user" as const, content: messageContent };
     const allMessages = [...messages, userMessage];
     setMessages(allMessages);
     setInput("");
+    setAttachedFiles([]);
     setIsLoading(true);
 
     const convId = getConversationId();
@@ -252,7 +321,7 @@ export default function AIAssistant() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (input.trim() && !isLoading) {
+      if ((input.trim() || attachedFiles.length > 0) && !isLoading) {
         sendMessage(input);
       }
     }
@@ -430,8 +499,58 @@ export default function AIAssistant() {
 
           {/* Input fixed at bottom */}
           <div className="shrink-0 border-t bg-white p-4">
-            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-2">
+              {/* Attached files preview */}
+              {attachedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {attachedFiles.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 text-sm"
+                    >
+                      {file.type.startsWith('image/') ? (
+                        <ImageIcon className="h-4 w-4 text-slate-600" />
+                      ) : (
+                        <File className="h-4 w-4 text-slate-600" />
+                      )}
+                      <span className="text-slate-700 max-w-[200px] truncate">{file.name}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => removeFile(index)}
+                      >
+                        <X className="h-3 w-3 text-slate-500 hover:text-slate-700" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="flex gap-2 items-end">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-[60px] w-[60px] shrink-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isUploading}
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Paperclip className="h-5 w-5" />
+                  )}
+                </Button>
                 <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -441,7 +560,11 @@ export default function AIAssistant() {
                   className="flex-1 min-h-[60px] max-h-[200px] resize-none"
                   rows={2}
                 />
-                <Button type="submit" disabled={isLoading || !input.trim()} className="h-[60px]">
+                <Button 
+                  type="submit" 
+                  disabled={isLoading || (!input.trim() && attachedFiles.length === 0)} 
+                  className="h-[60px]"
+                >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
