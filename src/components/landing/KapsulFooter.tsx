@@ -60,6 +60,14 @@ export function KapsulFooter() {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link 
+                  to="/roadmap" 
+                  className="text-white/60 hover:text-white transition-colors"
+                >
+                  Roadmap
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -1003,6 +1003,72 @@ export type Database = {
           },
         ]
       }
+      pricing_plans: {
+        Row: {
+          ai_credits_limit: number | null
+          badge_text: string | null
+          created_at: string
+          description: string | null
+          email_limit: number | null
+          features: Json
+          id: string
+          is_active: boolean
+          is_highlighted: boolean
+          max_courses: number | null
+          max_students: number | null
+          name: string
+          position: number
+          price_monthly: number
+          price_yearly: number | null
+          slug: string
+          stripe_price_id_monthly: string | null
+          stripe_price_id_yearly: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_credits_limit?: number | null
+          badge_text?: string | null
+          created_at?: string
+          description?: string | null
+          email_limit?: number | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_highlighted?: boolean
+          max_courses?: number | null
+          max_students?: number | null
+          name: string
+          position?: number
+          price_monthly?: number
+          price_yearly?: number | null
+          slug: string
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_credits_limit?: number | null
+          badge_text?: string | null
+          created_at?: string
+          description?: string | null
+          email_limit?: number | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_highlighted?: boolean
+          max_courses?: number | null
+          max_students?: number | null
+          name?: string
+          position?: number
+          price_monthly?: number
+          price_yearly?: number | null
+          slug?: string
+          stripe_price_id_monthly?: string | null
+          stripe_price_id_yearly?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1077,6 +1143,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      roadmap_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_visible: boolean
+          position: number
+          release_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          votes_count: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_visible?: boolean
+          position?: number
+          release_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          votes_count?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_visible?: boolean
+          position?: number
+          release_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          votes_count?: number
+        }
+        Relationships: []
       }
       sequence_enrollments: {
         Row: {
