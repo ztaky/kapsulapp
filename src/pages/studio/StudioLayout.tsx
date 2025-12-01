@@ -63,7 +63,7 @@ export default function StudioLayout() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-8">
+          <div className="flex-1 overflow-hidden p-8">
             <Outlet />
           </div>
         </main>
