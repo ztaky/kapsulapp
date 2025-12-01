@@ -436,6 +436,7 @@ serve(async (req) => {
         ...messages,
       ],
       stream: true,
+      max_tokens: 8192, // Allow long responses to prevent truncation
     };
 
     // Add tools for studio mode
@@ -443,6 +444,8 @@ serve(async (req) => {
       requestBody.tools = studioTools;
       requestBody.tool_choice = "auto";
     }
+
+    console.log(`[unified-chat] Request body size: ${JSON.stringify(requestBody).length} chars, messages: ${messages.length}, max_tokens: 8192`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

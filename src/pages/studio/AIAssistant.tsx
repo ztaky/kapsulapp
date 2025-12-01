@@ -213,10 +213,11 @@ export default function AIAssistant() {
       let assistantContent = "";
       let textBuffer = "";
       let toolCalls: any[] = [];
+      let streamDone = false;
 
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
-      while (true) {
+      while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -232,7 +233,10 @@ export default function AIAssistant() {
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
 
           try {
             const parsed = JSON.parse(jsonStr);
@@ -268,12 +272,63 @@ export default function AIAssistant() {
                 }
               }
             }
-          } catch {
+          } catch (e) {
+            console.error('[AIAssistant] JSON parse error, buffering line:', e);
             textBuffer = line + "\n" + textBuffer;
             break;
           }
         }
       }
+
+      // ✅ FINAL FLUSH - Process any remaining buffered data
+      if (textBuffer.trim()) {
+        console.log('[AIAssistant] Final flush processing remaining buffer:', textBuffer.length, 'chars');
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (raw.startsWith(":") || raw.trim() === "") continue;
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const delta = parsed.choices?.[0]?.delta;
+            if (delta?.content) {
+              assistantContent += delta.content;
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = {
+                  ...newMessages[newMessages.length - 1],
+                  content: assistantContent,
+                };
+                return newMessages;
+              });
+            }
+            if (delta?.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                if (tc.index !== undefined) {
+                  if (!toolCalls[tc.index]) {
+                    toolCalls[tc.index] = {
+                      id: tc.id || "",
+                      function: { name: "", arguments: "" },
+                    };
+                  }
+                  if (tc.function?.name) {
+                    toolCalls[tc.index].function.name = tc.function.name;
+                  }
+                  if (tc.function?.arguments) {
+                    toolCalls[tc.index].function.arguments += tc.function.arguments;
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('[AIAssistant] Ignoring unparseable leftover:', e);
+          }
+        }
+      }
+
+      console.log(`[AIAssistant] Stream complete. Total content: ${assistantContent.length} chars, Tool calls: ${toolCalls.length}`);
 
       // Process tool calls after streaming is complete
       if (toolCalls.length > 0) {
