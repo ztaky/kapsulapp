@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Send, Sparkles, Loader2, Bot, User, BookOpen, Users, GraduationCap, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useStudioContext, formatStudioContextForAI } from "@/hooks/useStudioContext";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { ActionCard, ActionType } from "@/components/assistant/ActionCard";
+import { DraftsList } from "@/components/assistant/DraftsList";
 
 interface ActionData {
   type: ActionType;
@@ -257,6 +259,27 @@ export default function AIAssistant() {
     sendMessage(suggestion);
   };
 
+  const handleLoadDraft = (draft: any) => {
+    // Parse draft and create a message with the loaded data
+    const draftData = draft.draft_data;
+    const action: ActionData = {
+      type: "create_complete_course",
+      data: draftData,
+    };
+
+    // Add a system message showing the loaded draft
+    const loadMessage = {
+      role: "assistant" as const,
+      content: `Brouillon "${draft.title}" chargé. Vous pouvez continuer à le modifier ou le créer.`,
+    };
+
+    setMessages((prev) => [...prev, loadMessage]);
+    setMessageActions((prev) => ({
+      ...prev,
+      [messages.length]: action,
+    }));
+  };
+
   if (studioContext.isLoading || isLoadingHistory) {
     return (
       <div className="flex flex-col h-[calc(100vh-8rem)] items-center justify-center">
@@ -304,110 +327,138 @@ export default function AIAssistant() {
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">
-        <ScrollArea className="flex-1">
-          <div className="max-w-4xl mx-auto space-y-6 p-6">
-            {messages.length <= 1 && (
-              <Card className="p-10 text-center bg-white border border-slate-100 rounded-3xl shadow-premium">
-                <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="h-8 w-8" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-slate-900 tracking-tight">
-                  Bienvenue ! Comment puis-je vous aider ?
-                </h3>
-                <p className="text-base text-slate-600 leading-relaxed mb-4 max-w-2xl mx-auto">
-                  Je peux créer des <span className="font-semibold text-orange-600">quiz</span>, proposer des <span className="font-semibold text-orange-600">structures de modules</span>, et vous conseiller sur vos formations.
-                </p>
-                {studioContext.courses.length > 0 && (
-                  <p className="text-sm text-orange-600 mb-6">
-                    📚 Je connais vos {studioContext.courses.length} cours et {studioContext.totalLessons} leçons
-                  </p>
-                )}
-                <div className="grid gap-3 max-w-xl mx-auto">
-                  {SUGGESTIONS.map((suggestion, idx) => (
-                    <Button
-                      key={idx}
-                      variant="outline"
-                      className="justify-start text-left h-auto py-4 px-5 rounded-xl border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 text-sm font-medium"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      <Sparkles className="h-4 w-4 mr-3 shrink-0 text-orange-600" />
-                      <span className="text-slate-900">{suggestion}</span>
-                    </Button>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            {messages.slice(1).map((message, idx) => {
-              const actualIndex = idx + 1; // Account for the slice(1)
-              const action = messageActions[actualIndex];
-              
-              return (
-                <div key={idx} className="space-y-4">
-                  <div
-                    className={`flex gap-3 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shrink-0">
-                        <Bot className="h-5 w-5 text-orange-600" />
-                      </div>
-                    )}
-                    <Card
-                      className={`p-5 max-w-[80%] rounded-2xl border shadow-sm ${
-                        message.role === "user"
-                          ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg"
-                          : "bg-white border-slate-100"
-                      }`}
-                    >
-                      <p className={`whitespace-pre-wrap leading-relaxed ${
-                        message.role === "user" ? "text-white" : "text-slate-700"
-                      }`}>
-                        {message.content}
-                      </p>
-                    </Card>
-                    {message.role === "user" && (
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shrink-0">
-                        <User className="h-5 w-5 text-slate-600" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Render ActionCard if there's an action for this message */}
-                  {message.role === "assistant" && action && (
-                    <div className="ml-13 pl-13">
-                      <ActionCard
-                        type={action.type}
-                        data={action.data}
-                        organizationId={studioContext.organizationId || ""}
-                        organizationSlug={studioContext.organizationSlug}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {isLoading && messages[messages.length - 1]?.content === "" && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-orange-600" />
-                </div>
-                <Card className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center gap-3">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <span className="text-sm text-slate-500">Réflexion en cours...</span>
-                </Card>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
+        <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+          <div className="px-6 pt-4">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+              <TabsTrigger value="chat" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Conversation
+              </TabsTrigger>
+              <TabsTrigger value="drafts" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Brouillons
+              </TabsTrigger>
+            </TabsList>
           </div>
-        </ScrollArea>
+
+          <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
+            <ScrollArea className="flex-1">
+              <div className="max-w-4xl mx-auto space-y-6 p-6">
+                {messages.length <= 1 && (
+                  <Card className="p-10 text-center bg-white border border-slate-100 rounded-3xl shadow-premium">
+                    <div className="rounded-2xl bg-orange-100 text-orange-600 p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                      <Sparkles className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3 text-slate-900 tracking-tight">
+                      Bienvenue ! Comment puis-je vous aider ?
+                    </h3>
+                    <p className="text-base text-slate-600 leading-relaxed mb-4 max-w-2xl mx-auto">
+                      Je peux créer des <span className="font-semibold text-orange-600">quiz</span>, proposer des <span className="font-semibold text-orange-600">structures de modules</span>, et vous conseiller sur vos formations.
+                    </p>
+                    {studioContext.courses.length > 0 && (
+                      <p className="text-sm text-orange-600 mb-6">
+                        📚 Je connais vos {studioContext.courses.length} cours et {studioContext.totalLessons} leçons
+                      </p>
+                    )}
+                    <div className="grid gap-3 max-w-xl mx-auto">
+                      {SUGGESTIONS.map((suggestion, idx) => (
+                        <Button
+                          key={idx}
+                          variant="outline"
+                          className="justify-start text-left h-auto py-4 px-5 rounded-xl border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 text-sm font-medium"
+                          onClick={() => handleSuggestionClick(suggestion)}
+                        >
+                          <Sparkles className="h-4 w-4 mr-3 shrink-0 text-orange-600" />
+                          <span className="text-slate-900">{suggestion}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+
+                {messages.slice(1).map((message, idx) => {
+                  const actualIndex = idx + 1; // Account for the slice(1)
+                  const action = messageActions[actualIndex];
+                  
+                  return (
+                    <div key={idx} className="space-y-4">
+                      <div
+                        className={`flex gap-3 ${
+                          message.role === "user" ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        {message.role === "assistant" && (
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shrink-0">
+                            <Bot className="h-5 w-5 text-orange-600" />
+                          </div>
+                        )}
+                        <Card
+                          className={`p-5 max-w-[80%] rounded-2xl border shadow-sm ${
+                            message.role === "user"
+                              ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg"
+                              : "bg-white border-slate-100"
+                          }`}
+                        >
+                          <p className={`whitespace-pre-wrap leading-relaxed ${
+                            message.role === "user" ? "text-white" : "text-slate-700"
+                          }`}>
+                            {message.content}
+                          </p>
+                        </Card>
+                        {message.role === "user" && (
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shrink-0">
+                            <User className="h-5 w-5 text-slate-600" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Render ActionCard if there's an action for this message */}
+                      {message.role === "assistant" && action && (
+                        <div className="ml-13 pl-13">
+                          <ActionCard
+                            type={action.type}
+                            data={action.data}
+                            organizationId={studioContext.organizationId || ""}
+                            organizationSlug={studioContext.organizationSlug}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {isLoading && messages[messages.length - 1]?.content === "" && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                      <Bot className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <Card className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center gap-3">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <span className="text-sm text-slate-500">Réflexion en cours...</span>
+                    </Card>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="drafts" className="flex-1 mt-0">
+            <ScrollArea className="h-full">
+              <div className="max-w-4xl mx-auto p-6">
+                <DraftsList
+                  organizationId={studioContext.organizationId || ""}
+                  onLoadDraft={handleLoadDraft}
+                />
+              </div>
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
 
         <div className="p-6 border-t border-slate-200">
           <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">

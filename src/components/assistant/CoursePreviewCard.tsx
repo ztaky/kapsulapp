@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Rocket, Plus, BookOpen, Users, Clock } from "lucide-react";
+import { Loader2, Rocket, Plus, BookOpen, Users, Clock, Save } from "lucide-react";
 import { ModuleEditor } from "./ModuleEditor";
 import { useCreateCompleteCourse } from "@/hooks/useCreateCompleteCourse";
+import { useSaveDraft } from "@/hooks/useSaveDraft";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Lesson {
   id: string;
@@ -45,6 +47,7 @@ interface CoursePreviewCardProps {
   }>;
   organizationId: string;
   organizationSlug?: string;
+  existingDraftId?: string;
 }
 
 export function CoursePreviewCard({
@@ -52,9 +55,11 @@ export function CoursePreviewCard({
   initialModules,
   organizationId,
   organizationSlug,
+  existingDraftId,
 }: CoursePreviewCardProps) {
   const navigate = useNavigate();
   const { createCompleteCourse } = useCreateCompleteCourse();
+  const { saveDraft, isSaving } = useSaveDraft(organizationId);
   
   const [course, setCourse] = useState<CourseInfo>(initialCourse);
   const [modules, setModules] = useState<Module[]>(
@@ -72,6 +77,28 @@ export function CoursePreviewCard({
     }))
   );
   const [isCreating, setIsCreating] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<string | undefined>(existingDraftId);
+
+  const handleSaveDraft = async () => {
+    const draftData = {
+      course,
+      modules: modules.map((m) => ({
+        title: m.title,
+        description: m.description,
+        lessons: m.lessons.map((l) => ({
+          title: l.title,
+          content: l.content,
+          has_quiz: l.has_quiz,
+          quiz: l.quiz,
+        })),
+      })),
+    };
+
+    const result = await saveDraft(course.title, draftData, currentDraftId);
+    if (result.success && result.draftId) {
+      setCurrentDraftId(result.draftId);
+    }
+  };
 
   const handleCreateCourse = async () => {
     setIsCreating(true);
@@ -93,6 +120,11 @@ export function CoursePreviewCard({
     setIsCreating(false);
 
     if (result.success && result.courseId) {
+      // Delete draft if it was created from one
+      if (currentDraftId) {
+        await supabase.from("course_drafts").delete().eq("id", currentDraftId);
+      }
+      
       setTimeout(() => {
         if (organizationSlug) {
           navigate(`/school/${organizationSlug}/studio/courses/${result.courseId}/curriculum`);
@@ -292,29 +324,51 @@ export function CoursePreviewCard({
         </div>
       </ScrollArea>
 
-      {/* Create Button */}
-      <div className="p-6 border-t border-orange-100 bg-white">
-        <Button
-          onClick={handleCreateCourse}
-          disabled={isCreating || modules.length === 0}
-          variant="gradient"
-          size="lg"
-          className="w-full h-14 text-lg font-bold shadow-lg"
-        >
-          {isCreating ? (
-            <>
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              Création en cours...
-            </>
-          ) : (
-            <>
-              <Rocket className="h-5 w-5 mr-2" />
-              Créer ce cours maintenant
-            </>
-          )}
-        </Button>
-        <p className="text-center text-xs text-slate-500 mt-2">
-          Le cours sera créé en brouillon, vous pourrez le modifier ensuite
+      {/* Action Buttons */}
+      <div className="p-6 border-t border-orange-100 bg-white space-y-3">
+        <div className="flex gap-3">
+          <Button
+            onClick={handleSaveDraft}
+            disabled={isSaving || modules.length === 0}
+            variant="outline"
+            size="lg"
+            className="flex-1 h-12"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Sauvegarde...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                {currentDraftId ? "Mettre à jour" : "Sauvegarder"} le brouillon
+              </>
+            )}
+          </Button>
+          
+          <Button
+            onClick={handleCreateCourse}
+            disabled={isCreating || modules.length === 0}
+            variant="gradient"
+            size="lg"
+            className="flex-1 h-12 text-base font-bold shadow-lg"
+          >
+            {isCreating ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Création...
+              </>
+            ) : (
+              <>
+                <Rocket className="h-5 w-5 mr-2" />
+                Créer le cours
+              </>
+            )}
+          </Button>
+        </div>
+        <p className="text-center text-xs text-slate-500">
+          Sauvegardez pour reprendre plus tard ou créez le cours directement
         </p>
       </div>
     </Card>
