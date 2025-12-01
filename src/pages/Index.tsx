@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2 } from "lucide-react";
+import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2, ChevronDown } from "lucide-react";
 import { KapsulFooter } from "@/components/landing/KapsulFooter";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -81,6 +81,9 @@ const Index = () => {
               </button>
               <button onClick={() => scrollToSection("pricing")} className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm">
                 Pricing
+              </button>
+              <button onClick={() => scrollToSection("faq")} className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm">
+                FAQ
               </button>
             </div>
 
@@ -513,6 +516,9 @@ const Index = () => {
 
       {/* GUARANTEE SECTION */}
       <GuaranteeSection />
+
+      {/* FAQ SECTION */}
+      <FAQSection />
 
       {/* FOOTER URGENCY */}
       <section className="py-20 px-6 bg-gradient-to-br from-[#0F172A] to-[#1E293B]">
@@ -973,6 +979,105 @@ const GuaranteeSection = () => {
         </p>
       </div>
     </section>;
+};
+
+// FAQ SECTION COMPONENT
+const FAQSection = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  
+  const faqs = [
+    {
+      question: "Qu'est-ce que l'offre Founder ?",
+      answer: "Accès PRO à vie pour 297€ au lieu de 804€/an. Limité aux 100 premiers. Expire le 31 décembre."
+    },
+    {
+      question: "Que se passe-t-il après le 31 décembre ?",
+      answer: "L'offre Founder disparaît. Les tarifs normaux s'appliquent : Free (0€+8%), Pro (67€/mois), Elite (147€/mois)."
+    },
+    {
+      question: "Puis-je être remboursé ?",
+      answer: "Oui, remboursement intégral sous 30 jours si Kapsul ne te convient pas."
+    },
+    {
+      question: "Combien de formations puis-je créer ?",
+      answer: "Illimité avec le plan Founder (équivalent Pro)."
+    },
+    {
+      question: "Y a-t-il des frais de transaction ?",
+      answer: "0% de commission Kapsul. Stripe facture ~2,9% + 0,25€ par transaction."
+    },
+    {
+      question: "L'IA génère-t-elle vraiment les landing pages ?",
+      answer: "Oui, tu remplis un formulaire, l'IA génère 13 sections en 5 minutes."
+    },
+    {
+      question: "Kapsul est-il conforme RGPD ?",
+      answer: "Oui, hébergement EU, cookies opt-in, export des données utilisateur."
+    },
+    {
+      question: "Le support est-il inclus ?",
+      answer: "Oui, support prioritaire pour les Founders via tickets et email."
+    }
+  ];
+
+  return (
+    <section id="faq" className="py-24 px-6 bg-muted/30">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+          Questions <span className="gradient-text">fréquentes</span>
+        </h2>
+        <p className="text-center text-muted-foreground mb-12 text-lg">
+          Tout ce que tu dois savoir avant de te lancer
+        </p>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className={`bg-card rounded-2xl border transition-all overflow-hidden ${
+                openIndex === index 
+                  ? "border-[#DD2476]/50 shadow-lg shadow-[#DD2476]/10" 
+                  : "border-border hover:border-border/80"
+              }`}
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full p-6 flex items-center justify-between text-left"
+              >
+                <span className="text-lg font-semibold text-foreground pr-4">
+                  {faq.question}
+                </span>
+                <ChevronDown
+                  className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${
+                    openIndex === index ? "rotate-180 text-[#DD2476]" : ""
+                  }`}
+                />
+              </button>
+              
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  openIndex === index ? "max-h-40" : "max-h-0"
+                }`}
+              >
+                <div className="px-6 pb-6">
+                  <p className="text-muted-foreground leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-center mt-10 text-muted-foreground">
+          D'autres questions ?{" "}
+          <a href="/faq" className="font-semibold text-foreground hover:text-[#DD2476] transition-colors">
+            Voir toutes les FAQ →
+          </a>
+        </p>
+      </div>
+    </section>
+  );
 };
 
 export default Index;
