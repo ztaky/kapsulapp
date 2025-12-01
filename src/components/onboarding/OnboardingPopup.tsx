@@ -24,6 +24,9 @@ interface OnboardingPopupProps {
   organizationName: string;
   onStepAction: (stepKey: string, action: "complete" | "skip") => void;
   currentStepIndex?: number;
+  showMinimizedByDefault?: boolean;
+  completedCount?: number;
+  totalSteps?: number;
 }
 
 const WIZARD_STEPS = [
@@ -94,14 +97,22 @@ export function OnboardingPopup({
   organizationName,
   onStepAction,
   currentStepIndex = 0,
+  showMinimizedByDefault = false,
+  completedCount = 0,
+  totalSteps = 6,
 }: OnboardingPopupProps) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(currentStepIndex);
   const [isMinimized, setIsMinimized] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(MINIMIZED_KEY) === "true";
+      const saved = localStorage.getItem(MINIMIZED_KEY);
+      // If showMinimizedByDefault is true and no saved preference, show minimized
+      if (showMinimizedByDefault && saved === null) {
+        return true;
+      }
+      return saved === "true";
     }
-    return false;
+    return showMinimizedByDefault;
   });
 
   const step = WIZARD_STEPS[currentStep];
@@ -170,27 +181,42 @@ export function OnboardingPopup({
     setIsMinimized(false);
   };
 
-  if (!open) return null;
+  // Show minimized widget when showMinimizedByDefault is true, even if open is false
+  const shouldShowMinimizedWidget = showMinimizedByDefault && isMinimized;
+  
+  if (!open && !shouldShowMinimizedWidget) return null;
 
-  // Minimized badge
-  if (isMinimized) {
+  // Minimized widget - Enhanced design
+  if (isMinimized || (!open && shouldShowMinimizedWidget)) {
+    const displayProgress = Math.round((completedCount / totalSteps) * 100);
     return (
       <button
         onClick={handleMaximize}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-full shadow-elevated hover:shadow-lg transition-all hover:scale-105 animate-slide-in-right-bottom"
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-3 pl-3 pr-4 py-2.5 bg-card border border-border rounded-2xl shadow-elevated hover:shadow-lg transition-all hover:scale-[1.02] group"
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-pink-100 flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-primary" />
+        <div className="relative">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-primary" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse" />
         </div>
-        <span className="text-sm font-medium text-foreground">
-          {currentStep + 1}/{WIZARD_STEPS.length}
-        </span>
-        <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary rounded-full transition-all"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="flex flex-col items-start">
+          <span className="text-sm font-semibold text-foreground">
+            Guide de configuration
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {completedCount}/{totalSteps} étapes
+            </span>
+            <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${displayProgress}%` }}
+              />
+            </div>
+          </div>
         </div>
+        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors ml-1" />
       </button>
     );
   }

@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight, Sparkles, Plus } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { OnboardingPopup } from "@/components/onboarding/OnboardingPopup";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -213,14 +212,19 @@ export default function StudioDashboard() {
 
     return (
     <div className="space-y-8 animate-fade-in">
-      {/* Onboarding Popup */}
-      <OnboardingPopup
-        open={showWizard}
-        onOpenChange={setShowWizard}
-        organizationSlug={slug || ""}
-        organizationName={currentOrg?.name || ""}
-        onStepAction={handleStepAction}
-      />
+      {/* Onboarding Popup - Always show widget when onboarding not completed */}
+      {!onboardingCompleted && (
+        <OnboardingPopup
+          open={showWizard}
+          onOpenChange={setShowWizard}
+          organizationSlug={slug || ""}
+          organizationName={currentOrg?.name || ""}
+          onStepAction={handleStepAction}
+          showMinimizedByDefault={true}
+          completedCount={completedCount}
+          totalSteps={totalSteps}
+        />
+      )}
 
       {/* AI Credits Shop Modal */}
       {currentOrg?.id && (
@@ -242,18 +246,6 @@ export default function StudioDashboard() {
         {isFounder && <FounderBadge className="mt-2" />}
       </div>
 
-      {/* Onboarding Checklist - Show if not completed */}
-      {!onboardingCompleted && (
-        <OnboardingChecklist
-          steps={steps}
-          progress={progress}
-          completedCount={completedCount}
-          totalSteps={totalSteps}
-          organizationSlug={slug || ""}
-          onOpenWizard={() => setShowWizard(true)}
-          onComplete={completeOnboarding}
-        />
-      )}
 
       {/* Stats Grid - Neutral style */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
