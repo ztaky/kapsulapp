@@ -47,6 +47,16 @@ import FAQ from "./pages/FAQ";
 import TestLandingPage from "./pages/TestLandingPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 
+// Legal pages for Kapsul SaaS
+import MentionsLegales from "./pages/legal/MentionsLegales";
+import Confidentialite from "./pages/legal/Confidentialite";
+import CGV from "./pages/legal/CGV";
+import CookiesPage from "./pages/legal/Cookies";
+
+// Global components
+import { CookieConsentBanner } from "./components/shared/CookieConsentBanner";
+import { KapsulTracking } from "./components/shared/KapsulTracking";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -55,11 +65,23 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        {/* Global Cookie Consent Banner */}
+        <CookieConsentBanner />
+        
+        {/* Kapsul SaaS Tracking (GTM + FB Pixel) */}
+        <KapsulTracking />
+        
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/start" element={<CoachSignup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* Kapsul Legal Pages */}
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
+          <Route path="/confidentialite" element={<Confidentialite />} />
+          <Route path="/cgv" element={<CGV />} />
+          <Route path="/cookies" element={<CookiesPage />} />
           
           {/* Legacy redirect */}
           <Route path="/super-admin" element={<Navigate to="/admin" replace />} />
