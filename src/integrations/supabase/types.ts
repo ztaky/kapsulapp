@@ -228,6 +228,225 @@ export type Database = {
           },
         ]
       }
+      email_sends: {
+        Row: {
+          clicked_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          opened_at: string | null
+          organization_id: string | null
+          recipient_email: string
+          recipient_user_id: string | null
+          sent_at: string | null
+          sequence_step_id: string | null
+          status: Database["public"]["Enums"]["email_send_status"]
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          organization_id?: string | null
+          recipient_email: string
+          recipient_user_id?: string | null
+          sent_at?: string | null
+          sequence_step_id?: string | null
+          status?: Database["public"]["Enums"]["email_send_status"]
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          organization_id?: string | null
+          recipient_email?: string
+          recipient_user_id?: string | null
+          sent_at?: string | null
+          sequence_step_id?: string | null
+          status?: Database["public"]["Enums"]["email_send_status"]
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_sequence_step_id_fkey"
+            columns: ["sequence_step_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequence_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequence_steps: {
+        Row: {
+          created_at: string
+          delay_hours: number
+          id: string
+          sequence_id: string
+          step_order: number
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delay_hours?: number
+          id?: string
+          sequence_id: string
+          step_order?: number
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delay_hours?: number
+          id?: string
+          sequence_id?: string
+          step_order?: number
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sequence_steps_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequences: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          trigger_course_id: string | null
+          trigger_event: Database["public"]["Enums"]["sequence_trigger_event"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          trigger_course_id?: string | null
+          trigger_event: Database["public"]["Enums"]["sequence_trigger_event"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          trigger_course_id?: string | null
+          trigger_event?: Database["public"]["Enums"]["sequence_trigger_event"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sequences_trigger_course_id_fkey"
+            columns: ["trigger_course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          email_type: Database["public"]["Enums"]["email_type"]
+          html_content: string
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          organization_id: string | null
+          subject: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string
+          email_type: Database["public"]["Enums"]["email_type"]
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          organization_id?: string | null
+          subject: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string
+          email_type?: Database["public"]["Enums"]["email_type"]
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string | null
+          subject?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_entries: {
         Row: {
           answer: string
@@ -818,6 +1037,63 @@ export type Database = {
           },
         ]
       }
+      sequence_enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string | null
+          created_at: string
+          current_step: number | null
+          enrolled_at: string
+          id: string
+          is_active: boolean | null
+          next_email_at: string | null
+          sequence_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id?: string | null
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string
+          id?: string
+          is_active?: boolean | null
+          next_email_at?: string | null
+          sequence_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string | null
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string
+          id?: string
+          is_active?: boolean | null
+          next_email_at?: string | null
+          sequence_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_enrollments_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           content: string
@@ -1216,6 +1492,22 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "user"
+      email_send_status: "pending" | "sent" | "failed" | "opened" | "clicked"
+      email_type:
+        | "welcome_purchase"
+        | "invoice"
+        | "course_reminder"
+        | "new_content"
+        | "onboarding_day_1"
+        | "onboarding_day_3"
+        | "onboarding_day_7"
+        | "coach_welcome"
+        | "founder_welcome"
+        | "support_ticket_created"
+        | "support_ticket_reply"
+        | "support_ticket_status"
+        | "platform_update"
+        | "custom"
       landing_page_status: "draft" | "published"
       legal_page_type:
         | "mentions_legales"
@@ -1224,6 +1516,11 @@ export type Database = {
         | "cookies"
       lesson_type: "video" | "interactive_tool"
       org_role: "coach" | "student"
+      sequence_trigger_event:
+        | "purchase_completed"
+        | "student_signup"
+        | "course_completed"
+        | "manual"
       ticket_priority: "low" | "medium" | "high" | "urgent"
       ticket_status:
         | "open"
@@ -1359,6 +1656,23 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "user"],
+      email_send_status: ["pending", "sent", "failed", "opened", "clicked"],
+      email_type: [
+        "welcome_purchase",
+        "invoice",
+        "course_reminder",
+        "new_content",
+        "onboarding_day_1",
+        "onboarding_day_3",
+        "onboarding_day_7",
+        "coach_welcome",
+        "founder_welcome",
+        "support_ticket_created",
+        "support_ticket_reply",
+        "support_ticket_status",
+        "platform_update",
+        "custom",
+      ],
       landing_page_status: ["draft", "published"],
       legal_page_type: [
         "mentions_legales",
@@ -1368,6 +1682,12 @@ export const Constants = {
       ],
       lesson_type: ["video", "interactive_tool"],
       org_role: ["coach", "student"],
+      sequence_trigger_event: [
+        "purchase_completed",
+        "student_signup",
+        "course_completed",
+        "manual",
+      ],
       ticket_priority: ["low", "medium", "high", "urgent"],
       ticket_status: [
         "open",
