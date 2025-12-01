@@ -36,7 +36,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${origin}/start?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment_canceled=true`,
       metadata: {
         offer: "founder_lifetime",

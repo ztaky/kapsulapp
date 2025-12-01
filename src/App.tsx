@@ -45,6 +45,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFAQ from "./pages/admin/AdminFAQ";
 import FAQ from "./pages/FAQ";
 import TestLandingPage from "./pages/TestLandingPage";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,9 @@ const App = () => (
           
           {/* Test Landing Page */}
           <Route path="/test-landing" element={<TestLandingPage />} />
+          
+          {/* Payment Success */}
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
