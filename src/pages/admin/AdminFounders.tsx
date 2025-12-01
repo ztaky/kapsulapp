@@ -23,6 +23,8 @@ interface FounderData {
   total_emails: number;
   current_month_ai: number;
   current_month_emails: number;
+  ai_limit: number;
+  email_limit: number;
 }
 
 export default function AdminFounders() {
@@ -39,6 +41,7 @@ export default function AdminFounders() {
           name,
           slug,
           created_at,
+          email_limit_per_month,
           organization_members!inner (
             user_id,
             role,
@@ -61,10 +64,10 @@ export default function AdminFounders() {
         .select("organization_id, credits_used, month_year")
         .in("organization_id", orgIds);
 
-      // Get email sends count for all founder orgs
-      const { data: emailSends } = await supabase
-        .from("email_sends")
-        .select("organization_id, created_at")
+      // Get email usage for all founder orgs
+      const { data: emailUsage } = await supabase
+        .from("email_usage")
+        .select("organization_id, emails_sent, month_year")
         .in("organization_id", orgIds);
 
       // Process the data
@@ -77,12 +80,10 @@ export default function AdminFounders() {
         const totalAi = orgAiCredits.reduce((sum, ac) => sum + ac.credits_used, 0);
         const currentMonthAi = orgAiCredits.find(ac => ac.month_year === currentMonthYear)?.credits_used || 0;
         
-        // Calculate emails
-        const orgEmails = emailSends?.filter(es => es.organization_id === org.id) || [];
-        const totalEmails = orgEmails.length;
-        const currentMonthEmails = orgEmails.filter(es => 
-          es.created_at.startsWith(currentMonthYear)
-        ).length;
+        // Calculate emails from email_usage table
+        const orgEmailUsage = emailUsage?.filter(eu => eu.organization_id === org.id) || [];
+        const totalEmails = orgEmailUsage.reduce((sum, eu) => sum + eu.emails_sent, 0);
+        const currentMonthEmails = orgEmailUsage.find(eu => eu.month_year === currentMonthYear)?.emails_sent || 0;
 
         return {
           organization_id: org.id,
@@ -95,6 +96,8 @@ export default function AdminFounders() {
           total_emails: totalEmails,
           current_month_ai: currentMonthAi,
           current_month_emails: currentMonthEmails,
+          ai_limit: 5000,
+          email_limit: (org as any).email_limit_per_month || 3000,
         };
       });
 
@@ -276,13 +279,13 @@ export default function AdminFounders() {
             </div>
           ) : founders && founders.length > 0 ? (
             <Table>
-              <TableHeader>
+                <TableHeader>
                 <TableRow>
                   <TableHead>Académie</TableHead>
                   <TableHead>Coach</TableHead>
                   <TableHead>Inscrit le</TableHead>
-                  <TableHead className="text-right">Crédits IA</TableHead>
-                  <TableHead className="text-right">Emails</TableHead>
+                  <TableHead className="text-right">Crédits IA (5000/mois)</TableHead>
+                  <TableHead className="text-right">Emails (3000/mois)</TableHead>
                   <TableHead className="text-right">Coût Estimé</TableHead>
                 </TableRow>
               </TableHeader>
@@ -305,14 +308,20 @@ export default function AdminFounders() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="font-medium">{founder.total_ai_credits.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {founder.current_month_ai.toLocaleString()} ce mois
+                        <div className={`text-xs ${
+                          founder.current_month_ai >= founder.ai_limit ? "text-destructive font-medium" :
+                          founder.current_month_ai >= founder.ai_limit * 0.8 ? "text-amber-500" : "text-muted-foreground"
+                        }`}>
+                          {founder.current_month_ai.toLocaleString()} / {founder.ai_limit.toLocaleString()}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="font-medium">{founder.total_emails.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {founder.current_month_emails.toLocaleString()} ce mois
+                        <div className={`text-xs ${
+                          founder.current_month_emails >= founder.email_limit ? "text-destructive font-medium" :
+                          founder.current_month_emails >= founder.email_limit * 0.8 ? "text-amber-500" : "text-muted-foreground"
+                        }`}>
+                          {founder.current_month_emails.toLocaleString()} / {founder.email_limit.toLocaleString()}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

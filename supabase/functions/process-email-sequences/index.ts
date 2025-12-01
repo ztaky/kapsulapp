@@ -166,6 +166,47 @@ serve(async (req) => {
           courseName = course?.title || "";
         }
 
+        // Check email quota before sending
+        const currentDate = new Date();
+        const quotaMonthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+        
+        const { data: quotaResult, error: quotaError } = await supabaseAdmin.rpc('increment_email_usage', {
+          _organization_id: sequence.organization_id,
+          _month_year: quotaMonthYear,
+          _amount: 1
+        });
+
+        if (quotaError) {
+          console.error("Error checking email quota:", quotaError);
+          // Continue anyway - don't block sequence due to quota check errors
+        } else if (quotaResult && !quotaResult[0]?.success) {
+          console.log(`Email quota exceeded for organization ${sequence.organization_id}, pausing enrollment ${enrollment.id}`);
+          
+          // Pause the enrollment due to quota exceeded
+          await supabaseAdmin
+            .from("sequence_enrollments")
+            .update({
+              is_active: false,
+              completed_at: now.toISOString(),
+            })
+            .eq("id", enrollment.id);
+          
+          // Log the quota exceeded event
+          await supabaseAdmin
+            .from("email_sends")
+            .insert({
+              organization_id: sequence.organization_id,
+              recipient_email: user.email,
+              subject: `[QUOTA EXCEEDED] Sequence: ${sequence.name}`,
+              status: "failed",
+              error_message: "Email quota exceeded - sequence paused",
+              metadata: { sequence_id: enrollment.sequence_id, quota_exceeded: true },
+            });
+          
+          errorCount++;
+          continue;
+        }
+
         // Send email via send-transactional-email
         console.log(`Sending email to ${user.email} for sequence ${sequence.name}`);
 

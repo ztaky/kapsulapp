@@ -548,6 +548,45 @@ serve(async (req) => {
       );
     }
 
+    // Check email quota before proceeding
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    const { data: quotaResult, error: quotaError } = await supabaseAdmin.rpc('increment_email_usage', {
+      _organization_id: request.organizationId,
+      _month_year: monthYear,
+      _amount: 1
+    });
+
+    if (quotaError) {
+      console.error("Error checking email quota:", quotaError);
+      // Continue anyway - don't block emails due to quota check errors
+    } else if (quotaResult && !quotaResult[0]?.success) {
+      console.log("Email quota exceeded for organization:", request.organizationId);
+      
+      // Log the quota exceeded event
+      await logEmailSend(supabaseAdmin, {
+        organizationId: request.organizationId,
+        recipientEmail: request.recipientEmail,
+        subject: `[QUOTA EXCEEDED] ${request.type}`,
+        status: "failed",
+        errorMessage: "Email quota exceeded for this month",
+        metadata: { type: request.type, quota_exceeded: true },
+      });
+
+      return new Response(
+        JSON.stringify({ 
+          error: "Email quota exceeded", 
+          code: "QUOTA_EXCEEDED",
+          current: quotaResult[0]?.new_count,
+          limit: quotaResult[0]?.emails_limit
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    console.log("Email quota check passed, proceeding with send");
+
     const { data: org, error: orgError } = await supabaseAdmin
       .from("organizations")
       .select("name, logo_url, brand_color, contact_email, slug")

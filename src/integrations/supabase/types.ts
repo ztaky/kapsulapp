@@ -447,6 +447,44 @@ export type Database = {
           },
         ]
       }
+      email_usage: {
+        Row: {
+          bonus_emails: number
+          created_at: string
+          emails_sent: number
+          id: string
+          month_year: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          bonus_emails?: number
+          created_at?: string
+          emails_sent?: number
+          id?: string
+          month_year: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          bonus_emails?: number
+          created_at?: string
+          emails_sent?: number
+          id?: string
+          month_year?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_entries: {
         Row: {
           answer: string
@@ -858,6 +896,7 @@ export type Database = {
           contact_email: string | null
           created_at: string
           description: string | null
+          email_limit_per_month: number | null
           facebook_pixel_id: string | null
           gtm_container_id: string | null
           id: string
@@ -883,6 +922,7 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           description?: string | null
+          email_limit_per_month?: number | null
           facebook_pixel_id?: string | null
           gtm_container_id?: string | null
           id?: string
@@ -908,6 +948,7 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           description?: string | null
+          email_limit_per_month?: number | null
           facebook_pixel_id?: string | null
           gtm_container_id?: string | null
           id?: string
@@ -1368,6 +1409,18 @@ export type Database = {
           total_bonus: number
         }[]
       }
+      add_bonus_emails: {
+        Args: {
+          _emails_amount: number
+          _month_year: string
+          _organization_id: string
+        }
+        Returns: {
+          new_bonus: number
+          success: boolean
+          total_bonus: number
+        }[]
+      }
       check_coach_limit: {
         Args: { _organization_id: string }
         Returns: {
@@ -1401,6 +1454,14 @@ export type Database = {
           bonus_credits: number
           credits_limit: number
           credits_used: number
+        }[]
+      }
+      get_email_usage: {
+        Args: { _month_year: string; _organization_id: string }
+        Returns: {
+          bonus_emails: number
+          emails_limit: number
+          emails_sent: number
         }[]
       }
       get_public_organization: {
@@ -1462,6 +1523,18 @@ export type Database = {
         }
         Returns: {
           credits_limit: number
+          new_count: number
+          success: boolean
+        }[]
+      }
+      increment_email_usage: {
+        Args: {
+          _amount?: number
+          _month_year: string
+          _organization_id: string
+        }
+        Returns: {
+          emails_limit: number
           new_count: number
           success: boolean
         }[]
