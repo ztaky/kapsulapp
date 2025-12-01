@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.create-credits-checkout]
 verify_jwt = false
+
+[functions.create-email-credits-checkout]
+verify_jwt = false

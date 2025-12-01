@@ -264,6 +264,76 @@ serve(async (req) => {
         );
       }
 
+      // Check if this is an email credits purchase
+      if (session.metadata?.type === "email_credits") {
+        console.log("Processing email credits purchase");
+        
+        const organizationId = session.metadata.organization_id;
+        const emailsAmount = parseInt(session.metadata.emails_amount || "0", 10);
+        const packType = session.metadata.pack;
+        const userId = session.metadata.user_id;
+        const amountPaid = session.amount_total ? session.amount_total / 100 : 0;
+
+        if (!organizationId || !emailsAmount) {
+          console.error("Missing organization_id or emails_amount in metadata");
+          return new Response(
+            JSON.stringify({ error: "Missing metadata" }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        // Create Supabase admin client
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        // Get current month
+        const now = new Date();
+        const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+        // Add bonus emails using existing function
+        const { data: emailsResult, error: emailsError } = await supabaseAdmin.rpc(
+          "add_bonus_emails",
+          {
+            _organization_id: organizationId,
+            _emails_amount: emailsAmount,
+            _month_year: monthYear,
+          }
+        );
+
+        if (emailsError) {
+          console.error("Error adding bonus emails:", emailsError);
+          return new Response(
+            JSON.stringify({ error: "Failed to add emails" }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        console.log("Bonus emails added:", emailsResult);
+
+        // Send notification to the coach
+        if (userId) {
+          try {
+            await supabaseAdmin.rpc("create_notification", {
+              _user_id: userId,
+              _title: "Crédits emails ajoutés !",
+              _message: `${emailsAmount.toLocaleString("fr-FR")} emails ont été ajoutés à votre compte.`,
+              _type: "credits",
+              _metadata: { pack: packType, emails: emailsAmount },
+            });
+            console.log("Notification sent to user");
+          } catch (notifError) {
+            console.error("Error sending notification:", notifError);
+          }
+        }
+
+        return new Response(
+          JSON.stringify({ received: true, type: "email_credits", emails_added: emailsAmount }),
+          { status: 200, headers: corsHeaders }
+        );
+      }
+
       // Check if this is a founder payment
       if (session.metadata?.offer === "founder_lifetime") {
         console.log("Processing founder payment");
