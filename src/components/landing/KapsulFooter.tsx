@@ -122,10 +122,10 @@ export function KapsulFooter() {
             </p>
             <div className="flex items-center gap-4">
               <a 
-                href="mailto:contact@kapsul.io" 
+                href="mailto:contact@kapsulapp.io" 
                 className="text-white/40 hover:text-white text-sm transition-colors"
               >
-                contact@kapsul.io
+                contact@kapsulapp.io
               </a>
             </div>
           </div>
