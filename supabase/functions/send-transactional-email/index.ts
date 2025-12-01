@@ -174,6 +174,7 @@ function generateWelcomeEmailHtml(
               </p>
             </td>
           </tr>
+          ${generateLegalFooter(false)}
         </table>
       </td>
     </tr>
@@ -283,6 +284,7 @@ function generateInvoiceEmailHtml(
               </p>
             </td>
           </tr>
+          ${generateLegalFooter(false)}
         </table>
       </td>
     </tr>
@@ -422,6 +424,7 @@ function generateFounderWelcomeEmailHtml(
               </p>
             </td>
           </tr>
+          ${generateLegalFooter(true)}
         </table>
       </td>
     </tr>
@@ -449,6 +452,24 @@ function adjustColor(hex: string, percent: number): string {
       .toString(16)
       .slice(1)
   );
+}
+
+// Generate legal footer for all emails
+function generateLegalFooter(isKapsulEmail: boolean = false): string {
+  const baseUrl = isKapsulEmail ? "https://kapsul.app" : "https://kapsul.app";
+  return `
+    <tr>
+      <td style="padding: 16px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px;">
+          <a href="${baseUrl}/cgv" style="color: #94a3b8; text-decoration: underline;">CGV</a>
+          &nbsp;•&nbsp;
+          <a href="${baseUrl}/confidentialite" style="color: #94a3b8; text-decoration: underline;">Politique de confidentialité</a>
+          &nbsp;•&nbsp;
+          <a href="${baseUrl}/mentions-legales" style="color: #94a3b8; text-decoration: underline;">Mentions légales</a>
+        </p>
+      </td>
+    </tr>
+  `;
 }
 
 serve(async (req) => {
