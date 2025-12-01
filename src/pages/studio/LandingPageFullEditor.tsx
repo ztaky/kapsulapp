@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   ArrowLeft, 
   Save, 
@@ -27,12 +28,16 @@ import {
   EyeOff,
   Palette,
   CreditCard,
-  FileText
+  FileText,
+  Undo2,
+  Redo2
 } from "lucide-react";
 import { toast } from "sonner";
 import { SectionEditor } from "@/components/landing/SectionEditor";
 import { LandingPageAIChat } from "@/components/landing/LandingPageAIChat";
 import { DesignEditor } from "@/components/landing/DesignEditor";
+import { PreviewDeviceSelector, getPreviewMaxWidth, type PreviewDevice } from "@/components/landing/PreviewDeviceSelector";
+import { useEditorHistory } from "@/hooks/useEditorHistory";
 
 const SECTIONS = [
   { id: 'hero', label: 'Hero', icon: LayoutTemplate, required: true },
@@ -62,6 +67,11 @@ export default function LandingPageFullEditor() {
   const [localTrainerInfo, setLocalTrainerInfo] = useState<any>(null);
   const [localDesignConfig, setLocalDesignConfig] = useState<any>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
+  
+  // History for undo/redo
+  const { pushState, initHistory, undo, redo, canUndo, canRedo, historyInfo } = useEditorHistory();
+  const historyInitialized = useRef(false);
 
   // Fetch landing page data
   const { data: landingPage, isLoading } = useQuery({
@@ -85,16 +95,25 @@ export default function LandingPageFullEditor() {
   // Initialize local state when data loads
   useEffect(() => {
     if (landingPage) {
-      setLocalContent(landingPage.content || {});
-      setLocalTrainerInfo(landingPage.trainer_info || {});
+      const content = landingPage.content || {};
+      const trainerInfo = landingPage.trainer_info || {};
       // Ensure enabledSections is always an array
       const designConfig = (landingPage.design_config as Record<string, any>) || {};
       if (!designConfig.enabledSections) {
         designConfig.enabledSections = DEFAULT_ENABLED_SECTIONS;
       }
+      
+      setLocalContent(content);
+      setLocalTrainerInfo(trainerInfo);
       setLocalDesignConfig(designConfig);
+      
+      // Initialize history with first state
+      if (!historyInitialized.current) {
+        initHistory({ content, trainerInfo, designConfig });
+        historyInitialized.current = true;
+      }
     }
-  }, [landingPage]);
+  }, [landingPage, initHistory]);
 
   // Toggle section visibility
   const toggleSection = (sectionId: string) => {
@@ -162,7 +181,19 @@ export default function LandingPageFullEditor() {
     },
   });
 
+  // Push current state to history
+  const saveToHistory = useCallback(() => {
+    if (localContent && localTrainerInfo && localDesignConfig) {
+      pushState({
+        content: localContent,
+        trainerInfo: localTrainerInfo,
+        designConfig: localDesignConfig,
+      });
+    }
+  }, [localContent, localTrainerInfo, localDesignConfig, pushState]);
+
   const handleContentChange = (section: string, data: any) => {
+    saveToHistory();
     setLocalContent((prev: any) => ({
       ...prev,
       [section]: section === 'testimonials' || section === 'faq' 
@@ -173,11 +204,13 @@ export default function LandingPageFullEditor() {
   };
 
   const handleTrainerChange = (data: any) => {
+    saveToHistory();
     setLocalTrainerInfo(data);
     setHasChanges(true);
   };
 
   const handleAISuggestion = (section: string, newValue: any) => {
+    saveToHistory();
     if (section === 'testimonials' || section === 'faq') {
       setLocalContent((prev: any) => ({
         ...prev,
@@ -196,6 +229,7 @@ export default function LandingPageFullEditor() {
 
   // Handle design changes from AI
   const handleDesignChange = (designKey: string, newValue: any) => {
+    saveToHistory();
     setLocalDesignConfig((prev: any) => {
       const updated = { ...prev };
       
@@ -216,6 +250,50 @@ export default function LandingPageFullEditor() {
     });
     setHasChanges(true);
   };
+
+  // Undo/Redo handlers
+  const handleUndo = useCallback(() => {
+    const state = undo();
+    if (state) {
+      setLocalContent(state.content);
+      setLocalTrainerInfo(state.trainerInfo);
+      setLocalDesignConfig(state.designConfig);
+      setHasChanges(true);
+      toast.info("Modification annulée");
+    }
+  }, [undo]);
+
+  const handleRedo = useCallback(() => {
+    const state = redo();
+    if (state) {
+      setLocalContent(state.content);
+      setLocalTrainerInfo(state.trainerInfo);
+      setLocalDesignConfig(state.designConfig);
+      setHasChanges(true);
+      toast.info("Modification rétablie");
+    }
+  }, [redo]);
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'y') {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo]);
 
   if (isLoading || !localContent) {
     return (
@@ -257,6 +335,54 @@ export default function LandingPageFullEditor() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Undo/Redo buttons */}
+            <TooltipProvider>
+              <div className="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleUndo}
+                      disabled={!canUndo}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Annuler (Ctrl+Z)</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRedo}
+                      disabled={!canRedo}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Redo2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Rétablir (Ctrl+Shift+Z)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+            
+            <div className="h-6 w-px bg-border" />
+            
+            {/* Device selector */}
+            <PreviewDeviceSelector 
+              device={previewDevice} 
+              onChange={setPreviewDevice} 
+            />
+            
+            <div className="h-6 w-px bg-border" />
+            
             {hasChanges && (
               <Badge variant="outline" className="text-amber-600 border-amber-600">
                 Non sauvegardé
@@ -308,11 +434,26 @@ export default function LandingPageFullEditor() {
 
         {/* Preview Iframe/Component */}
         <div className="flex-1 overflow-auto bg-muted/30 p-4">
-          <div className="bg-background rounded-lg shadow-lg overflow-hidden max-w-5xl mx-auto">
+          <div 
+            className="bg-background rounded-lg shadow-lg overflow-hidden mx-auto transition-all duration-300"
+            style={{ 
+              maxWidth: getPreviewMaxWidth(previewDevice),
+              width: previewDevice === 'desktop' ? '100%' : getPreviewMaxWidth(previewDevice)
+            }}
+          >
+            {/* Device frame for mobile/tablet */}
+            {previewDevice !== 'desktop' && (
+              <div className="bg-muted/50 px-2 py-1.5 border-b flex items-center justify-center gap-1.5">
+                <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
+              </div>
+            )}
             <iframe
-              key={JSON.stringify(localDesignConfig)} // Force re-render on design changes
+              key={`${JSON.stringify(localDesignConfig)}-${previewDevice}`}
               src={previewUrl}
-              className="w-full h-[800px] border-0"
+              className="w-full border-0 transition-all duration-300"
+              style={{ 
+                height: previewDevice === 'mobile' ? '667px' : previewDevice === 'tablet' ? '1024px' : '800px'
+              }}
               title="Landing Page Preview"
             />
           </div>
