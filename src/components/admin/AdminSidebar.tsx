@@ -4,7 +4,8 @@ import {
   Crown, 
   Sparkles,
   GraduationCap, 
-  Users, 
+  Users,
+  UserCheck,
   DollarSign, 
   BookOpen, 
   Settings, 
@@ -69,6 +70,11 @@ const navItems = [
     icon: Crown,
   },
   {
+    title: "Utilisateurs",
+    url: "/users",
+    icon: Users,
+  },
+  {
     title: "Coachs",
     url: "/coaches",
     icon: GraduationCap,
@@ -76,7 +82,7 @@ const navItems = [
   {
     title: "Étudiants",
     url: "/students",
-    icon: Users,
+    icon: UserCheck,
   },
   {
     title: "Revenus",

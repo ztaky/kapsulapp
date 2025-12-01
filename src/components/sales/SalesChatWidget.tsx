@@ -21,14 +21,27 @@ const QUICK_SUGGESTIONS = [
   "Comment ça marche ?",
 ];
 
+const AUTO_WELCOME_MESSAGE = "👋 Bonjour ! Je vois que vous explorez Kapsul. Avez-vous des questions sur notre plateforme de formation ? Je suis là pour vous aider !";
+
 export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPulse, setShowPulse] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [autoMessageShown, setAutoMessageShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Check sessionStorage for previous interaction
+  useEffect(() => {
+    const interacted = sessionStorage.getItem("kapsul_chat_interacted");
+    if (interacted) {
+      setHasInteracted(true);
+      setAutoMessageShown(true);
+    }
+  }, []);
 
   // Show widget with pulse after 5 seconds
   useEffect(() => {
@@ -37,6 +50,20 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
     }, 5000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Auto welcome message after 10 seconds of inactivity
+  useEffect(() => {
+    if (hasInteracted || autoMessageShown || isOpen) return;
+
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+      setAutoMessageShown(true);
+      setShowPulse(false);
+      setMessages([{ role: "assistant", content: AUTO_WELCOME_MESSAGE }]);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [hasInteracted, autoMessageShown, isOpen]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -51,6 +78,13 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  const markAsInteracted = () => {
+    if (!hasInteracted) {
+      setHasInteracted(true);
+      sessionStorage.setItem("kapsul_chat_interacted", "true");
+    }
+  };
 
   const streamChat = async (userMessage: string) => {
     setIsLoading(true);
@@ -134,6 +168,7 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    markAsInteracted();
     const message = input.trim();
     setInput("");
     streamChat(message);
@@ -141,6 +176,7 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
 
   const handleSuggestionClick = (suggestion: string) => {
     if (isLoading) return;
+    markAsInteracted();
     streamChat(suggestion);
   };
 
