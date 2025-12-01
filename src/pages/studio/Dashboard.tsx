@@ -8,7 +8,7 @@ import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight } from "lucide-reac
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
-import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { OnboardingPopup } from "@/components/onboarding/OnboardingPopup";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { FounderBadge } from "@/components/shared/FounderBadge";
@@ -184,8 +184,8 @@ export default function StudioDashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Onboarding Wizard */}
-      <OnboardingWizard
+      {/* Onboarding Popup */}
+      <OnboardingPopup
         open={showWizard}
         onOpenChange={setShowWizard}
         organizationSlug={slug || ""}
