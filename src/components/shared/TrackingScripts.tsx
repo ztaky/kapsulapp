@@ -110,5 +110,40 @@ export function useTrackEvent() {
     }
   };
 
-  return { trackGTMEvent, trackFBEvent };
+  // Conversion: Lead (inscription réussie)
+  const trackLead = (email?: string) => {
+    trackGTMEvent("generate_lead", { method: "email", email });
+    trackFBEvent("Lead", { content_name: "signup", content_category: "registration" });
+    console.log("[Tracking] Lead event fired", { email });
+  };
+
+  // Conversion: Purchase (paiement fondateur)
+  const trackPurchase = (value: number, currency: string = "EUR", transactionId?: string) => {
+    trackGTMEvent("purchase", { value, currency, transaction_id: transactionId });
+    trackFBEvent("Purchase", { value, currency, content_name: "founder_offer" });
+    console.log("[Tracking] Purchase event fired", { value, currency, transactionId });
+  };
+
+  // Conversion: AddToCart (clic sur offre)
+  const trackAddToCart = (productName: string, value: number, currency: string = "EUR") => {
+    trackGTMEvent("add_to_cart", { items: [{ item_name: productName, price: value }], value, currency });
+    trackFBEvent("AddToCart", { content_name: productName, value, currency });
+    console.log("[Tracking] AddToCart event fired", { productName, value, currency });
+  };
+
+  // Conversion: InitiateCheckout (début du checkout)
+  const trackInitiateCheckout = (productName: string, value: number, currency: string = "EUR") => {
+    trackGTMEvent("begin_checkout", { items: [{ item_name: productName, price: value }], value, currency });
+    trackFBEvent("InitiateCheckout", { content_name: productName, value, currency });
+    console.log("[Tracking] InitiateCheckout event fired", { productName, value, currency });
+  };
+
+  return { 
+    trackGTMEvent, 
+    trackFBEvent, 
+    trackLead, 
+    trackPurchase, 
+    trackAddToCart, 
+    trackInitiateCheckout 
+  };
 }
