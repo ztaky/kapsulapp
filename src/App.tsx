@@ -46,7 +46,10 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFAQ from "./pages/admin/AdminFAQ";
 import AdminEmails from "./pages/admin/AdminEmails";
 import AdminFounders from "./pages/admin/AdminFounders";
+import AdminRoadmap from "./pages/admin/AdminRoadmap";
+import AdminPricing from "./pages/admin/AdminPricing";
 import FAQ from "./pages/FAQ";
+import Roadmap from "./pages/Roadmap";
 import TestLandingPage from "./pages/TestLandingPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 
@@ -103,6 +106,8 @@ const App = () => (
             <Route path="support/*" element={<AdminSupport />} />
             <Route path="faq" element={<AdminFAQ />} />
             <Route path="emails" element={<AdminEmails />} />
+            <Route path="roadmap" element={<AdminRoadmap />} />
+            <Route path="pricing" element={<AdminPricing />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
@@ -138,6 +143,9 @@ const App = () => (
           
           {/* Public FAQ */}
           <Route path="/faq" element={<FAQ />} />
+          
+          {/* Public Roadmap */}
+          <Route path="/roadmap" element={<Roadmap />} />
           
           {/* Public Landing Pages */}
           <Route path="/lp/:slug" element={<LandingPageView />} />

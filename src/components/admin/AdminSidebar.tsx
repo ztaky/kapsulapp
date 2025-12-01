@@ -12,7 +12,9 @@ import {
   ScrollText,
   MessageCircleQuestion,
   HelpCircle,
-  Mail
+  Mail,
+  Map,
+  CreditCard
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -93,6 +95,16 @@ const navItems = [
     title: "Emails",
     url: "/emails",
     icon: Mail,
+  },
+  {
+    title: "Roadmap",
+    url: "/roadmap",
+    icon: Map,
+  },
+  {
+    title: "Pricing",
+    url: "/pricing",
+    icon: CreditCard,
   },
   {
     title: "Paramètres",
