@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Loader2, Eye, EyeOff, ArrowLeft, CheckCircle, Sparkles } from "lucide-react";
 import kapsulLogo from "@/assets/kapsul-logo.png";
+import confetti from "canvas-confetti";
 
 // Helper function to translate Supabase auth errors to French
 const getAuthErrorMessage = (error: any): string => {
@@ -63,8 +64,37 @@ const GoogleIcon = () => (
   </svg>
 );
 
+const triggerConfetti = () => {
+  const duration = 3000;
+  const end = Date.now() + duration;
+
+  const frame = () => {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: ["#f97316", "#ec4899", "#8b5cf6"],
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: ["#f97316", "#ec4899", "#8b5cf6"],
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  };
+
+  frame();
+};
+
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
@@ -74,22 +104,45 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
+    // Check for payment success parameter
+    const isPaymentSuccess = searchParams.get("payment_success") === "true";
+    if (isPaymentSuccess) {
+      setPaymentSuccess(true);
+      triggerConfetti();
+      // Pre-fill email if available
+      const founderEmail = localStorage.getItem("founder_email");
+      if (founderEmail) {
+        setEmail(founderEmail);
+      }
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/dashboard");
+        // If payment success, redirect to /start instead of dashboard
+        if (isPaymentSuccess) {
+          const sessionId = searchParams.get("session_id");
+          navigate(`/start?payment_success=true&session_id=${sessionId}`);
+        } else {
+          navigate("/dashboard");
+        }
       }
     });
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     
+    const redirectUrl = paymentSuccess 
+      ? `${window.location.origin}/start?payment_success=true&session_id=${searchParams.get("session_id")}`
+      : `${window.location.origin}/dashboard`;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: redirectUrl,
       },
     });
 
@@ -105,12 +158,16 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
+    const redirectUrl = paymentSuccess 
+      ? `${window.location.origin}/start?payment_success=true&session_id=${searchParams.get("session_id")}`
+      : `${window.location.origin}/dashboard`;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: redirectUrl,
       },
     });
 
@@ -137,7 +194,13 @@ const Auth = () => {
       toast.error(friendlyMessage);
     } else {
       toast.success("Connexion réussie !");
-      navigate("/dashboard");
+      // Redirect to /start if payment success, otherwise dashboard
+      if (paymentSuccess) {
+        const sessionId = searchParams.get("session_id");
+        navigate(`/start?payment_success=true&session_id=${sessionId}`);
+      } else {
+        navigate("/dashboard");
+      }
     }
     setLoading(false);
   };
@@ -236,8 +299,27 @@ const Auth = () => {
             <img src={kapsulLogo} alt="Kapsul" className="h-10 w-10 rounded-lg" />
             <span className="text-2xl font-bold font-gotham text-slate-900">Kapsul</span>
           </Link>
-          <CardTitle className="text-2xl font-bold">Bienvenue</CardTitle>
-          <CardDescription>Connectez-vous à votre plateforme LMS</CardDescription>
+          
+          {paymentSuccess ? (
+            <>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-[hsl(340,85%,55%)] text-white rounded-full font-semibold mb-3 mx-auto">
+                <Sparkles className="w-4 h-4" />
+                FONDATEUR
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="flex items-center justify-center gap-2 text-green-600 mb-2">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-medium">Paiement confirmé !</span>
+              </div>
+              <CardTitle className="text-2xl font-bold">Créez votre compte</CardTitle>
+              <CardDescription>Pour accéder à votre académie et commencer à créer</CardDescription>
+            </>
+          ) : (
+            <>
+              <CardTitle className="text-2xl font-bold">Bienvenue</CardTitle>
+              <CardDescription>Connectez-vous à votre plateforme LMS</CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent>
           {/* Google Sign In Button */}
