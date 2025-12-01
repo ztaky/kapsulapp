@@ -1,15 +1,39 @@
+import { useState } from 'react';
 import { PricingContent } from '@/config/landingPageSchema';
 import { useTheme, getGradientStyle } from '@/theme/ThemeProvider';
 import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 interface PricingProps {
   content: PricingContent;
+  landingSlug?: string;
 }
 
-export function Pricing({ content }: PricingProps) {
+export function Pricing({ content, landingSlug }: PricingProps) {
   const { theme } = useTheme();
   const gradientStyle = getGradientStyle(theme);
+  const [cgvAccepted, setCgvAccepted] = useState(false);
+
+  const handleCtaClick = (e: React.MouseEvent) => {
+    if (!cgvAccepted) {
+      e.preventDefault();
+      toast.error("Veuillez accepter les CGV pour continuer");
+      return;
+    }
+  };
+
+  // Generate legal page links based on landing slug
+  const legalLinks = landingSlug ? {
+    cgv: `/lp/${landingSlug}/legal/cgv`,
+    confidentialite: `/lp/${landingSlug}/legal/politique_confidentialite`,
+    mentions: `/lp/${landingSlug}/legal/mentions_legales`,
+  } : {
+    cgv: '/cgv',
+    confidentialite: '/confidentialite',
+    mentions: '/mentions-legales',
+  };
 
   return (
     <section 
@@ -32,6 +56,53 @@ export function Pricing({ content }: PricingProps) {
         >
           {content.subheadline}
         </p>
+
+        {/* CGV Checkbox */}
+        <div className="flex items-center justify-center gap-3 mb-10 max-w-2xl mx-auto">
+          <Checkbox 
+            id="cgv-accept-pricing" 
+            checked={cgvAccepted} 
+            onCheckedChange={(checked) => setCgvAccepted(checked === true)}
+            className="border-current"
+            style={{ borderColor: theme.colors.textDark }}
+          />
+          <label 
+            htmlFor="cgv-accept-pricing" 
+            className="text-sm cursor-pointer text-left"
+            style={{ color: theme.colors.textDark }}
+          >
+            {"J'accepte les "}
+            <a 
+              href={legalLinks.cgv} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+              style={{ color: theme.colors.primary }}
+            >
+              CGV
+            </a>
+            {", la "}
+            <a 
+              href={legalLinks.confidentialite} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+              style={{ color: theme.colors.primary }}
+            >
+              Politique de Confidentialité
+            </a>
+            {" et les "}
+            <a 
+              href={legalLinks.mentions} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+              style={{ color: theme.colors.primary }}
+            >
+              Mentions Légales
+            </a>
+          </label>
+        </div>
 
         {/* Offers */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -93,7 +164,9 @@ export function Pricing({ content }: PricingProps) {
 
                 <Button 
                   size="lg"
-                  className="w-full text-xl py-8 h-auto gradient-button shadow-xl hover:shadow-2xl transition-all rounded-full"
+                  onClick={handleCtaClick}
+                  disabled={!cgvAccepted}
+                  className="w-full text-xl py-8 h-auto gradient-button shadow-xl hover:shadow-2xl transition-all rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ 
                     background: isHighlighted ? gradientStyle : theme.colors.primary,
                     color: theme.colors.textLight

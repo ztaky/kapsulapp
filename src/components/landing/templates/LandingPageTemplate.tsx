@@ -140,7 +140,7 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections, lan
 
         {/* Section 12 - Pricing */}
         {isEnabled('pricing') && content.pricing && (
-          <Pricing content={content.pricing} />
+          <Pricing content={content.pricing} landingSlug={landingSlug} />
         )}
 
         {/* Section 13 - FAQ Final */}
