@@ -356,7 +356,7 @@ export default function AIAssistant() {
           </div>
 
           <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 h-0 min-h-0">
               <div className="max-w-4xl mx-auto space-y-6 p-6">
                 {messages.length <= 1 && (
                   <Card className="p-10 text-center bg-white border border-slate-100 rounded-3xl shadow-premium">
