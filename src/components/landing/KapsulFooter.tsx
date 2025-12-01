@@ -94,14 +94,6 @@ export function KapsulFooter() {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/cookies" 
-                  className="text-white/60 hover:text-white transition-colors"
-                >
-                  Cookies
-                </Link>
-              </li>
-              <li>
                 <button 
                   onClick={handleManageCookies}
                   className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5"
