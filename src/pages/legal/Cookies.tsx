@@ -1,15 +1,13 @@
 import { usePlatformSetting, LegalPageSetting } from "@/hooks/usePlatformSettings";
-import { useCookieConsent } from "@/hooks/useCookieConsent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Cookie, Settings } from "lucide-react";
+import { ArrowLeft, Cookie } from "lucide-react";
 import { Link } from "react-router-dom";
 import { KapsulFooter } from "@/components/landing/KapsulFooter";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 
 export default function Cookies() {
   const { data: content, isLoading } = usePlatformSetting<LegalPageSetting>("cookie_policy");
-  const { resetConsent } = useCookieConsent();
 
   if (isLoading) {
     return (
@@ -55,21 +53,6 @@ export default function Cookies() {
             </h1>
           </div>
 
-          {/* Cookie preferences button */}
-          <div className="mb-8 p-4 rounded-xl bg-muted/50 border border-border flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Gérer vos préférences
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Modifiez vos choix de cookies à tout moment
-              </p>
-            </div>
-            <Button variant="outline" onClick={resetConsent}>
-              Modifier mes préférences
-            </Button>
-          </div>
           
           <div className="prose prose-lg max-w-none dark:prose-invert">
             {text.split('\n').map((paragraph: string, index: number) => {
