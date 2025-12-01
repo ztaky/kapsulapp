@@ -7,7 +7,6 @@ import CountdownTimer from "@/components/landing/CountdownTimer";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -21,16 +20,16 @@ const Index = () => {
       window.history.replaceState({}, "", "/");
     }
   }, [searchParams]);
-
   const handleFounderCheckout = async () => {
     setCheckoutLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-founder-checkout");
-      
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke("create-founder-checkout");
       if (error) {
         throw new Error(error.message || "Erreur lors de la création du paiement");
       }
-      
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -83,14 +82,10 @@ const Index = () => {
                 Connexion
               </Button>
               <Button variant="gradient" size="sm" onClick={handleFounderCheckout} disabled={checkoutLoading} className="shadow-lg shadow-[#DD2476]/25 text-xs sm:text-sm px-3 sm:px-4 whitespace-nowrap">
-                {checkoutLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
+                {checkoutLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
                     <span className="hidden sm:inline">Profiter de l'offre Fondateur</span>
                     <span className="sm:hidden">Offre Fondateur</span>
-                  </>
-                )}
+                  </>}
               </Button>
             </div>
           </div>
@@ -125,9 +120,7 @@ const Index = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Button size="lg" variant="gradient" onClick={handleFounderCheckout} disabled={checkoutLoading} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
-              {checkoutLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              ) : null}
+              {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
               Profiter de l'offre Fondateur
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={() => scrollToSection("demo")}>
@@ -471,26 +464,14 @@ const Index = () => {
                     </div>
 
                     <ul className="space-y-3 mb-8">
-                      {[
-                        "Accès PRO à vie (67€/mois value)",
-                        "Formations illimitées",
-                        "Jusqu'à 1 000 étudiants",
-                        "Landing pages IA illimitées",
-                        "0% commission à vie",
-                        "Branding personnalisé",
-                        "Support prioritaire",
-                        "Badge \"Fondateur\" dans ton profil",
-                        "Vote sur la roadmap produit"
-                      ].map((feature, i) => <li key={i} className="flex items-center gap-3">
+                      {["Accès PRO à vie (67€/mois value)", "Formations illimitées", "Jusqu'à 1 000 étudiants", "Landing pages IA illimitées", "0% commission à vie", "Branding personnalisé", "Support prioritaire", "Badge \"Fondateur\" dans ton profil", "Vote sur la roadmap produit"].map((feature, i) => <li key={i} className="flex items-center gap-3">
                           <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
                           <span className="text-white/90">{feature}</span>
                         </li>)}
                     </ul>
 
                     <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/50 hover:shadow-2xl hover:shadow-[#DD2476]/60 transition-all" onClick={handleFounderCheckout} disabled={checkoutLoading}>
-                      {checkoutLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      ) : null}
+                      {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                       Devenir fondateur - 297€
                     </Button>
 
@@ -556,9 +537,7 @@ const Index = () => {
 
           <div>
             <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={handleFounderCheckout} disabled={checkoutLoading}>
-              {checkoutLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              ) : null}
+              {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
               Je deviens fondateur maintenant
             </Button>
           </div>
@@ -809,7 +788,6 @@ const ComparisonTable = () => {
     thrive: "95€+",
     kapsul: "297€ LIFE"
   }];
-
   const renderCell = (value: string, isKapsul: boolean = false) => {
     switch (value) {
       case "yes":
@@ -832,9 +810,7 @@ const ComparisonTable = () => {
         return <span className="text-sm text-muted-foreground">{value}</span>;
     }
   };
-
-  return (
-    <section id="comparison" className="py-24 px-6">
+  return <section id="comparison" className="py-24 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
           Kapsul vs les <span className="gradient-text">outils habituels</span>
@@ -856,15 +832,11 @@ const ComparisonTable = () => {
                 </tr>
               </thead>
               <tbody>
-                {features.map((feature, i) => (
-                  <tr 
-                    key={i} 
-                    className={`
+                {features.map((feature, i) => <tr key={i} className={`
                       border-b border-border/30 transition-colors hover:bg-muted/20
                       ${i % 2 === 0 ? "bg-background" : "bg-muted/10"}
                       ${i === features.length - 1 ? "font-bold border-b-0" : ""}
-                    `}
-                  >
+                    `}>
                     <td className="py-5 px-6 text-foreground font-medium">{feature.name}</td>
                     <td className="py-5 px-4 text-center">{renderCell(feature.wp)}</td>
                     <td className="py-5 px-4 text-center">{renderCell(feature.kajabi)}</td>
@@ -873,23 +845,19 @@ const ComparisonTable = () => {
                     <td className="py-5 px-4 text-center bg-gradient-to-b from-[#FF512F]/15 to-[#DD2476]/15">
                       {renderCell(feature.kapsul, true)}
                     </td>
-                  </tr>
-                ))}
+                  </tr>)}
               </tbody>
             </table>
           </div>
         </div>
 
         <p className="text-center mt-10">
-          <span className="font-bold text-foreground text-lg">Lifetime à 297€ = moins de 2 ans d'abonnement ailleurs.</span>
+          <span className="font-bold text-foreground text-lg">Lifetime à 297€ </span>
           <br />
-          <span className="text-lg bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent font-semibold">
-            Après, c'est gratuit. À vie.
-          </span>
+          <span className="text-lg bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent font-semibold">Au lieu de 804€ / an à partir du 1er Janvier 2026</span>
         </p>
       </div>
-    </section>
-  );
+    </section>;
 };
 
 // QUALIFICATION SECTION COMPONENT
