@@ -1,7 +1,19 @@
 import { Link } from "react-router-dom";
 import kapsulLogo from "@/assets/kapsul-logo.png";
+import { useCookieConsent } from "@/hooks/useCookieConsent";
+import { Cookie } from "lucide-react";
 
 export function KapsulFooter() {
+  const { resetConsent } = useCookieConsent();
+
+  const handleManageCookies = () => {
+    resetConsent();
+    // Small delay to ensure state is updated before banner shows
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  };
+
   return (
     <footer className="bg-[#0F172A] border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -88,6 +100,15 @@ export function KapsulFooter() {
                 >
                   Cookies
                 </Link>
+              </li>
+              <li>
+                <button 
+                  onClick={handleManageCookies}
+                  className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <Cookie className="w-3.5 h-3.5" />
+                  Gérer les cookies
+                </button>
               </li>
             </ul>
           </div>

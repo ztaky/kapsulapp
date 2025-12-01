@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2, ChevronDown } from "lucide-react";
 import { KapsulFooter } from "@/components/landing/KapsulFooter";
@@ -9,10 +9,12 @@ import kapsulLogo from "@/assets/kapsul-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
+import { Checkbox } from "@/components/ui/checkbox";
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cgvAccepted, setCgvAccepted] = useState(false);
   const { trackAddToCart, trackInitiateCheckout } = useTrackEvent();
 
   // Handle payment canceled
@@ -25,6 +27,11 @@ const Index = () => {
   }, [searchParams]);
   
   const handleFounderCheckout = async () => {
+    if (!cgvAccepted) {
+      toast.error("Veuillez accepter les CGV pour continuer");
+      return;
+    }
+    
     // Track AddToCart + InitiateCheckout before redirecting to Stripe
     trackAddToCart("Offre Fondateur", 297, "EUR");
     trackInitiateCheckout("Offre Fondateur", 297, "EUR");
@@ -128,9 +135,29 @@ const Index = () => {
             Hébergez vos formations, envoyez vos emails et encaissez vos ventes dans une seule interface magnifique.
           </p>
 
+          {/* CGV Checkbox */}
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <Checkbox 
+              id="cgv-accept" 
+              checked={cgvAccepted} 
+              onCheckedChange={(checked) => setCgvAccepted(checked === true)}
+              className="border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <label htmlFor="cgv-accept" className="text-sm text-muted-foreground cursor-pointer">
+              J'accepte les{" "}
+              <Link to="/cgv" className="text-primary hover:underline" target="_blank">
+                Conditions Générales de Vente
+              </Link>{" "}
+              et la{" "}
+              <Link to="/confidentialite" className="text-primary hover:underline" target="_blank">
+                Politique de Confidentialité
+              </Link>
+            </label>
+          </div>
+
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" variant="gradient" onClick={handleFounderCheckout} disabled={checkoutLoading} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
+            <Button size="lg" variant="gradient" onClick={handleFounderCheckout} disabled={checkoutLoading || !cgvAccepted} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
               Profiter de l'offre Fondateur
             </Button>
