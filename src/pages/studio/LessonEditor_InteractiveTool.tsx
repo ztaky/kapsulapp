@@ -473,6 +473,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
               setNewToolConfig(config);
               onChange(newToolType, config);
             }}
+            organizationId={organizationId}
           />
 
           {/* Save & Return buttons */}
@@ -537,6 +538,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
               setNewToolConfig(config);
               onChange(newToolType, config);
             }}
+            organizationId={organizationId}
           />
 
           {/* Update & Return buttons */}
@@ -575,11 +577,13 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
 function ToolConfigEditor({ 
   toolType, 
   config, 
-  onChange 
+  onChange,
+  organizationId
 }: { 
   toolType: string; 
   config: any; 
   onChange: (config: any) => void;
+  organizationId?: string;
 }) {
   const [showPreview, setShowPreview] = useState(false);
 
@@ -589,6 +593,7 @@ function ToolConfigEditor({
         <AIToolBuilder
           toolConfig={config}
           onChange={onChange}
+          organizationId={organizationId}
         />
       );
 
