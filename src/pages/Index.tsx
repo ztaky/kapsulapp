@@ -530,7 +530,7 @@ const Index = () => {
                 <X className="w-4 h-4" /> Plus de garantie 30 jours
               </p>
             </div>
-            <p className="text-white/60 mt-4 text-sm">Le prix passera à 67€ / mois soit 804€ / an après cette date.</p>
+            <p className="text-white/60 mt-4 text-sm">Le prix passera à 67€/mois soit 804€/an après cette date.</p>
           </div>
 
           <div>
