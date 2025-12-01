@@ -292,7 +292,7 @@ export function CoursePreviewCard({
       </div>
 
       {/* Modules List */}
-      <ScrollArea className="max-h-[500px]">
+      <ScrollArea className="max-h-[60vh]">
         <div className="p-6 space-y-4">
           {modules.map((module) => (
             <ModuleEditor
