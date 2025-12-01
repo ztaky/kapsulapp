@@ -9,6 +9,7 @@ import kapsulLogo from "@/assets/kapsul-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
+import { SalesChatWidget } from "@/components/sales/SalesChatWidget";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -692,6 +693,9 @@ const Index = () => {
 
       {/* FOOTER */}
       <KapsulFooter />
+
+      {/* Sales Chatbot */}
+      <SalesChatWidget onFounderClick={handleFounderCheckout} />
     </div>;
 };
 
