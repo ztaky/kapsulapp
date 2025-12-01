@@ -45,6 +45,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFAQ from "./pages/admin/AdminFAQ";
 import AdminEmails from "./pages/admin/AdminEmails";
+import AdminFounders from "./pages/admin/AdminFounders";
 import FAQ from "./pages/FAQ";
 import TestLandingPage from "./pages/TestLandingPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -92,6 +93,7 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="academies" element={<AdminAcademies />} />
+            <Route path="founders" element={<AdminFounders />} />
             <Route path="super-admins" element={<AdminSuperAdmins />} />
             <Route path="coaches" element={<AdminCoaches />} />
             <Route path="students" element={<AdminStudents />} />

@@ -2,6 +2,7 @@ import {
   LayoutDashboard, 
   Building2, 
   Crown, 
+  Sparkles,
   GraduationCap, 
   Users, 
   DollarSign, 
@@ -42,6 +43,11 @@ const navItems = [
     title: "Académies",
     url: "/academies",
     icon: Building2,
+  },
+  {
+    title: "Founders",
+    url: "/founders",
+    icon: Sparkles,
   },
   {
     title: "Super Admins",
