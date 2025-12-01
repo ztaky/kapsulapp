@@ -20,6 +20,7 @@ import LandingPages from "./pages/studio/LandingPages";
 import LandingPageFullEditor from "./pages/studio/LandingPageFullEditor";
 import LegalPages from "./pages/studio/LegalPages";
 import StudioSupport from "./pages/studio/Support";
+import StudioEmails from "./pages/studio/Emails";
 import LearningSpace from "./pages/learning/LearningSpace";
 import StudentLayout from "./pages/student/StudentLayout";
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -43,6 +44,7 @@ import AdminLogs from "./pages/admin/AdminLogs";
 import AdminSupport from "./pages/admin/AdminSupport";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFAQ from "./pages/admin/AdminFAQ";
+import AdminEmails from "./pages/admin/AdminEmails";
 import FAQ from "./pages/FAQ";
 import TestLandingPage from "./pages/TestLandingPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -98,6 +100,7 @@ const App = () => (
             <Route path="logs" element={<AdminLogs />} />
             <Route path="support/*" element={<AdminSupport />} />
             <Route path="faq" element={<AdminFAQ />} />
+            <Route path="emails" element={<AdminEmails />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
@@ -121,6 +124,7 @@ const App = () => (
             <Route path="landing-pages" element={<LandingPages />} />
             <Route path="landing-pages/:pageId/edit" element={<LandingPageFullEditor />} />
             <Route path="legal" element={<LegalPages />} />
+            <Route path="emails" element={<StudioEmails />} />
             <Route path="branding" element={<StudioBranding />} />
             <Route path="support/*" element={<StudioSupport />} />
           </Route>

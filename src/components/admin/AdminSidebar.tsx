@@ -10,7 +10,8 @@ import {
   LogOut,
   ScrollText,
   MessageCircleQuestion,
-  HelpCircle
+  HelpCircle,
+  Mail
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -81,6 +82,11 @@ const navItems = [
     title: "FAQ",
     url: "/faq",
     icon: HelpCircle,
+  },
+  {
+    title: "Emails",
+    url: "/emails",
+    icon: Mail,
   },
   {
     title: "Paramètres",
