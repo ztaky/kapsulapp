@@ -112,7 +112,35 @@ CAPACITÉS D'ACTION:
 Tu peux générer du contenu concret que le coach peut ajouter directement à ses cours.
 Quand tu génères un quiz ou une structure de modules, utilise les tools disponibles.
 Pour un quiz, génère 3-5 questions pertinentes avec des réponses et explications.
-Pour des modules, suggère une structure logique avec 3-6 modules et des leçons pour chacun.`,
+Pour des modules, suggère une structure logique avec 3-6 modules et des leçons pour chacun.
+
+GÉNÉRATION DE COURS COMPLETS (tool create_complete_course):
+Quand tu génères un cours complet, applique ces règles strictes :
+
+STRUCTURE GLOBALE:
+- 3-6 modules organisés par progression logique (du simple au complexe)
+- 2-5 leçons par module
+- Quiz optionnel à la fin de certaines leçons clés
+
+CONTENU DE CHAQUE LEÇON (300-500 mots structurés):
+1. 🎯 **Objectif** (1 phrase - ce que l'apprenant saura faire après cette leçon)
+2. 📖 **Introduction** (2-3 phrases - contexte et importance du sujet)
+3. 💡 **Points clés** (3-5 points avec explications détaillées)
+4. 🔍 **Exemple concret** (illustration pratique applicable immédiatement)
+5. ✅ **À retenir** (3 bullet points résumant l'essentiel)
+
+QUALITÉ DU CONTENU:
+- Ton adapté à la spécialité du coach (formel pour business, chaleureux pour bien-être, créatif pour arts, etc.)
+- Vocabulaire spécifique au domaine
+- Exemples pertinents pour l'audience cible mentionnée
+- Progression pédagogique cohérente (fondamentaux → pratique → maîtrise)
+- Contenu actionnable avec des exercices pratiques
+
+QUIZ (quand has_quiz=true):
+- 3-5 questions par quiz
+- Mélange de types : compréhension + application pratique
+- Explications constructives et encourageantes pour chaque réponse
+- Questions qui testent la compréhension réelle, pas juste la mémorisation`,
 
     support: `Tu es l'assistant support de Kapsul, une plateforme SaaS de création de formations en ligne.
 
@@ -258,6 +286,107 @@ const studioTools = [
           }
         },
         required: ["course_topic", "modules"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_complete_course",
+      description: "Génère un cours complet avec modules, leçons et contenu pédagogique détaillé prêt à être créé",
+      parameters: {
+        type: "object",
+        properties: {
+          course: {
+            type: "object",
+            description: "Informations du cours",
+            properties: {
+              title: { 
+                type: "string", 
+                description: "Titre accrocheur et clair du cours" 
+              },
+              description: { 
+                type: "string", 
+                description: "Description marketing engageante (2-3 phrases qui vendent les bénéfices)" 
+              },
+              target_audience: { 
+                type: "string", 
+                description: "Public cible précis (ex: 'Entrepreneurs débutants', 'Professionnels du bien-être')" 
+              },
+              duration_estimate: { 
+                type: "string", 
+                description: "Durée estimée du cours (ex: '3 semaines', '6 heures')" 
+              }
+            },
+            required: ["title", "description"]
+          },
+          modules: {
+            type: "array",
+            description: "Liste des modules du cours (3-6 modules)",
+            items: {
+              type: "object",
+              properties: {
+                title: { 
+                  type: "string", 
+                  description: "Titre du module" 
+                },
+                description: { 
+                  type: "string", 
+                  description: "Description courte du module (1-2 phrases)" 
+                },
+                lessons: {
+                  type: "array",
+                  description: "Liste des leçons du module (2-5 leçons)",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { 
+                        type: "string", 
+                        description: "Titre de la leçon" 
+                      },
+                      content: { 
+                        type: "string", 
+                        description: "Contenu pédagogique complet et structuré de la leçon (300-500 mots avec objectif, points clés, exemple, résumé)" 
+                      },
+                      has_quiz: { 
+                        type: "boolean", 
+                        description: "Ajouter un quiz à la fin de cette leçon" 
+                      },
+                      quiz: {
+                        type: "object",
+                        description: "Configuration du quiz si has_quiz est true",
+                        properties: {
+                          title: { 
+                            type: "string", 
+                            description: "Titre du quiz" 
+                          },
+                          questions: {
+                            type: "array",
+                            description: "Questions du quiz (3-5 questions)",
+                            items: {
+                              type: "object",
+                              properties: {
+                                question: { type: "string" },
+                                answers: { type: "array", items: { type: "string" } },
+                                correctIndex: { type: "number" },
+                                explanation: { type: "string" }
+                              },
+                              required: ["question", "answers", "correctIndex"]
+                            }
+                          }
+                        },
+                        required: ["title", "questions"]
+                      }
+                    },
+                    required: ["title", "content"]
+                  }
+                }
+              },
+              required: ["title", "lessons"]
+            }
+          }
+        },
+        required: ["course", "modules"]
       }
     }
   }

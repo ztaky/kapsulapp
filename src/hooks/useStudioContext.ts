@@ -27,6 +27,7 @@ interface Course {
 
 interface StudioContext {
   organizationId: string | null;
+  organizationSlug: string | null;
   organizationName: string | null;
   organizationSpecialty: string | null;
   organizationDescription: string | null;
@@ -137,6 +138,7 @@ export function useStudioContext(): StudioContext {
 
   return {
     organizationId,
+    organizationSlug: slug || null,
     organizationName,
     organizationSpecialty,
     organizationDescription,
