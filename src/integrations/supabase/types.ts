@@ -954,7 +954,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      purchases_safe: {
+        Row: {
+          amount: number | null
+          course_id: string | null
+          id: string | null
+          purchased_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          course_id?: string | null
+          id?: string | null
+          purchased_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          course_id?: string | null
+          id?: string | null
+          purchased_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       create_notification: {
@@ -967,6 +1008,30 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      get_public_organization: {
+        Args: { org_slug: string }
+        Returns: {
+          brand_color: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          slug: string
+          specialty: string
+        }[]
+      }
+      get_public_organization_by_id: {
+        Args: { org_id: string }
+        Returns: {
+          brand_color: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          slug: string
+          specialty: string
+        }[]
       }
       get_tutor_usage: {
         Args: {
