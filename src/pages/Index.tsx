@@ -988,35 +988,43 @@ const FAQSection = () => {
   const faqs = [
     {
       question: "Qu'est-ce que l'offre Founder ?",
-      answer: "Accès PRO à vie pour 297€ au lieu de 804€/an. Limité aux 100 premiers. Expire le 31 décembre."
-    },
-    {
-      question: "Que se passe-t-il après le 31 décembre ?",
-      answer: "L'offre Founder disparaît. Les tarifs normaux s'appliquent : Free (0€+8%), Pro (67€/mois), Elite (147€/mois)."
+      answer: "Accès PRO à vie pour 297€ au lieu de 804€/an. Limité aux 100 premiers. Expire le 31 décembre 2024."
     },
     {
       question: "Puis-je être remboursé ?",
-      answer: "Oui, remboursement intégral sous 30 jours si Kapsul ne te convient pas."
+      answer: "Oui, remboursement intégral sous 30 jours si Kapsul ne te convient pas. Sans condition."
+    },
+    {
+      question: "Ai-je besoin de compétences techniques ?",
+      answer: "Non, Kapsul est conçu pour les non-techniciens. L'IA génère tes landing pages, quiz et outils en quelques clics."
+    },
+    {
+      question: "Comment héberger mes vidéos de formation ?",
+      answer: "Kapsul ne stocke pas les vidéos (trop coûteux). Héberge-les gratuitement sur YouTube (non listé) ou Vimeo, puis colle le lien. Un guide est inclus."
+    },
+    {
+      question: "Quels outils pédagogiques sont disponibles ?",
+      answer: "Vidéos, quiz interactifs, ressources téléchargeables, et outils IA personnalisés pour engager tes étudiants."
     },
     {
       question: "Combien de formations puis-je créer ?",
-      answer: "Illimité avec le plan Founder (équivalent Pro)."
+      answer: "Illimité. Le plan Founder (= PRO à 67€/mois dès janvier) inclut jusqu'à 1 000 étudiants et 5 000 crédits IA/mois."
+    },
+    {
+      question: "Comment mes étudiants accèdent-ils aux formations ?",
+      answer: "Ils reçoivent un email automatique avec leurs identifiants et accèdent à leur espace sur ton domaine personnalisé."
+    },
+    {
+      question: "Puis-je suivre la progression de mes étudiants ?",
+      answer: "Oui, tableau de bord complet : progression par module, taux de complétion, statistiques de vente."
+    },
+    {
+      question: "Comment recevoir les paiements ?",
+      answer: "Via Stripe Connect. Tu connectes ton compte en 2 clics, les paiements arrivent directement chez toi."
     },
     {
       question: "Y a-t-il des frais de transaction ?",
-      answer: "0% de commission Kapsul. Stripe facture ~2,9% + 0,25€ par transaction."
-    },
-    {
-      question: "L'IA génère-t-elle vraiment les landing pages ?",
-      answer: "Oui, tu remplis un formulaire, l'IA génère 13 sections en 5 minutes."
-    },
-    {
-      question: "Kapsul est-il conforme RGPD ?",
-      answer: "Oui, hébergement EU, cookies opt-in, export des données utilisateur."
-    },
-    {
-      question: "Le support est-il inclus ?",
-      answer: "Oui, support prioritaire pour les Founders via tickets et email."
+      answer: "0% de commission Kapsul. Seul Stripe facture ~2,9% + 0,25€ par transaction (standard)."
     }
   ];
 
