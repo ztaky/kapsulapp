@@ -1042,6 +1042,18 @@ export type Database = {
       }
     }
     Functions: {
+      add_bonus_credits: {
+        Args: {
+          _credits_amount: number
+          _month_year: string
+          _organization_id: string
+        }
+        Returns: {
+          new_bonus: number
+          success: boolean
+          total_bonus: number
+        }[]
+      }
       check_coach_limit: {
         Args: { _organization_id: string }
         Returns: {
@@ -1072,6 +1084,7 @@ export type Database = {
       get_ai_credits_usage: {
         Args: { _month_year: string; _organization_id: string }
         Returns: {
+          bonus_credits: number
           credits_limit: number
           credits_used: number
         }[]
