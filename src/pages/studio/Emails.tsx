@@ -1,19 +1,25 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Mail, Workflow, History, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Mail, Workflow, History, AlertTriangle, Plus } from "lucide-react";
 import { EmailTemplatesList } from "@/components/emails/EmailTemplatesList";
 import { EmailSequencesList } from "@/components/emails/EmailSequencesList";
 import { EmailHistoryList } from "@/components/emails/EmailHistoryList";
+import { EmailCreditsShop } from "@/components/credits/EmailCreditsShop";
 import { useEmailQuota } from "@/hooks/useEmailQuota";
+import { toast } from "@/hooks/use-toast";
 
 export default function StudioEmails() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("templates");
+  const [showCreditsShop, setShowCreditsShop] = useState(false);
 
   const { data: organization } = useQuery({
     queryKey: ["organization", slug],
@@ -30,6 +36,21 @@ export default function StudioEmails() {
   });
 
   const { data: emailQuota } = useEmailQuota(organization?.id);
+
+  // Handle success redirect from Stripe
+  useEffect(() => {
+    if (searchParams.get("email_purchase") === "success") {
+      toast({
+        title: "Crédits emails ajoutés !",
+        description: "Vos emails bonus ont été ajoutés à votre compte.",
+      });
+      // Remove the query param
+      searchParams.delete("email_purchase");
+      setSearchParams(searchParams, { replace: true });
+      // Refresh quota data
+      queryClient.invalidateQueries({ queryKey: ["email-quota", organization?.id] });
+    }
+  }, [searchParams, setSearchParams, queryClient, organization?.id]);
 
   if (!organization) {
     return (
@@ -93,10 +114,26 @@ export default function StudioEmails() {
                   Quota atteint ! Les emails ne seront plus envoyés.
                 </p>
               )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full mt-2"
+                onClick={() => setShowCreditsShop(true)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Acheter plus d'emails
+              </Button>
             </CardContent>
           </Card>
         )}
       </div>
+
+      <EmailCreditsShop 
+        open={showCreditsShop} 
+        onOpenChange={setShowCreditsShop}
+        organizationId={organization.id}
+        organizationSlug={slug || ""}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-3">
