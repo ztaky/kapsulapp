@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircleQuestion, X, Send, Loader2, TicketPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateTicketForm } from "./CreateTicketForm";
 
@@ -130,109 +128,125 @@ export function SupportChatWidget({ organizationId }: SupportChatWidgetProps) {
     .join("\n\n");
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button
-          size="icon"
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary hover:bg-primary/90"
-        >
-          <MessageCircleQuestion className="h-6 w-6" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md flex flex-col p-0">
-        <SheetHeader className="p-4 border-b">
-          <SheetTitle className="flex items-center gap-2">
-            <MessageCircleQuestion className="h-5 w-5" />
-            Support Kapsul
-          </SheetTitle>
-        </SheetHeader>
+    <>
+      {/* Bouton flottant */}
+      <Button
+        size="icon"
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary hover:bg-primary/90"
+      >
+        <MessageCircleQuestion className="h-6 w-6" />
+      </Button>
 
-        {showTicketForm ? (
-          <div className="flex-1 overflow-auto p-4">
-            <CreateTicketForm
-              organizationId={organizationId}
-              aiConversation={messages}
-              conversationSummary={conversationSummary}
-              onSuccess={handleTicketCreated}
-              onCancel={() => setShowTicketForm(false)}
-            />
-          </div>
-        ) : (
-          <>
-            <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-              {messages.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  <MessageCircleQuestion className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="font-medium">Bonjour ! Comment puis-je vous aider ?</p>
-                  <p className="text-sm mt-2">
-                    Décrivez votre problème et je ferai de mon mieux pour vous aider.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
+      {/* Popup chatbot */}
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 w-96 h-[600px] bg-background rounded-xl shadow-2xl flex flex-col z-50 border border-border animate-in slide-in-from-bottom-4 fade-in duration-300">
+          {/* Header */}
+          <header className="flex items-center justify-between p-4 border-b border-border bg-muted/30 rounded-t-xl">
+            <div className="flex items-center gap-2">
+              <MessageCircleQuestion className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-foreground">Support Kapsul</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              className="h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </header>
+
+          {showTicketForm ? (
+            <div className="flex-1 overflow-auto p-4">
+              <CreateTicketForm
+                organizationId={organizationId}
+                aiConversation={messages}
+                conversationSummary={conversationSummary}
+                onSuccess={handleTicketCreated}
+                onCancel={() => setShowTicketForm(false)}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Zone messages scrollable */}
+              <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                    <MessageCircleQuestion className="h-16 w-16 mb-4 opacity-30" />
+                    <p className="font-medium text-foreground mb-2">Bonjour ! Comment puis-je vous aider ?</p>
+                    <p className="text-sm">
+                      Décrivez votre problème et je ferai de mon mieux pour vous aider.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {messages.map((message, index) => (
                       <div
-                        className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
+                        key={index}
+                        className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                       >
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <div
+                          className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                            message.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-muted rounded-lg px-4 py-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-muted rounded-lg px-4 py-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Bouton ticket si nécessaire */}
+              {unresolvedCount >= 2 && (
+                <div className="px-4 py-2 bg-amber-50 border-t border-amber-200">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-amber-300 text-amber-700 hover:bg-amber-100"
+                    onClick={() => setShowTicketForm(true)}
+                  >
+                    <TicketPlus className="h-4 w-4 mr-2" />
+                    Créer un ticket de support
+                  </Button>
                 </div>
               )}
-            </ScrollArea>
 
-            {unresolvedCount >= 2 && (
-              <div className="px-4 py-2 bg-amber-50 border-t border-amber-200">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-amber-300 text-amber-700 hover:bg-amber-100"
-                  onClick={() => setShowTicketForm(true)}
-                >
-                  <TicketPlus className="h-4 w-4 mr-2" />
-                  Créer un ticket de support
-                </Button>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="p-4 border-t">
-              <div className="flex gap-2">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Décrivez votre problème..."
-                  className="min-h-[60px] resize-none"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                />
-                <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </form>
-          </>
-        )}
-      </SheetContent>
-    </Sheet>
+              {/* Input fixe en bas */}
+              <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-background rounded-b-xl">
+                <div className="flex gap-2">
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Décrivez votre problème..."
+                    className="min-h-[60px] resize-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
+                  />
+                  <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
+      )}
+    </>
   );
 }
