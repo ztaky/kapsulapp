@@ -142,6 +142,7 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons, allModules }: { 
         )}
       </div>
       <span className="flex-1 text-sm font-medium text-slate-900">{lesson.title}</span>
+      <div className="flex items-center gap-1 ml-auto">
       {otherModules.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -226,11 +227,17 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons, allModules }: { 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }
 
-export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordionProps) {
+interface ModuleAccordionExtendedProps extends ModuleAccordionProps {
+  isDefaultOpen?: boolean;
+  onModuleChange?: (moduleId: string) => void;
+}
+
+export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, onModuleChange }: ModuleAccordionExtendedProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: module.id });
   const queryClient = useQueryClient();
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
@@ -238,6 +245,7 @@ export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordio
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(module.title);
   const [editObjective, setEditObjective] = useState(module.objective || "");
+  const [accordionValue, setAccordionValue] = useState<string | undefined>(isDefaultOpen ? module.id : undefined);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -354,6 +362,7 @@ export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordio
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["course-modules", courseId] });
       toast({ title: "Leçon créée" });
+      onModuleChange?.(module.id);
       setLessonDialogOpen(false);
       setLessonTitle("");
     },
@@ -392,7 +401,7 @@ export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordio
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Accordion type="single" collapsible>
+      <Accordion type="single" collapsible value={accordionValue} onValueChange={setAccordionValue}>
         <AccordionItem value={module.id} className="border-none">
           <div className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-white shadow-premium p-6 hover:border-orange-200/50 transition-all">
             <div {...attributes} {...listeners} className="cursor-grab hover:text-orange-600 transition-colors">
@@ -413,6 +422,7 @@ export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordio
                 )}
               </div>
             </AccordionTrigger>
+            <div className="flex items-center gap-1 ml-auto">
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -508,6 +518,7 @@ export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordio
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+            </div>
           </div>
           <AccordionContent className="px-4 pt-4">
             <div className="space-y-2">

@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Save, Sparkles, X } from "lucide-react";
 import { ModuleAccordion } from "@/components/studio/ModuleAccordion";
 import { CourseInfoCard } from "@/components/studio/CourseInfoCard";
@@ -37,6 +37,20 @@ export default function CourseBuilder() {
   const [newModuleObjective, setNewModuleObjective] = useState("");
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
   const [paymentLinkUrl, setPaymentLinkUrl] = useState("");
+  const [lastOpenedModuleId, setLastOpenedModuleId] = useState<string | null>(null);
+
+  // Load last opened module from localStorage
+  useEffect(() => {
+    const storedModuleId = localStorage.getItem(`lastOpenedModule_${courseId}`);
+    if (storedModuleId) {
+      setLastOpenedModuleId(storedModuleId);
+    }
+  }, [courseId]);
+
+  const handleModuleChange = (moduleId: string) => {
+    setLastOpenedModuleId(moduleId);
+    localStorage.setItem(`lastOpenedModule_${courseId}`, moduleId);
+  };
   const [marketingContent, setMarketingContent] = useState<any>({
     headline: "",
     subheadline: "",
@@ -398,7 +412,14 @@ export default function CourseBuilder() {
                 <SortableContext items={modules.map((m) => m.id)} strategy={verticalListSortingStrategy}>
                   <div className="space-y-4">
                     {modules.map((module: any) => (
-                      <ModuleAccordion key={module.id} module={module} courseId={courseId!} allModules={modules} />
+                      <ModuleAccordion 
+                        key={module.id} 
+                        module={module} 
+                        courseId={courseId!} 
+                        allModules={modules}
+                        isDefaultOpen={module.id === lastOpenedModuleId}
+                        onModuleChange={handleModuleChange}
+                      />
                     ))}
                   </div>
                 </SortableContext>
