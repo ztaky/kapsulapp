@@ -24,6 +24,7 @@ export default function LessonEditor() {
   
   const [formData, setFormData] = useState<{
     title: string;
+    objective: string;
     content_text: string;
     video_url: string;
     resources: Resource[];
@@ -32,6 +33,7 @@ export default function LessonEditor() {
     tool_config: any;
   }>({
     title: "",
+    objective: "",
     content_text: "",
     video_url: "",
     resources: [],
@@ -91,6 +93,7 @@ export default function LessonEditor() {
       
       setFormData({
         title: lesson.title,
+        objective: (lesson as any).objective || "",
         content_text: lesson.content_text || "",
         video_url: lesson.video_url || "",
         resources: parsedResources,
@@ -116,6 +119,7 @@ export default function LessonEditor() {
         .from("lessons")
         .update({
           title: data.title,
+          objective: data.objective,
           content_text: data.content_text,
           video_url: data.video_url,
           resources: data.resources as any,
@@ -203,6 +207,16 @@ export default function LessonEditor() {
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="objective">Objectif de la leçon</Label>
+              <Input
+                id="objective"
+                value={formData.objective}
+                onChange={(e) => setFormData({ ...formData, objective: e.target.value })}
+                placeholder="Ex: À la fin de cette leçon, l'apprenant saura..."
               />
             </div>
 

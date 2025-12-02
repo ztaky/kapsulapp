@@ -34,6 +34,7 @@ export default function CourseBuilder() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [newModuleObjective, setNewModuleObjective] = useState("");
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
   const [paymentLinkUrl, setPaymentLinkUrl] = useState("");
   const [marketingContent, setMarketingContent] = useState<any>({
@@ -107,13 +108,14 @@ export default function CourseBuilder() {
 
   // Create module mutation
   const createModuleMutation = useMutation({
-    mutationFn: async (title: string) => {
+    mutationFn: async ({ title, objective }: { title: string; objective: string }) => {
       const position = modules ? modules.length : 0;
       const { data, error } = await supabase
         .from("modules")
         .insert({
           course_id: courseId,
           title,
+          objective: objective || null,
           position,
         })
         .select()
@@ -122,10 +124,11 @@ export default function CourseBuilder() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["course-modules", courseId] });
       toast.success("Module créé avec succès");
       setNewModuleTitle("");
+      setNewModuleObjective("");
       setIsModuleDialogOpen(false);
     },
     onError: (error: any) => {
@@ -368,8 +371,17 @@ export default function CourseBuilder() {
                         placeholder="Ex: Introduction à React"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="module-objective">Objectif du module (optionnel)</Label>
+                      <Input
+                        id="module-objective"
+                        value={newModuleObjective}
+                        onChange={(e) => setNewModuleObjective(e.target.value)}
+                        placeholder="Ex: Comprendre les fondamentaux de React"
+                      />
+                    </div>
                     <Button
-                      onClick={() => createModuleMutation.mutate(newModuleTitle)}
+                      onClick={() => createModuleMutation.mutate({ title: newModuleTitle, objective: newModuleObjective })}
                       disabled={!newModuleTitle || createModuleMutation.isPending}
                       className="w-full"
                     >

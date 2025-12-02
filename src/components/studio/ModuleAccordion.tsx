@@ -20,12 +20,14 @@ interface Lesson {
   title: string;
   type: string;
   position: number;
+  objective?: string;
 }
 
 interface Module {
   id: string;
   title: string;
   position: number;
+  objective?: string;
   lessons: Lesson[];
 }
 
@@ -173,8 +175,8 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["modules", courseId] });
       toast({ title: "Leçon créée" });
       setLessonDialogOpen(false);
       setLessonTitle("");
@@ -221,11 +223,18 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
               <GripVertical className="h-5 w-5 text-slate-400" />
             </div>
             <AccordionTrigger className="flex-1 hover:no-underline">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[#1e293b] text-base tracking-tight">{module.title}</span>
-                <span className="text-sm text-slate-600 font-normal">
-                  ({module.lessons.length} leçon{module.lessons.length > 1 ? "s" : ""})
-                </span>
+              <div className="flex flex-col items-start gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-[#1e293b] text-base tracking-tight">{module.title}</span>
+                  <span className="text-sm text-slate-600 font-normal">
+                    ({module.lessons.length} leçon{module.lessons.length > 1 ? "s" : ""})
+                  </span>
+                </div>
+                {module.objective && (
+                  <span className="text-xs text-slate-500 font-normal text-left">
+                    🎯 {module.objective}
+                  </span>
+                )}
               </div>
             </AccordionTrigger>
             <AlertDialog>
@@ -282,7 +291,7 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader>
+                <DialogHeader>
                     <DialogTitle>Créer une leçon</DialogTitle>
                   </DialogHeader>
                   <form
@@ -301,7 +310,10 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" className="w-full" disabled={createLessonMutation.isPending}>
+                      {createLessonMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
                       Créer
                     </Button>
                   </form>

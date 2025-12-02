@@ -729,6 +729,7 @@ export type Database = {
           created_at: string
           id: string
           module_id: string
+          objective: string | null
           position: number
           resource_url: string | null
           resources: Json | null
@@ -744,6 +745,7 @@ export type Database = {
           created_at?: string
           id?: string
           module_id: string
+          objective?: string | null
           position?: number
           resource_url?: string | null
           resources?: Json | null
@@ -759,6 +761,7 @@ export type Database = {
           created_at?: string
           id?: string
           module_id?: string
+          objective?: string | null
           position?: number
           resource_url?: string | null
           resources?: Json | null
@@ -784,6 +787,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          objective: string | null
           position: number
           title: string
           updated_at: string
@@ -792,6 +796,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          objective?: string | null
           position?: number
           title: string
           updated_at?: string
@@ -800,6 +805,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          objective?: string | null
           position?: number
           title?: string
           updated_at?: string

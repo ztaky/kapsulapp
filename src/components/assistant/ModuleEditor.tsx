@@ -10,12 +10,15 @@ interface Lesson {
   title: string;
   content: string;
   has_quiz: boolean;
+  objective?: string;
 }
 
 interface ModuleEditorProps {
   title: string;
+  objective?: string;
   lessons: Lesson[];
   onTitleChange: (newTitle: string) => void;
+  onObjectiveChange?: (newObjective: string) => void;
   onLessonUpdate: (lessonId: string, updates: Partial<Lesson>) => void;
   onAddLesson: () => void;
   onDeleteLesson: (lessonId: string) => void;
@@ -25,8 +28,10 @@ interface ModuleEditorProps {
 
 export function ModuleEditor({
   title,
+  objective,
   lessons,
   onTitleChange,
+  onObjectiveChange,
   onLessonUpdate,
   onAddLesson,
   onDeleteLesson,
@@ -61,6 +66,15 @@ export function ModuleEditor({
             onChange={(e) => onTitleChange(e.target.value)}
             className="flex-1 border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-orange-200 font-medium"
           />
+          
+          {onObjectiveChange && (
+            <Input
+              value={objective || ""}
+              onChange={(e) => onObjectiveChange(e.target.value)}
+              placeholder="Objectif du module..."
+              className="flex-1 border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-orange-200 text-sm text-slate-500"
+            />
+          )}
           
           <span className="text-sm text-slate-500">
             {lessons.length} leçon{lessons.length > 1 ? "s" : ""}
