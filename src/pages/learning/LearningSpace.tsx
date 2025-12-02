@@ -54,14 +54,11 @@ export default function LearningSpace() {
           lessons(*)
         `)
         .eq("course_id", courseId)
-        .order("position", { ascending: true });
+        .order("position", { ascending: true })
+        .order("position", { referencedTable: "lessons", ascending: true });
 
       if (error) throw error;
-
-      return data.map((m) => ({
-        ...m,
-        lessons: m.lessons?.sort((a: any, b: any) => a.position - b.position) || [],
-      }));
+      return data;
     },
   });
 

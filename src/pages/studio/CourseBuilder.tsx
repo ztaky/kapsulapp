@@ -99,7 +99,8 @@ export default function CourseBuilder() {
           lessons (*)
         `)
         .eq("course_id", courseId)
-        .order("position", { ascending: true });
+        .order("position", { ascending: true })
+        .order("position", { referencedTable: "lessons", ascending: true });
 
       if (error) throw error;
       return data;
