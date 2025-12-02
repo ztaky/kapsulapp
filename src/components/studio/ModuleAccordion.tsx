@@ -74,7 +74,7 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
       toast({ title: "Leçon dupliquée" });
     },
     onError: () => {
@@ -156,7 +156,7 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
       if (moduleError) throw moduleError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
       toast({ title: "Module supprimé" });
     },
     onError: () => {
@@ -176,7 +176,7 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
       if (error) throw error;
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["modules", courseId] });
+      await queryClient.refetchQueries({ queryKey: ["course-modules", courseId] });
       toast({ title: "Leçon créée" });
       setLessonDialogOpen(false);
       setLessonTitle("");
@@ -198,7 +198,7 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["modules", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
     },
   });
 
