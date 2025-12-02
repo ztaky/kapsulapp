@@ -407,7 +407,7 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
             <div {...attributes} {...listeners} className="cursor-grab hover:text-orange-600 transition-colors">
               <GripVertical className="h-5 w-5 text-slate-400" />
             </div>
-            <AccordionTrigger className="flex-1 hover:no-underline">
+            <AccordionTrigger className="flex-1 hover:no-underline px-3 py-2 [&>svg]:ml-4 [&>svg]:h-5 [&>svg]:w-5">
               <div className="flex flex-col items-start gap-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-[#1e293b] text-base tracking-tight">{module.title}</span>
