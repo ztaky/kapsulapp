@@ -398,7 +398,7 @@ export default function CourseBuilder() {
                 <SortableContext items={modules.map((m) => m.id)} strategy={verticalListSortingStrategy}>
                   <div className="space-y-4">
                     {modules.map((module: any) => (
-                      <ModuleAccordion key={module.id} module={module} courseId={courseId!} />
+                      <ModuleAccordion key={module.id} module={module} courseId={courseId!} allModules={modules} />
                     ))}
                   </div>
                 </SortableContext>

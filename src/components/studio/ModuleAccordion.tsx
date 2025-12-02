@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2, MoveRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -34,9 +35,10 @@ interface Module {
 interface ModuleAccordionProps {
   module: Module;
   courseId: string;
+  allModules?: Module[];
 }
 
-function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Lesson; moduleId: string; courseId: string; totalLessons: number }) {
+function LessonItem({ lesson, moduleId, courseId, totalLessons, allModules }: { lesson: Lesson; moduleId: string; courseId: string; totalLessons: number; allModules?: Module[] }) {
   const { slug } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -99,6 +101,30 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
     },
   });
 
+  const moveLessonMutation = useMutation({
+    mutationFn: async (targetModuleId: string) => {
+      // Get the target module's lessons count for position
+      const targetModule = allModules?.find(m => m.id === targetModuleId);
+      const newPosition = targetModule?.lessons.length || 0;
+
+      const { error } = await supabase
+        .from("lessons")
+        .update({ module_id: targetModuleId, position: newPosition })
+        .eq("id", lesson.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+      toast({ title: "Leçon déplacée" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors du déplacement", variant: "destructive" });
+    },
+  });
+
+  const otherModules = allModules?.filter(m => m.id !== moduleId) || [];
+
   return (
     <div
       ref={setNodeRef}
@@ -116,6 +142,35 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
         )}
       </div>
       <span className="flex-1 text-sm font-medium text-slate-900">{lesson.title}</span>
+      {otherModules.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hover:bg-blue-100 hover:text-blue-700"
+              title="Déplacer vers un autre module"
+              disabled={moveLessonMutation.isPending}
+            >
+              {moveLessonMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <MoveRight className="h-4 w-4" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {otherModules.map((m) => (
+              <DropdownMenuItem
+                key={m.id}
+                onClick={() => moveLessonMutation.mutate(m.id)}
+              >
+                {m.title}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       <Button
         variant="ghost"
         size="sm"
@@ -175,7 +230,7 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
   );
 }
 
-export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
+export function ModuleAccordion({ module, courseId, allModules }: ModuleAccordionProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: module.id });
   const queryClient = useQueryClient();
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
@@ -462,7 +517,7 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                   strategy={verticalListSortingStrategy}
                 >
                   {module.lessons.map((lesson) => (
-                    <LessonItem key={lesson.id} lesson={lesson} moduleId={module.id} courseId={courseId} totalLessons={module.lessons.length} />
+                    <LessonItem key={lesson.id} lesson={lesson} moduleId={module.id} courseId={courseId} totalLessons={module.lessons.length} allModules={allModules} />
                   ))}
                 </SortableContext>
               </DndContext>
