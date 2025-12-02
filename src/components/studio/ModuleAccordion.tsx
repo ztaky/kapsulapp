@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2, MoveRight } from "lucide-react";
+import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2, MoveRight, ChevronDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -407,7 +407,7 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
             <div {...attributes} {...listeners} className="cursor-grab hover:text-orange-600 transition-colors">
               <GripVertical className="h-5 w-5 text-slate-400" />
             </div>
-            <AccordionTrigger className="flex-1 hover:no-underline px-3 py-2 [&>svg]:ml-4 [&>svg]:h-5 [&>svg]:w-5">
+            <div className="flex-1 px-3 py-2">
               <div className="flex flex-col items-start gap-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-[#1e293b] text-base tracking-tight">{module.title}</span>
@@ -421,8 +421,18 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
                   </span>
                 )}
               </div>
-            </AccordionTrigger>
+            </div>
             <div className="flex items-center gap-1 ml-auto">
+            <AccordionTrigger className="hover:no-underline p-0 [&>svg]:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hover:bg-orange-100 hover:text-orange-700"
+                title="Ouvrir/Fermer le module"
+              >
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${accordionValue === module.id ? 'rotate-180' : ''}`} />
+              </Button>
+            </AccordionTrigger>
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
               <DialogTrigger asChild>
                 <Button
