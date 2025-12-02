@@ -49,7 +49,6 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
 
   const duplicateLessonMutation = useMutation({
     mutationFn: async () => {
-      // Fetch full lesson data
       const { data: fullLesson, error: fetchError } = await supabase
         .from("lessons")
         .select("*")
@@ -58,7 +57,6 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
 
       if (fetchError) throw fetchError;
 
-      // Create duplicated lesson
       const { error } = await supabase.from("lessons").insert({
         module_id: moduleId,
         title: `${fullLesson.title} - Copie`,
@@ -69,6 +67,7 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
         resources: fullLesson.resources,
         tool_id: fullLesson.tool_id,
         tool_config: fullLesson.tool_config,
+        objective: fullLesson.objective,
       });
 
       if (error) throw error;
@@ -79,6 +78,24 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
     },
     onError: () => {
       toast({ title: "Erreur lors de la duplication", variant: "destructive" });
+    },
+  });
+
+  const deleteLessonMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("lessons")
+        .delete()
+        .eq("id", lesson.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+      toast({ title: "Leçon supprimée" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la suppression", variant: "destructive" });
     },
   });
 
@@ -122,6 +139,38 @@ function LessonItem({ lesson, moduleId, courseId, totalLessons }: { lesson: Less
       >
         <Edit className="h-4 w-4" />
       </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hover:bg-red-100 hover:text-red-700"
+            title="Supprimer la leçon"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette leçon ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La leçon "{lesson.title}" sera définitivement supprimée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteLessonMutation.mutate()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteLessonMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -183,6 +232,56 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
     },
     onError: () => {
       toast({ title: "Erreur lors de la suppression", variant: "destructive" });
+    },
+  });
+
+  const duplicateModuleMutation = useMutation({
+    mutationFn: async () => {
+      // Get total modules count for position
+      const { data: allModules } = await supabase
+        .from("modules")
+        .select("id")
+        .eq("course_id", courseId);
+
+      const newPosition = allModules?.length || 0;
+
+      // Create duplicated module
+      const { data: newModule, error: moduleError } = await supabase
+        .from("modules")
+        .insert({
+          course_id: courseId,
+          title: `${module.title} - Copie`,
+          objective: module.objective,
+          position: newPosition,
+        })
+        .select()
+        .single();
+
+      if (moduleError) throw moduleError;
+
+      // Duplicate all lessons
+      if (module.lessons.length > 0) {
+        const lessonsToInsert = module.lessons.map((lesson, index) => ({
+          module_id: newModule.id,
+          title: lesson.title,
+          type: lesson.type as "video" | "interactive_tool",
+          position: index,
+          objective: lesson.objective,
+        }));
+
+        const { error: lessonsError } = await supabase
+          .from("lessons")
+          .insert(lessonsToInsert);
+
+        if (lessonsError) throw lessonsError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+      toast({ title: "Module dupliqué avec ses leçons" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la duplication", variant: "destructive" });
     },
   });
 
@@ -308,6 +407,20 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                 </form>
               </DialogContent>
             </Dialog>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => duplicateModuleMutation.mutate()}
+              disabled={duplicateModuleMutation.isPending}
+              className="hover:bg-orange-100 hover:text-orange-700"
+              title="Dupliquer le module"
+            >
+              {duplicateModuleMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
