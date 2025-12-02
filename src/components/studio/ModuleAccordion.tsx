@@ -131,11 +131,33 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
   const queryClient = useQueryClient();
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [lessonTitle, setLessonTitle] = useState("");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState(module.title);
+  const [editObjective, setEditObjective] = useState(module.objective || "");
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const updateModuleMutation = useMutation({
+    mutationFn: async ({ title, objective }: { title: string; objective: string }) => {
+      const { error } = await supabase
+        .from("modules")
+        .update({ title, objective: objective || null })
+        .eq("id", module.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+      toast({ title: "Module mis à jour" });
+      setEditDialogOpen(false);
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la mise à jour", variant: "destructive" });
+    },
+  });
 
   const deleteModuleMutation = useMutation({
     mutationFn: async () => {
@@ -237,6 +259,55 @@ export function ModuleAccordion({ module, courseId }: ModuleAccordionProps) {
                 )}
               </div>
             </AccordionTrigger>
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hover:bg-orange-100 hover:text-orange-700"
+                  title="Modifier le module"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Modifier le module</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    updateModuleMutation.mutate({ title: editTitle, objective: editObjective });
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <Label htmlFor="edit-module-title">Titre du module</Label>
+                    <Input
+                      id="edit-module-title"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-module-objective">Objectif (optionnel)</Label>
+                    <Input
+                      id="edit-module-objective"
+                      value={editObjective}
+                      onChange={(e) => setEditObjective(e.target.value)}
+                      placeholder="Ex: Comprendre les fondamentaux"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={updateModuleMutation.isPending}>
+                    {updateModuleMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Enregistrer
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
