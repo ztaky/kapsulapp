@@ -239,7 +239,7 @@ export default function LandingPages() {
                           )}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent side="top">
                         {lp.status === "published" 
                           ? "Retirer la page de la mise en ligne" 
                           : "Mettre la page en ligne"}
@@ -256,7 +256,7 @@ export default function LandingPages() {
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent side="top">
                         {lp.status === "published" 
                           ? "Voir la page en ligne" 
                           : "Publiez d'abord la page"}
@@ -272,7 +272,7 @@ export default function LandingPages() {
                           <Copy className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Dupliquer la page</TooltipContent>
+                      <TooltipContent side="top">Dupliquer la page</TooltipContent>
                     </Tooltip>
                     <AlertDialog>
                       <Tooltip>
@@ -286,7 +286,7 @@ export default function LandingPages() {
                             </Button>
                           </AlertDialogTrigger>
                         </TooltipTrigger>
-                        <TooltipContent>Supprimer la page</TooltipContent>
+                        <TooltipContent side="top">Supprimer la page</TooltipContent>
                       </Tooltip>
                       <AlertDialogContent>
                         <AlertDialogHeader>
