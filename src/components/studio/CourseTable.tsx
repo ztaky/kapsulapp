@@ -163,11 +163,11 @@ export function CourseTable({ courses, isLoading, organizationSlug, onDelete }: 
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-1">
+              <div className="flex flex-col gap-2 pt-1">
                 <Button
                   variant="gradient"
                   size="sm"
-                  className="flex-1"
+                  className="w-full"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(
@@ -178,50 +178,54 @@ export function CourseTable({ courses, isLoading, organizationSlug, onDelete }: 
                   <Edit className="h-4 w-4 mr-2" />
                   Éditer le cours
                 </Button>
-                {isPublished && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-200 hover:bg-slate-50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                )}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                <div className="flex gap-2">
+                  {isPublished && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 border-slate-200 hover:bg-slate-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Eye className="h-4 w-4 mr-1" />
+                      Voir
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Supprimer cette formation ?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Cette action est irréversible. La formation "{course.title}" et tout son contenu (modules, leçons) seront définitivement supprimés.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-red-600 hover:bg-red-700"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete?.(course.id);
-                        }}
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`${isPublished ? 'flex-1' : 'w-full'} border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700`}
+                        onClick={(e) => e.stopPropagation()}
                       >
+                        <Trash2 className="h-4 w-4 mr-1" />
                         Supprimer
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Supprimer cette formation ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Cette action est irréversible. La formation "{course.title}" et tout son contenu (modules, leçons) seront définitivement supprimés.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600 hover:bg-red-700"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete?.(course.id);
+                          }}
+                        >
+                          Supprimer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </CardContent>
           </Card>
