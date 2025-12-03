@@ -78,7 +78,7 @@ export function FAQ({ content }: FAQProps) {
                     {isOpen ? '—' : '+'}
                   </span>
                   <span 
-                    className="text-xl md:text-2xl font-bold"
+                    className="text-base md:text-lg font-bold"
                     style={{ color: currentColor, fontWeight: 700 }}
                   >
                     {item.question}
