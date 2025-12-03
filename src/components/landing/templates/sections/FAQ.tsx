@@ -41,8 +41,7 @@ export function FAQ({ content }: FAQProps) {
               return (
                 <span 
                   key={i}
-                  className="italic"
-                  style={{ 
+                  style={{
                     background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -76,13 +75,13 @@ export function FAQ({ content }: FAQProps) {
                 >
                   {/* Plus/Minus icon */}
                   <span 
-                    className={`text-xl flex-shrink-0 ${isOpen ? 'font-bold' : 'font-normal'}`}
+                    className="text-xl flex-shrink-0 font-bold"
                     style={{ color: currentColor }}
                   >
                     {isOpen ? '—' : '+'}
                   </span>
                   <span 
-                    className={`text-xl md:text-2xl ${isOpen ? 'font-bold' : 'font-normal'}`}
+                    className="text-xl md:text-2xl font-bold"
                     style={{ color: currentColor }}
                   >
                     {item.question}
