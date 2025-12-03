@@ -280,3 +280,9 @@ All colors MUST be HSL.
 .ai-generated-tool button {
   font-family: inherit;
 }
+
+/* Force Inter sur le container de landing page */
+.landing-page-container,
+.landing-page-container * {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
