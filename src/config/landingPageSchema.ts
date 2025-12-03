@@ -63,13 +63,30 @@ export interface AgitationContent {
 }
 
 export interface SolutionTimeframeContent {
-  headline: string;
-  stats: Array<{
+  headline: {
+    before: string;
+    gradient: string;
+    after: string;
+  };
+  subheadline: string;
+  description: string;
+  cards: Array<{
+    title: string;
+    subtitle: string;
+    color: string;
+    items: string[];
+  }>;
+  benefits: Array<{
+    text: string;
+    boldPart: string;
+  }>;
+  // Legacy support
+  stats?: Array<{
     value: string;
     label: string;
   }>;
-  socialProof: string;
-  secretBox: {
+  socialProof?: string;
+  secretBox?: {
     title: string;
     content: string;
   };
