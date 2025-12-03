@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Edit, Eye, BookOpen, Users, DollarSign, Layers, TrendingUp } from "lucide-react";
+import { Edit, Eye, BookOpen, Users, DollarSign, Layers, TrendingUp, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Course {
   id: string;
@@ -20,9 +21,10 @@ interface CourseTableProps {
   courses: Course[];
   isLoading: boolean;
   organizationSlug: string;
+  onDelete?: (courseId: string) => void;
 }
 
-export function CourseTable({ courses, isLoading, organizationSlug }: CourseTableProps) {
+export function CourseTable({ courses, isLoading, organizationSlug, onDelete }: CourseTableProps) {
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -188,6 +190,38 @@ export function CourseTable({ courses, isLoading, organizationSlug }: CourseTabl
                     <Eye className="h-4 w-4" />
                   </Button>
                 )}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Supprimer cette formation ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Cette action est irréversible. La formation "{course.title}" et tout son contenu (modules, leçons) seront définitivement supprimés.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete?.(course.id);
+                        }}
+                      >
+                        Supprimer
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
