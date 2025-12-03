@@ -58,7 +58,7 @@ export function Pedagogy({ content }: PedagogyProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4"
-      style={{ backgroundColor: 'white' }}
+      style={{ backgroundColor: 'white', fontFamily: "'Inter', sans-serif" }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline */}
@@ -89,7 +89,7 @@ export function Pedagogy({ content }: PedagogyProps) {
           {content.pillars.map((pillar, index) => (
             <div 
               key={index}
-              className="p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all"
+              className="p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all text-center"
               style={{ 
                 backgroundColor: cardBgColor,
                 border: '2px solid rgba(0,0,0,0.05)'
@@ -97,7 +97,7 @@ export function Pedagogy({ content }: PedagogyProps) {
             >
               {/* Number Badge - Pill shape */}
               <div 
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full text-white text-2xl font-bold mb-6"
+                className="inline-flex items-center justify-center w-14 h-14 rounded-full text-white text-2xl font-bold mb-6 mx-auto"
                 style={{ 
                   background: badgeGradient,
                   boxShadow: '0 4px 15px rgba(147, 51, 234, 0.3)'
@@ -108,7 +108,7 @@ export function Pedagogy({ content }: PedagogyProps) {
 
               {/* Title with red-orange gradient */}
               <h3 
-                className="text-2xl md:text-3xl font-bold mb-4"
+                className="text-2xl md:text-3xl font-bold mb-4 text-center"
                 style={{ 
                   background: titleGradient,
                   WebkitBackgroundClip: 'text',
@@ -121,7 +121,7 @@ export function Pedagogy({ content }: PedagogyProps) {
 
               {/* Description */}
               <p 
-                className="text-lg leading-relaxed mb-4"
+                className="text-lg leading-relaxed mb-4 text-center"
                 style={{ color: theme.colors.textDark }}
               >
                 {pillar.description}
@@ -129,7 +129,7 @@ export function Pedagogy({ content }: PedagogyProps) {
 
               {/* Details */}
               <p 
-                className="text-base leading-relaxed mb-4"
+                className="text-base leading-relaxed mb-4 text-center"
                 style={{ color: theme.colors.textDark, opacity: 0.85 }}
               >
                 {pillar.details}
@@ -138,7 +138,7 @@ export function Pedagogy({ content }: PedagogyProps) {
               {/* Testimonial - Red accent */}
               {pillar.testimonial && (
                 <p 
-                  className="text-base leading-relaxed font-semibold italic"
+                  className="text-base leading-relaxed font-semibold italic text-center"
                   style={{ color: accentColor }}
                 >
                   {pillar.testimonial}
