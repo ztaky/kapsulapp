@@ -74,7 +74,10 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline with gradient part */}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-6">
+        <h2 
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-6"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
           <span className="text-white">{content.headline.before} </span>
           <span 
             style={{ 
@@ -90,12 +93,18 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
         </h2>
 
         {/* Subheadline - bold white */}
-        <h3 className="text-xl md:text-2xl font-bold text-white text-center mb-6">
+        <h3 
+          className="text-xl md:text-2xl font-bold text-white text-center mb-6"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
           {content.subheadline}
         </h3>
 
         {/* Description - gray */}
-        <p className="text-lg text-gray-300 text-center max-w-4xl mx-auto mb-8">
+        <p 
+          className="text-lg text-gray-300 text-center max-w-4xl mx-auto mb-8"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
           {content.description}
         </p>
 
@@ -116,13 +125,16 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
               {/* Card title - colored uppercase */}
               <h4 
                 className="text-lg font-bold uppercase tracking-wider mb-2"
-                style={{ color: card.color }}
+                style={{ color: card.color, fontFamily: "'Inter', sans-serif" }}
               >
                 {card.title}
               </h4>
 
               {/* Subtitle */}
-              <p className="text-gray-700 mb-4">
+              <p 
+                className="text-gray-700 mb-4"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
                 {card.subtitle}
               </p>
 
@@ -138,6 +150,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
                   <li 
                     key={itemIndex}
                     className="text-gray-800 flex items-center gap-2"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
                   >
                     <span 
                       className="w-2 h-2 rounded-full"
@@ -162,7 +175,10 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
                 className="w-6 h-6 flex-shrink-0 mt-0.5"
                 style={{ color: '#10b981' }}
               />
-              <p className="text-gray-300 text-lg">
+              <p 
+                className="text-gray-300 text-lg"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
                 {renderBenefitText(benefit.text, benefit.boldPart)}
               </p>
             </div>
