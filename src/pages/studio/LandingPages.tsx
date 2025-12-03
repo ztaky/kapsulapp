@@ -209,11 +209,18 @@ export default function LandingPages() {
                     variant={lp.status === "published" ? "secondary" : "outline"}
                     size="sm"
                     onClick={() => handleTogglePublish(lp.id, lp.status)}
+                    className={lp.status !== "published" ? "text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700" : ""}
                   >
                     {lp.status === "published" ? (
-                      <EyeOff className="h-4 w-4" />
+                      <>
+                        <EyeOff className="h-4 w-4 mr-1" />
+                        Dépublier
+                      </>
                     ) : (
-                      <Globe className="h-4 w-4" />
+                      <>
+                        <Globe className="h-4 w-4 mr-1" />
+                        Publier
+                      </>
                     )}
                   </Button>
                   <Button
