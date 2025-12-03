@@ -31,6 +31,19 @@ const TOOL_TYPES = [
   { id: "rich_content", label: "📝 Contenu Enrichi", icon: FileText, description: "Texte formaté" },
 ];
 
+// Helper function to compare configs robustly
+const areConfigsEqual = (config1: any, config2: any): boolean => {
+  try {
+    const normalize = (obj: any): string => {
+      if (obj === null || obj === undefined) return "";
+      return JSON.stringify(obj, Object.keys(obj).sort());
+    };
+    return normalize(config1) === normalize(config2);
+  } catch {
+    return false;
+  }
+};
+
 export function InteractiveToolEditor({ toolId, toolConfig, organizationId, lessonId, onChange }: InteractiveToolEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [mode, setMode] = useState<"library" | "create" | "edit">("library");
@@ -39,6 +52,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, less
   const [newToolName, setNewToolName] = useState("");
   const [editingToolId, setEditingToolId] = useState<string | null>(null);
   const [previewToolId, setPreviewToolId] = useState<string | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch existing tools from library (filtered by lesson)
@@ -271,7 +285,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, less
             <div className="grid gap-3">
               {tools.map((tool) => {
                 const IconComponent = getToolIcon(tool.tool_type);
-                const isSelected = toolConfig && JSON.stringify(toolConfig) === JSON.stringify(tool.config);
+                const isSelected = toolConfig && areConfigsEqual(toolConfig, tool.config);
                 return (
                   <Card
                     key={tool.id}
@@ -375,56 +389,76 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, less
           )}
 
           {/* Current tool preview if selected but not in library */}
-          {toolId && toolConfig && !tools?.some(t => JSON.stringify(t.config) === JSON.stringify(toolConfig)) && (
+          {toolId && toolConfig && !tools?.some(t => areConfigsEqual(t.config, toolConfig)) && (
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-medium">Outil actuellement configuré (non sauvegardé)</p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button type="button" variant="outline" size="sm" className="gap-2">
-                      <Save className="h-4 w-4" />
-                      Sauvegarder
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Sauvegarder l'outil</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div>
-                        <Label>Nom de l'outil</Label>
-                        <Input
-                          placeholder="Ex: Calculateur de calories, Quiz module 1..."
-                          value={newToolName}
-                          onChange={(e) => setNewToolName(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Annuler</Button>
-                      </DialogClose>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          if (!newToolName.trim()) {
-                            toast.error("Veuillez entrer un nom pour l'outil");
-                            return;
-                          }
-                          saveToolMutation.mutate({
-                            name: newToolName,
-                            type: toolId,
-                            config: toolConfig,
-                          });
-                        }}
-                        disabled={saveToolMutation.isPending}
-                      >
-                        {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2 border-destructive/50 text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      onChange(null, {});
+                      toast.success("Outil supprimé de la leçon");
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Supprimer
+                  </Button>
+                  <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="outline" size="sm" className="gap-2">
+                        <Save className="h-4 w-4" />
                         Sauvegarder
                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Sauvegarder l'outil</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div>
+                          <Label>Nom de l'outil</Label>
+                          <Input
+                            placeholder="Ex: Calculateur de calories, Quiz module 1..."
+                            value={newToolName}
+                            onChange={(e) => setNewToolName(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline">Annuler</Button>
+                        </DialogClose>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (!newToolName.trim()) {
+                              toast.error("Veuillez entrer un nom pour l'outil");
+                              return;
+                            }
+                            saveToolMutation.mutate({
+                              name: newToolName,
+                              type: toolId,
+                              config: toolConfig,
+                            }, {
+                              onSuccess: () => {
+                                setSaveDialogOpen(false);
+                                setNewToolName("");
+                              }
+                            });
+                          }}
+                          disabled={saveToolMutation.isPending}
+                        >
+                          {saveToolMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                          Sauvegarder
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 Type: {TOOL_TYPES.find(t => t.id === toolId)?.label || toolId}
