@@ -40,7 +40,7 @@ export function Testimonials({ content }: TestimonialsProps) {
         rating: 5
       })) || [];
 
-  const headline = isLegacyFormat ? "Ils ont transformé leur business avec l'IA\nPourquoi pas toi ?" : (content as TestimonialsContent).headline;
+  const headline = isLegacyFormat ? "Ils ont transformé leur business" : (content as TestimonialsContent).headline;
   const headerStars = isLegacyFormat ? 5 : (content as TestimonialsContent).stars;
   const cta = isLegacyFormat ? "Je rejoins les entrepreneurs qui ont changer leur quotidien avec l'IA" : (content as TestimonialsContent).cta;
 
