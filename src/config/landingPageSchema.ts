@@ -46,7 +46,17 @@ export interface HeroContent {
 export interface AgitationContent {
   headline: string;
   subheadline: string;
-  painPoints: Array<{
+  supportingText?: string;
+  overwhelmedPains: Array<{
+    title: string;
+    description: string;
+  }>;
+  fomoPains: Array<{
+    title: string;
+    description: string;
+  }>;
+  // Legacy support
+  painPoints?: Array<{
     icon: string;
     text: string;
   }>;
