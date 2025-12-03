@@ -84,6 +84,28 @@ export default function StudioCourses() {
     },
   });
 
+  const deleteCourseMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      const { error } = await supabase
+        .from("courses")
+        .delete()
+        .eq("id", courseId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["studio-courses"] });
+      toast({ title: "Formation supprimée avec succès" });
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la formation",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Hero Header - Premium Style */}
@@ -184,7 +206,12 @@ export default function StudioCourses() {
         </div>
       </div>
 
-      <CourseTable courses={courses || []} isLoading={isLoading} organizationSlug={slug || ""} />
+      <CourseTable 
+        courses={courses || []} 
+        isLoading={isLoading} 
+        organizationSlug={slug || ""} 
+        onDelete={(courseId) => deleteCourseMutation.mutate(courseId)}
+      />
     </div>
   );
 }
