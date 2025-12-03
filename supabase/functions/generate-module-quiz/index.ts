@@ -20,7 +20,13 @@ serve(async (req) => {
   }
 
   try {
-    const { moduleId, organizationId } = await req.json();
+    const { 
+      moduleId, 
+      organizationId,
+      questionCount = 7,
+      difficulty = "medium",
+      questionTypes = ["qcm"]
+    } = await req.json();
 
     if (!moduleId) {
       return new Response(
@@ -28,6 +34,14 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Validate parameters
+    const validQuestionCount = Math.min(Math.max(questionCount, 3), 15);
+    const validDifficulty = ["easy", "medium", "hard"].includes(difficulty) ? difficulty : "medium";
+    const validQuestionTypes = questionTypes.filter((t: string) => 
+      ["qcm", "true_false", "fill_blank"].includes(t)
+    );
+    if (validQuestionTypes.length === 0) validQuestionTypes.push("qcm");
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -110,12 +124,32 @@ serve(async (req) => {
       );
     }
 
+    // Build difficulty instructions
+    const difficultyInstructions = {
+      easy: "Les questions doivent être simples et directes, testant la compréhension de base. Évite les pièges et les nuances complexes.",
+      medium: "Les questions doivent être de difficulté intermédiaire, testant une bonne compréhension du contenu avec quelques nuances.",
+      hard: "Les questions doivent être avancées et exigeantes, testant une compréhension approfondie avec des cas particuliers et des nuances."
+    };
+
+    // Build question types instructions
+    const questionTypeDescriptions: string[] = [];
+    if (validQuestionTypes.includes("qcm")) {
+      questionTypeDescriptions.push("QCM classiques avec 4 options de réponse");
+    }
+    if (validQuestionTypes.includes("true_false")) {
+      questionTypeDescriptions.push("Questions Vrai/Faux avec seulement 2 options: ['Vrai', 'Faux']");
+    }
+    if (validQuestionTypes.includes("fill_blank")) {
+      questionTypeDescriptions.push("Questions à trous où la réponse est un mot ou une courte phrase (la bonne réponse doit être courte et précise)");
+    }
+
     const systemPrompt = `Tu es un expert en pédagogie qui crée des quiz de qualité pour évaluer la compréhension des apprenants.
 
 Tu dois générer un quiz basé sur le contenu du module fourni. Le quiz doit:
-- Contenir entre 5 et 10 questions
+- Contenir exactement ${validQuestionCount} questions
+- Niveau de difficulté: ${validDifficulty.toUpperCase()} - ${difficultyInstructions[validDifficulty as keyof typeof difficultyInstructions]}
+- Types de questions à utiliser: ${questionTypeDescriptions.join(", ")}
 - Avoir des questions claires et précises
-- Proposer 4 réponses par question
 - Avoir une seule bonne réponse par question
 - Inclure une explication pour chaque réponse
 
@@ -128,16 +162,23 @@ Format de réponse attendu:
       "question": "La question posée ?",
       "answers": ["Réponse A", "Réponse B", "Réponse C", "Réponse D"],
       "correct": 0,
-      "explanation": "Explication de pourquoi cette réponse est correcte..."
+      "explanation": "Explication de pourquoi cette réponse est correcte...",
+      "type": "qcm"
     }
   ]
 }
 
-Le champ "correct" est l'index (0-3) de la bonne réponse dans le tableau "answers".`;
+Notes importantes:
+- Pour les QCM: 4 options de réponse, "correct" est l'index (0-3)
+- Pour Vrai/Faux: 2 options ["Vrai", "Faux"], "correct" est 0 ou 1
+- Pour texte à trous: "answers" contient uniquement la bonne réponse ["réponse correcte"], "correct" est toujours 0
+- Le champ "type" doit être "qcm", "true_false" ou "fill_blank"`;
 
-    const userPrompt = `Génère un quiz de 5-10 questions pour le module "${moduleData.title}".
+    const userPrompt = `Génère un quiz de ${validQuestionCount} questions (niveau ${validDifficulty}) pour le module "${moduleData.title}".
 
 ${moduleData.objective ? `Objectif du module: ${moduleData.objective}` : ""}
+
+Types de questions à utiliser: ${validQuestionTypes.join(", ")}
 
 Contenu du module:
 ${contentContext}

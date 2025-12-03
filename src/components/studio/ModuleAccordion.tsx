@@ -8,13 +8,22 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2, MoveRight, ChevronDown, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DndContext, closestCenter } from "@dnd-kit/core";
+
+interface QuizConfig {
+  questionCount: number;
+  difficulty: "easy" | "medium" | "hard";
+  questionTypes: string[];
+}
 
 interface Lesson {
   id: string;
@@ -246,6 +255,12 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
   const [editTitle, setEditTitle] = useState(module.title);
   const [editObjective, setEditObjective] = useState(module.objective || "");
   const [accordionValue, setAccordionValue] = useState<string | undefined>(isDefaultOpen ? module.id : undefined);
+  const [quizDialogOpen, setQuizDialogOpen] = useState(false);
+  const [quizConfig, setQuizConfig] = useState<QuizConfig>({
+    questionCount: 7,
+    difficulty: "medium",
+    questionTypes: ["qcm"],
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -400,7 +415,7 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
   };
 
   const generateQuizMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (config: QuizConfig) => {
       // First get the organization ID from the course
       const { data: courseData } = await supabase
         .from("courses")
@@ -411,7 +426,10 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
       const { data, error } = await supabase.functions.invoke("generate-module-quiz", {
         body: { 
           moduleId: module.id,
-          organizationId: courseData?.organization_id 
+          organizationId: courseData?.organization_id,
+          questionCount: config.questionCount,
+          difficulty: config.difficulty,
+          questionTypes: config.questionTypes,
         },
       });
 
@@ -449,6 +467,7 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
       }
 
       queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+      setQuizDialogOpen(false);
       toast({
         title: "Quiz généré avec succès !",
         description: `${data.questionsCount} questions créées à partir du contenu du module`,
@@ -462,6 +481,19 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
       });
     },
   });
+
+  const handleGenerateQuiz = () => {
+    generateQuizMutation.mutate(quizConfig);
+  };
+
+  const toggleQuestionType = (type: string) => {
+    setQuizConfig(prev => ({
+      ...prev,
+      questionTypes: prev.questionTypes.includes(type)
+        ? prev.questionTypes.filter(t => t !== type)
+        : [...prev.questionTypes, type]
+    }));
+  };
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -546,20 +578,126 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
                 </form>
               </DialogContent>
             </Dialog>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => generateQuizMutation.mutate()}
-              disabled={generateQuizMutation.isPending || module.lessons.length === 0}
-              className="hover:bg-purple-100 hover:text-purple-700"
-              title={module.lessons.length === 0 ? "Ajoutez des leçons avant de générer un quiz" : "Générer un quiz IA à partir du contenu"}
-            >
-              {generateQuizMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
-              )}
-            </Button>
+            <Dialog open={quizDialogOpen} onOpenChange={setQuizDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={module.lessons.length === 0}
+                  className="hover:bg-purple-100 hover:text-purple-700"
+                  title={module.lessons.length === 0 ? "Ajoutez des leçons avant de générer un quiz" : "Générer un quiz IA à partir du contenu"}
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Générer un quiz IA</DialogTitle>
+                  <DialogDescription>
+                    Personnalisez les paramètres du quiz généré à partir du contenu du module.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Nombre de questions</Label>
+                      <span className="text-sm font-medium text-primary">{quizConfig.questionCount}</span>
+                    </div>
+                    <Slider
+                      value={[quizConfig.questionCount]}
+                      onValueChange={([value]) => setQuizConfig(prev => ({ ...prev, questionCount: value }))}
+                      min={3}
+                      max={15}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>3</span>
+                      <span>15</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Niveau de difficulté</Label>
+                    <Select
+                      value={quizConfig.difficulty}
+                      onValueChange={(value: "easy" | "medium" | "hard") => 
+                        setQuizConfig(prev => ({ ...prev, difficulty: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="easy">🟢 Facile - Questions de base</SelectItem>
+                        <SelectItem value="medium">🟡 Moyen - Questions intermédiaires</SelectItem>
+                        <SelectItem value="hard">🔴 Difficile - Questions avancées</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Types de questions</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="qcm"
+                          checked={quizConfig.questionTypes.includes("qcm")}
+                          onCheckedChange={() => toggleQuestionType("qcm")}
+                        />
+                        <label htmlFor="qcm" className="text-sm cursor-pointer">
+                          QCM (choix multiples)
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="true_false"
+                          checked={quizConfig.questionTypes.includes("true_false")}
+                          onCheckedChange={() => toggleQuestionType("true_false")}
+                        />
+                        <label htmlFor="true_false" className="text-sm cursor-pointer">
+                          Vrai / Faux
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="fill_blank"
+                          checked={quizConfig.questionTypes.includes("fill_blank")}
+                          onCheckedChange={() => toggleQuestionType("fill_blank")}
+                        />
+                        <label htmlFor="fill_blank" className="text-sm cursor-pointer">
+                          Texte à trous (réponse courte)
+                        </label>
+                      </div>
+                    </div>
+                    {quizConfig.questionTypes.length === 0 && (
+                      <p className="text-xs text-destructive">Sélectionnez au moins un type de question</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setQuizDialogOpen(false)}>
+                    Annuler
+                  </Button>
+                  <Button 
+                    onClick={handleGenerateQuiz}
+                    disabled={generateQuizMutation.isPending || quizConfig.questionTypes.length === 0}
+                  >
+                    {generateQuizMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Générer le quiz
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button
               variant="ghost"
               size="sm"
