@@ -4,7 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookOpen, Search, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { BookOpen, Search, ExternalLink, Eye, EyeOff, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -83,6 +94,22 @@ const AdminCourses = () => {
 
     setCourses(processed);
     setLoading(false);
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    const { error } = await supabase
+      .from("courses")
+      .delete()
+      .eq("id", courseId);
+
+    if (error) {
+      console.error("Error deleting course:", error);
+      toast.error("Erreur lors de la suppression de la formation");
+      return;
+    }
+
+    toast.success("Formation supprimée avec succès");
+    fetchCourses();
   };
 
   const filteredCourses = courses.filter(course =>
@@ -178,14 +205,40 @@ const AdminCourses = () => {
                         <span className="text-muted-foreground ml-1">étudiant{course.students_count !== 1 && "s"}</span>
                       </td>
                       <td className="py-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/school/${course.organization.slug}/studio/courses/${course.id}/curriculum`)}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Éditer
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/school/${course.organization.slug}/studio/courses/${course.id}/curriculum`)}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Éditer
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Supprimer cette formation ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Cette action est irréversible. La formation "{course.title}" et tout son contenu seront définitivement supprimés.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteCourse(course.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </td>
                     </tr>
                   ))}
