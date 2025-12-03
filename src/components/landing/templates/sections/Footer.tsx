@@ -21,8 +21,8 @@ export function Footer({ content, landingSlug }: FooterProps) {
 
   return (
     <footer 
-      className="relative py-12 px-4"
-      style={{ backgroundColor: theme.colors.bgDark }}
+      className="relative py-12 px-4 font-inter"
+      style={{ backgroundColor: theme.colors.bgDark, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       <div className="max-w-6xl mx-auto text-center">
         {/* Logo */}

@@ -16,8 +16,8 @@ export function Agitation({ content }: AgitationProps) {
 
   return (
     <section 
-      className="relative py-16 md:py-24 px-4"
-      style={{ backgroundColor: theme.colors.bgDark }}
+      className="relative py-16 md:py-24 px-4 font-inter"
+      style={{ backgroundColor: theme.colors.bgDark, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       <div className="max-w-5xl mx-auto">
         {/* Card Container */}

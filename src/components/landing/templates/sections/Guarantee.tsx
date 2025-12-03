@@ -11,8 +11,8 @@ export function Guarantee({ content }: GuaranteeProps) {
 
   return (
     <section 
-      className="relative py-24 md:py-32 px-4"
-      style={{ backgroundColor: '#fef8f3' }}
+      className="relative py-24 md:py-32 px-4 font-inter"
+      style={{ backgroundColor: '#fef8f3', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       <div className="max-w-4xl mx-auto text-center">
         <Shield 

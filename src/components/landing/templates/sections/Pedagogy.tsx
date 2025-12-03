@@ -58,7 +58,7 @@ export function Pedagogy({ content }: PedagogyProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4 font-inter"
-      style={{ backgroundColor: 'white' }}
+      style={{ backgroundColor: 'white', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline */}
