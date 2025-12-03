@@ -1,6 +1,7 @@
 import { FAQContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
-import { Minus } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
+import { useState } from 'react';
 
 interface FAQProps {
   content: FAQContent;
@@ -19,6 +20,7 @@ function renderAnswer(text: string) {
 
 export function FAQ({ content }: FAQProps) {
   const { theme } = useTheme();
+  const [openIndex, setOpenIndex] = useState<number | null>(null); // Closed by default
 
   // Parse headline to find gradient word (between ** **)
   const headlineParts = content.headline.split(/(\*\*[^*]+\*\*)/g);
@@ -52,36 +54,52 @@ export function FAQ({ content }: FAQProps) {
           })}
         </h2>
 
-        {/* Questions - all visible */}
-        <div className="space-y-8">
-          {content.questions.map((item, index) => (
-            <div key={index}>
-              {/* Question */}
-              <div className="flex items-start gap-3 mb-2">
-                <Minus 
-                  className="w-5 h-5 flex-shrink-0 mt-1"
-                  style={{ color: theme.colors.primary }}
-                  strokeWidth={3}
-                />
-                <h3 
-                  className="text-lg md:text-xl font-bold"
-                  style={{ color: theme.colors.primary }}
+        {/* Questions - accordion */}
+        <div className="space-y-6">
+          {content.questions.map((item, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div key={index}>
+                {/* Question - clickable */}
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="flex items-start gap-3 w-full text-left"
                 >
-                  {item.question}
-                </h3>
+                  {isOpen ? (
+                    <Minus 
+                      className="w-5 h-5 flex-shrink-0 mt-1"
+                      style={{ color: theme.colors.primary }}
+                      strokeWidth={3}
+                    />
+                  ) : (
+                    <Plus 
+                      className="w-5 h-5 flex-shrink-0 mt-1"
+                      style={{ color: theme.colors.primary }}
+                      strokeWidth={3}
+                    />
+                  )}
+                  <h3 
+                    className="text-lg md:text-xl font-bold"
+                    style={{ color: theme.colors.primary }}
+                  >
+                    {item.question}
+                  </h3>
+                </button>
+                
+                {/* Answer - only visible when open */}
+                {isOpen && (
+                  <div 
+                    className="pl-8 mt-3 animate-in fade-in slide-in-from-top-2 duration-200"
+                    style={{ color: '#1e1b4b' }}
+                  >
+                    <p className="text-base leading-relaxed whitespace-pre-line">
+                      {renderAnswer(item.answer)}
+                    </p>
+                  </div>
+                )}
               </div>
-              
-              {/* Answer - always visible */}
-              <div 
-                className="pl-8"
-                style={{ color: '#1e1b4b' }}
-              >
-                <p className="text-base leading-relaxed whitespace-pre-line">
-                  {renderAnswer(item.answer)}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
