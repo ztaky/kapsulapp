@@ -30,7 +30,7 @@ const testConfig: LandingPageConfig = {
     },
     // Sections vides pour l'instant (on testera juste Hero)
     agitation: { headline: "", subheadline: "", overwhelmedPains: [], fomoPains: [] },
-    solutionTimeframe: { headline: "", stats: [], socialProof: "", secretBox: { title: "", content: "" } },
+    solutionTimeframe: { headline: { before: "", gradient: "", after: "" }, subheadline: "", description: "", cards: [], benefits: [] },
     pedagogy: { headline: "", subheadline: "", pillars: [], shockPhrase: "" },
     program: { headline: "", subheadline: "", aiTypes: [], results: [], weeks: [], deliverables: [] },
     testimonials: { headline: "", stars: 5, items: [], cta: "" },
