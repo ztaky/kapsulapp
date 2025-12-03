@@ -32,7 +32,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
           {content.stats.map((stat, index) => (
             <div key={index} className="text-center">
               <div 
-                className="text-5xl md:text-6xl font-bold mb-2"
+                className="text-3xl md:text-4xl font-bold mb-2"
                 style={{ 
                   background: statGradient,
                   WebkitBackgroundClip: 'text',
