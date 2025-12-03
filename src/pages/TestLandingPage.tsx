@@ -29,7 +29,7 @@ const testConfig: LandingPageConfig = {
       }
     },
     // Sections vides pour l'instant (on testera juste Hero)
-    agitation: { headline: "", subheadline: "", painPoints: [] },
+    agitation: { headline: "", subheadline: "", overwhelmedPains: [], fomoPains: [] },
     solutionTimeframe: { headline: "", stats: [], socialProof: "", secretBox: { title: "", content: "" } },
     pedagogy: { headline: "", subheadline: "", pillars: [], shockPhrase: "" },
     program: { headline: "", subheadline: "", aiTypes: [], results: [], weeks: [], deliverables: [] },

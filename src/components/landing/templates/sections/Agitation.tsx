@@ -1,6 +1,6 @@
 import { AgitationContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
-import { AlertCircle } from 'lucide-react';
+import { XCircle, AlertTriangle } from 'lucide-react';
 
 interface AgitationProps {
   content: AgitationContent;
@@ -9,53 +9,120 @@ interface AgitationProps {
 export function Agitation({ content }: AgitationProps) {
   const { theme } = useTheme();
 
+  // Custom gradient matching Hero
+  const subtitleGradient = 'linear-gradient(90deg, #d97706 0%, #840a85 100%)';
+
   return (
     <section 
-      className="relative py-24 md:py-32 px-4"
+      className="relative py-16 md:py-24 px-4"
       style={{ backgroundColor: theme.colors.bgDark }}
     >
-      <div className="max-w-6xl mx-auto">
-        {/* Headline */}
-        <h2 
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6"
-          style={{ color: theme.colors.textLight }}
+      <div className="max-w-5xl mx-auto">
+        {/* Card Container */}
+        <div 
+          className="rounded-3xl p-8 md:p-12 lg:p-16"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}
         >
-          {content.headline}
-        </h2>
-
-        {/* Subheadline */}
-        {content.subheadline && (
-          <p 
-            className="text-xl md:text-2xl text-center mb-16 max-w-4xl mx-auto"
-            style={{ color: theme.colors.textLight, opacity: 0.9 }}
-          >
-            {content.subheadline}
-          </p>
-        )}
-
-        {/* Pain Points Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {content.painPoints.map((pain, index) => (
-            <div 
-              key={index}
-              className="flex items-start gap-4 p-6 rounded-2xl transition-all hover:scale-105"
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
-              }}
+          {/* Headlines */}
+          <div className="text-center mb-12">
+            <h2 
+              className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3"
+              style={{ color: theme.colors.textLight }}
             >
-              <AlertCircle 
-                className="w-6 h-6 flex-shrink-0 mt-1" 
-                style={{ color: theme.colors.accentRed }}
-              />
+              {content.headline}
+            </h2>
+            
+            {content.subheadline && (
               <p 
-                className="text-base md:text-lg leading-relaxed"
-                style={{ color: theme.colors.textLight }}
+                className="text-xl md:text-2xl font-semibold mb-4"
+                style={{ 
+                  background: subtitleGradient,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
               >
-                {pain.text}
+                {content.subheadline}
               </p>
-            </div>
-          ))}
+            )}
+            
+            {content.supportingText && (
+              <p 
+                className="text-base md:text-lg"
+                style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+              >
+                {content.supportingText}
+              </p>
+            )}
+          </div>
+
+          {/* Two Columns of Pain Points */}
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+            {/* Left Column - Overwhelmed */}
+            {content.overwhelmedPains && content.overwhelmedPains.length > 0 && (
+              <div className="space-y-4">
+                {content.overwhelmedPains.map((pain, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-start gap-3"
+                  >
+                    <XCircle 
+                      className="w-5 h-5 flex-shrink-0 mt-0.5" 
+                      style={{ color: '#dc2626' }}
+                    />
+                    <div>
+                      <p 
+                        className="font-semibold text-sm md:text-base"
+                        style={{ color: theme.colors.textLight }}
+                      >
+                        {pain.title}
+                      </p>
+                      <p 
+                        className="text-sm"
+                        style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                      >
+                        {pain.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Right Column - FOMO */}
+            {content.fomoPains && content.fomoPains.length > 0 && (
+              <div className="space-y-4">
+                {content.fomoPains.map((pain, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-start gap-3"
+                  >
+                    <AlertTriangle 
+                      className="w-5 h-5 flex-shrink-0 mt-0.5" 
+                      style={{ color: '#d97706' }}
+                    />
+                    <div>
+                      <p 
+                        className="font-semibold text-sm md:text-base"
+                        style={{ color: theme.colors.textLight }}
+                      >
+                        {pain.title}
+                      </p>
+                      <p 
+                        className="text-sm"
+                        style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                      >
+                        {pain.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>
