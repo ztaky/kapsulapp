@@ -58,13 +58,12 @@ export function Pedagogy({ content }: PedagogyProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4"
-      style={{ backgroundColor: 'white', fontFamily: "'Inter', sans-serif" }}
+      style={{ backgroundColor: 'white' }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline */}
         <h2 
           className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6"
-          style={{ fontFamily: "'Inter', sans-serif" }}
         >
           {renderHeadline()}
         </h2>
@@ -72,7 +71,7 @@ export function Pedagogy({ content }: PedagogyProps) {
         {/* Subheadline */}
         <p 
           className="text-xl md:text-2xl text-center mb-4 max-w-4xl mx-auto"
-          style={{ color: theme.colors.textDark, fontFamily: "'Inter', sans-serif" }}
+          style={{ color: theme.colors.textDark }}
         >
           {renderSubheadline()}
         </p>
@@ -81,7 +80,7 @@ export function Pedagogy({ content }: PedagogyProps) {
         {content.subheadline2 && (
           <p 
             className="text-xl md:text-2xl font-bold text-center mb-16 max-w-4xl mx-auto"
-            style={{ color: theme.colors.textDark, fontFamily: "'Inter', sans-serif" }}
+            style={{ color: theme.colors.textDark }}
           >
             {content.subheadline2}
           </p>
@@ -116,8 +115,7 @@ export function Pedagogy({ content }: PedagogyProps) {
                   background: titleGradient,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  fontFamily: "'Inter', sans-serif"
+                  backgroundClip: 'text'
                 }}
               >
                 {pillar.title}
@@ -126,7 +124,7 @@ export function Pedagogy({ content }: PedagogyProps) {
               {/* Description */}
               <p 
                 className="text-lg leading-relaxed mb-4 text-center"
-                style={{ color: theme.colors.textDark, fontFamily: "'Inter', sans-serif" }}
+                style={{ color: theme.colors.textDark }}
               >
                 {pillar.description}
               </p>
@@ -134,7 +132,7 @@ export function Pedagogy({ content }: PedagogyProps) {
               {/* Details */}
               <p 
                 className="text-base leading-relaxed mb-4 text-center"
-                style={{ color: theme.colors.textDark, opacity: 0.85, fontFamily: "'Inter', sans-serif" }}
+                style={{ color: theme.colors.textDark, opacity: 0.85 }}
               >
                 {pillar.details}
               </p>
@@ -143,7 +141,7 @@ export function Pedagogy({ content }: PedagogyProps) {
               {pillar.testimonial && (
                 <p 
                   className="text-base leading-relaxed font-semibold italic text-center"
-                  style={{ color: accentColor, fontFamily: "'Inter', sans-serif" }}
+                  style={{ color: accentColor }}
                 >
                   {pillar.testimonial}
                 </p>
@@ -156,7 +154,7 @@ export function Pedagogy({ content }: PedagogyProps) {
         {content.shockPhrase && (
           <p 
             className="text-2xl md:text-3xl font-bold text-center"
-            style={{ color: accentColor, fontFamily: "'Inter', sans-serif" }}
+            style={{ color: accentColor }}
           >
             {content.shockPhrase}
           </p>
