@@ -56,7 +56,7 @@ export function Testimonials({ content }: TestimonialsProps) {
         {/* Headline + Stars */}
         <div className="text-center mb-16">
           <h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 whitespace-pre-line"
+            className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 whitespace-pre-line"
             style={{ color: '#ffffff' }}
           >
             {headline}
