@@ -187,6 +187,20 @@ All colors MUST be HSL.
   font-weight: var(--font-body-weight, 400);
 }
 
+/* Force Inter on all landing page elements - override any theme font */
+.landing-page-theme *,
+.landing-page-theme h1,
+.landing-page-theme h2,
+.landing-page-theme h3,
+.landing-page-theme h4,
+.landing-page-theme h5,
+.landing-page-theme h6,
+.landing-page-theme p,
+.landing-page-theme span,
+.landing-page-theme li {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
 /* Gradient text utility for landing pages */
 .landing-page-theme .gradient-text {
   background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
