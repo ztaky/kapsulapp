@@ -182,7 +182,6 @@ All colors MUST be HSL.
 }
 
 .landing-page-theme p,
-.landing-page-theme span,
 .landing-page-theme li {
   font-weight: var(--font-body-weight, 400);
 }

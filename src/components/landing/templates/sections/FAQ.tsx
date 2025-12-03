@@ -46,7 +46,7 @@ export function FAQ({ content }: FAQProps) {
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                    fontWeight: 400
+                    fontWeight: 700
                   }}
                 >
                   {part.slice(2, -2)}
@@ -79,7 +79,7 @@ export function FAQ({ content }: FAQProps) {
                   </span>
                   <span 
                     className="text-xl md:text-2xl font-bold"
-                    style={{ color: currentColor }}
+                    style={{ color: currentColor, fontWeight: 700 }}
                   >
                     {item.question}
                   </span>
