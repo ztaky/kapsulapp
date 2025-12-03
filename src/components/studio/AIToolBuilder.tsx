@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -169,7 +169,7 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
         </Card>
       )}
 
-      {/* Prévisualisation */}
+      {/* Prévisualisation avec iframe sandboxé */}
       {showPreview && toolConfig.generatedCode && (
         <Card>
           <CardHeader className="pb-2">
@@ -179,7 +179,7 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-lg p-4 bg-background min-h-[200px]">
+            <div className="border rounded-lg bg-background overflow-hidden">
               <AIToolPreview code={toolConfig.generatedCode} />
             </div>
           </CardContent>
@@ -189,28 +189,81 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
   );
 }
 
-// Composant de prévisualisation sandboxé
+// Composant de prévisualisation sandboxé avec iframe
 function AIToolPreview({ code }: { code: string }) {
-  const [error, setError] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [iframeHeight, setIframeHeight] = useState(300);
+
+  useEffect(() => {
+    if (!code) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'resize' && typeof event.data.height === 'number') {
+        setIframeHeight(Math.max(200, event.data.height + 20));
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [code]);
 
   if (!code) {
     return <p className="text-muted-foreground text-center py-8">Aucun code généré</p>;
   }
 
-  // Pour la prévisualisation, on utilise dangerouslySetInnerHTML avec le HTML généré
-  // Dans une vraie implémentation, on utiliserait un iframe sandboxé
-  try {
-    return (
-      <div 
-        className="ai-tool-preview"
-        dangerouslySetInnerHTML={{ __html: code }}
-      />
-    );
-  } catch (e: any) {
-    return (
-      <div className="text-destructive text-center py-8">
-        Erreur de rendu : {e.message}
-      </div>
-    );
-  }
+  // Wrap the generated code with auto-resize script
+  const wrappedCode = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        * { box-sizing: border-box; }
+        body { 
+          margin: 0; 
+          padding: 16px; 
+          font-family: system-ui, -apple-system, sans-serif;
+          background: transparent;
+        }
+      </style>
+    </head>
+    <body>
+      ${code}
+      <script>
+        // Auto-resize iframe
+        function sendHeight() {
+          const height = document.body.scrollHeight;
+          parent.postMessage({ type: 'resize', height }, '*');
+        }
+        
+        // Send height on load and on DOM changes
+        window.addEventListener('load', sendHeight);
+        window.addEventListener('resize', sendHeight);
+        
+        // Observe DOM changes
+        const observer = new MutationObserver(sendHeight);
+        observer.observe(document.body, { 
+          childList: true, 
+          subtree: true, 
+          attributes: true 
+        });
+        
+        // Initial send
+        setTimeout(sendHeight, 100);
+      </script>
+    </body>
+    </html>
+  `;
+
+  return (
+    <iframe
+      ref={iframeRef}
+      srcDoc={wrappedCode}
+      sandbox="allow-scripts allow-forms"
+      className="w-full border-0"
+      style={{ height: `${iframeHeight}px`, minHeight: '200px' }}
+      title="Prévisualisation de l'outil IA"
+    />
+  );
 }

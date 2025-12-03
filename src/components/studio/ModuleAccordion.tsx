@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2, MoveRight, ChevronDown } from "lucide-react";
+import { GripVertical, Plus, Edit, Copy, Video, FileText, Loader2, Trash2, MoveRight, ChevronDown, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -399,6 +399,70 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
     }
   };
 
+  const generateQuizMutation = useMutation({
+    mutationFn: async () => {
+      // First get the organization ID from the course
+      const { data: courseData } = await supabase
+        .from("courses")
+        .select("organization_id")
+        .eq("id", courseId)
+        .single();
+
+      const { data, error } = await supabase.functions.invoke("generate-module-quiz", {
+        body: { 
+          moduleId: module.id,
+          organizationId: courseData?.organization_id 
+        },
+      });
+
+      if (error) throw error;
+      if (data.error) {
+        if (data.code === "AI_CREDITS_LIMIT_REACHED") {
+          throw new Error("Limite de crédits IA atteinte pour ce mois");
+        }
+        throw new Error(data.error);
+      }
+
+      return data;
+    },
+    onSuccess: async (data) => {
+      // Create a new quiz lesson at the end of the module
+      const { error: lessonError } = await supabase.from("lessons").insert({
+        module_id: module.id,
+        title: data.quiz.title,
+        position: module.lessons.length,
+        type: "interactive_tool",
+        tool_id: "quiz",
+        tool_config: {
+          title: data.quiz.title,
+          questions: data.quiz.questions,
+        },
+      });
+
+      if (lessonError) {
+        toast({
+          title: "Erreur",
+          description: "Quiz généré mais impossible de créer la leçon",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["course-modules", courseId] });
+      toast({
+        title: "Quiz généré avec succès !",
+        description: `${data.questionsCount} questions créées à partir du contenu du module`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de générer le quiz",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div ref={setNodeRef} style={style}>
       <Accordion type="single" collapsible value={accordionValue} onValueChange={setAccordionValue}>
@@ -482,6 +546,20 @@ export function ModuleAccordion({ module, courseId, allModules, isDefaultOpen, o
                 </form>
               </DialogContent>
             </Dialog>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => generateQuizMutation.mutate()}
+              disabled={generateQuizMutation.isPending || module.lessons.length === 0}
+              className="hover:bg-purple-100 hover:text-purple-700"
+              title={module.lessons.length === 0 ? "Ajoutez des leçons avant de générer un quiz" : "Générer un quiz IA à partir du contenu"}
+            >
+              {generateQuizMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+            </Button>
             <Button
               variant="ghost"
               size="sm"
