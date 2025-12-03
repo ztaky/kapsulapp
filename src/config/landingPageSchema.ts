@@ -77,12 +77,15 @@ export interface SolutionTimeframeContent {
 
 export interface PedagogyContent {
   headline: string;
+  highlightedHeadline?: string;
   subheadline: string;
+  subheadline2?: string;
   pillars: Array<{
     number: number;
     title: string;
     description: string;
     details: string;
+    testimonial?: string;
   }>;
   shockPhrase: string;
 }
