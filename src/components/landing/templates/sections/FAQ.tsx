@@ -1,6 +1,5 @@
 import { FAQContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
-import { Minus } from 'lucide-react';
 import { useState } from 'react';
 
 interface FAQProps {
@@ -56,36 +55,41 @@ export function FAQ({ content }: FAQProps) {
         </h2>
 
         {/* Questions - accordion */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {content.questions.map((item, index) => {
             const isOpen = openIndex === index;
+            const textColor = isOpen ? theme.colors.primary : '#1a1a1a';
+            const iconColor = isOpen ? theme.colors.primary : '#1a1a1a';
+            
             return (
               <div key={index}>
                 {/* Question - clickable */}
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="flex items-start gap-4 w-full text-left group"
+                  className="flex items-center gap-4 w-full text-left"
                 >
-                  <Minus 
-                    className="w-4 h-4 flex-shrink-0 mt-1.5"
-                    style={{ color: theme.colors.primary }}
-                    strokeWidth={3}
-                  />
-                  <h3 
-                    className="text-base md:text-lg font-semibold"
-                    style={{ color: theme.colors.primary }}
+                  {/* Plus/Minus icon as text */}
+                  <span 
+                    className="text-2xl font-bold flex-shrink-0 w-6"
+                    style={{ color: iconColor }}
+                  >
+                    {isOpen ? '—' : '+'}
+                  </span>
+                  <span 
+                    className="text-lg md:text-xl font-bold"
+                    style={{ color: textColor }}
                   >
                     {item.question}
-                  </h3>
+                  </span>
                 </button>
                 
                 {/* Answer - only visible when open */}
                 {isOpen && (
                   <div 
-                    className="pl-8 mt-3"
-                    style={{ color: '#1e1b4b' }}
+                    className="pl-10 mt-4"
+                    style={{ color: '#1a1a1a' }}
                   >
-                    <p className="text-sm md:text-base leading-relaxed whitespace-pre-line">
+                    <p className="text-base leading-relaxed whitespace-pre-line">
                       {renderAnswer(item.answer)}
                     </p>
                   </div>
