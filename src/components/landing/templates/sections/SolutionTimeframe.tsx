@@ -8,6 +8,10 @@ interface SolutionTimeframeProps {
 
 export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
   const { theme } = useTheme();
+  
+  // Dégradé harmonisé avec Hero
+  const statGradient = 'linear-gradient(90deg, #ea580c 0%, #9333ea 100%)';
+  const accentColor = '#ea580c';
 
   return (
     <section 
@@ -30,7 +34,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
               <div 
                 className="text-5xl md:text-6xl font-bold mb-2"
                 style={{ 
-                  background: `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryDark} 100%)`,
+                  background: statGradient,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text'
@@ -61,13 +65,13 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
           className="max-w-3xl mx-auto p-10 md:p-12 rounded-3xl shadow-xl"
           style={{ 
             backgroundColor: 'white',
-            border: `2px solid ${theme.colors.primary}`
+            border: `2px solid ${accentColor}`
           }}
         >
           <div className="flex items-center justify-center gap-3 mb-6">
             <Lightbulb 
               className="w-8 h-8" 
-              style={{ color: theme.colors.primary }}
+              style={{ color: accentColor }}
             />
             <h3 
               className="text-2xl md:text-3xl font-bold"
