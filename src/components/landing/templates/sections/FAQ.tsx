@@ -34,8 +34,8 @@ export function FAQ({ content }: FAQProps) {
       }}
     >
       <div className="max-w-5xl mx-auto px-6 md:px-20">
-        {/* Headline - left aligned, bold */}
-        <h2 className="text-2xl md:text-3xl lg:text-4xl mb-12 md:mb-16 text-left font-bold">
+        {/* Headline - centered, bold */}
+        <h2 className="text-2xl md:text-3xl lg:text-4xl mb-12 md:mb-16 text-center font-bold">
           {headlineParts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               return (
@@ -53,18 +53,18 @@ export function FAQ({ content }: FAQProps) {
                 </span>
               );
             }
-            return <span key={i} style={{ color: '#1e1b4b', fontWeight: 400 }}>{part}</span>;
+            return <span key={i} style={{ color: '#1e1b4b', fontWeight: 700 }}>{part}</span>;
           })}
         </h2>
 
-        {/* Questions - accordion with more spacing */}
-        <div className="space-y-10">
+        {/* Questions - accordion with more spacing, centered */}
+        <div className="space-y-10 flex flex-col items-center">
           {content.questions.map((item, index) => {
             const isOpen = openIndex === index;
             const currentColor = isOpen ? openColor : closedColor;
             
             return (
-              <div key={index}>
+              <div key={index} className="w-full max-w-2xl">
                 {/* Question - clickable */}
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : index)}
