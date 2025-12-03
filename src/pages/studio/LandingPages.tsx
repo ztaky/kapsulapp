@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, ExternalLink, Pencil, Trash2, Eye, Copy, Globe, EyeOff } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LandingPageWizard } from "@/components/landing/LandingPageWizard";
@@ -195,57 +196,87 @@ export default function LandingPages() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => navigate(`/school/${slug}/studio/landing-pages/${lp.id}/edit`)}
-                  >
-                    <Pencil className="h-4 w-4 mr-1" />
-                    Éditer
-                  </Button>
-                  <Button
-                    variant={lp.status === "published" ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => handleTogglePublish(lp.id, lp.status)}
-                    className={lp.status !== "published" ? "text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700" : ""}
-                  >
-                    {lp.status === "published" ? (
-                      <>
-                        <EyeOff className="h-4 w-4 mr-1" />
-                        Dépublier
-                      </>
-                    ) : (
-                      <>
-                        <Globe className="h-4 w-4 mr-1" />
-                        Publier
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`/lp/${lp.slug}`, "_blank")}
-                    disabled={lp.status !== "published"}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDuplicate(lp.id)}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(lp.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                <TooltipProvider>
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate(`/school/${slug}/studio/landing-pages/${lp.id}/edit`)}
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Éditer
+                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={lp.status === "published" ? "secondary" : "outline"}
+                          size="sm"
+                          onClick={() => handleTogglePublish(lp.id, lp.status)}
+                          className={lp.status !== "published" ? "text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700" : ""}
+                        >
+                          {lp.status === "published" ? (
+                            <>
+                              <EyeOff className="h-4 w-4 mr-1" />
+                              Dépublier
+                            </>
+                          ) : (
+                            <>
+                              <Globe className="h-4 w-4 mr-1" />
+                              Publier
+                            </>
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {lp.status === "published" 
+                          ? "Retirer la page de la mise en ligne" 
+                          : "Mettre la page en ligne"}
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/lp/${lp.slug}`, "_blank")}
+                          disabled={lp.status !== "published"}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {lp.status === "published" 
+                          ? "Voir la page en ligne" 
+                          : "Publiez d'abord la page"}
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDuplicate(lp.id)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Dupliquer la page</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(lp.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Supprimer la page</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
               </div>
             </Card>
           ))}
