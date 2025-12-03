@@ -186,6 +186,7 @@ export function CourseTable({ courses, isLoading, organizationSlug, onDelete }: 
                       className="flex-1 border-slate-200 hover:bg-slate-50"
                       onClick={(e) => {
                         e.stopPropagation();
+                        window.open(`/school/${organizationSlug}/course/${course.id}`, '_blank');
                       }}
                     >
                       <Eye className="h-4 w-4 mr-1" />
