@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.create-email-credits-checkout]
 verify_jwt = false
+
+[functions.generate-module-quiz]
+verify_jwt = false
