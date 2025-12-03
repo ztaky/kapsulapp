@@ -8,14 +8,8 @@ interface ProgramProps {
 export function Program({ content }: ProgramProps) {
   const gradientStyle = 'linear-gradient(90deg, #ea580c 0%, #ec4899 100%)';
   const orangeColor = '#ea580c';
-  const purpleColor = '#9333ea';
+  const redColor = '#dc2626';
   const greenColor = '#10b981';
-
-  // Extract day number from day string (e.g., "Jour 1-2 : Les fondations" -> "1-2")
-  const extractDayNumber = (dayText: string) => {
-    const match = dayText.match(/Jour\s*(\d+(?:-\d+)?)/i);
-    return match ? match[1] : dayText;
-  };
 
   return (
     <section 
@@ -53,98 +47,75 @@ export function Program({ content }: ProgramProps) {
           {content.subheadline}
         </p>
 
-        {/* Two columns - Assistant opérationnel & Partenaire créatif */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
+        {/* Two columns - Semaine 1 & Semaine 2 - NO CARDS */}
+        <div className="grid md:grid-cols-2 gap-12 mb-20">
           {content.weeks.map((week, weekIndex) => {
-            const isFirstColumn = weekIndex === 0;
-            const accentColor = isFirstColumn ? orangeColor : purpleColor;
-            // Use the week title as the main heading
-            const columnTitle = week.title;
+            const isWeek1 = weekIndex === 0;
+            const accentColor = isWeek1 ? orangeColor : redColor;
+            const weekNumber = isWeek1 ? '1' : '2';
+            const subtitle = isWeek1 
+              ? "L'IA devient ton assistant opérationnel"
+              : "L'IA devient ton partenaire créatif";
 
             return (
-              <div 
-                key={weekIndex}
-                className="p-8 rounded-3xl"
-                style={{ 
-                  backgroundColor: 'white',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                  border: '1px solid rgba(0,0,0,0.05)'
-                }}
-              >
-                {/* Column title - bold black */}
+              <div key={weekIndex}>
+                {/* Week title - "Semaine 1" / "Semaine 2" */}
                 <h3 
                   className="text-2xl md:text-3xl font-bold mb-2"
-                  style={{ color: '#1a1a1a' }}
+                  style={{ color: '#0f172a' }}
                 >
-                  {columnTitle}
+                  Semaine {weekNumber}
                 </h3>
 
-                {/* Subtitle with accent color - same as title */}
+                {/* Colored subtitle */}
                 <p 
-                  className="text-base font-medium mb-8"
+                  className="text-lg font-medium mb-8"
                   style={{ color: accentColor }}
                 >
-                  {columnTitle}
+                  {subtitle}
                 </p>
 
-                {/* Days list - just number + description */}
+                {/* Days list - Full "Jour X : Titre" without bullets */}
                 <div className="space-y-6">
-                  {week.days.map((day, dayIndex) => {
-                    const dayNumber = extractDayNumber(day.day);
-                    return (
-                      <div key={dayIndex} className="flex items-start gap-3">
-                        <div 
-                          className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                          style={{ backgroundColor: accentColor }}
-                        />
-                        <div>
-                          <p 
-                            className="font-bold text-base mb-1"
-                            style={{ color: '#1a1a1a' }}
-                          >
-                            {dayNumber}
-                          </p>
-                          <p 
-                            className="text-sm leading-relaxed"
-                            style={{ color: '#4b5563' }}
-                          >
-                            {day.content}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {week.days.map((day, dayIndex) => (
+                    <div key={dayIndex}>
+                      <p 
+                        className="font-bold text-lg mb-1"
+                        style={{ color: '#0f172a' }}
+                      >
+                        {day.day}
+                      </p>
+                      <p 
+                        className="text-gray-600 leading-relaxed"
+                      >
+                        {day.content}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Deliverables section */}
-        <div 
-          className="p-10 rounded-3xl mb-12"
-          style={{ 
-            backgroundColor: 'white',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            border: '1px solid rgba(0,0,0,0.05)'
-          }}
-        >
+        {/* Deliverables section - NO CARD, single column */}
+        <div className="text-center mb-12">
           <h3 
-            className="text-2xl md:text-3xl font-bold mb-8 text-center"
-            style={{ color: '#1a1a1a' }}
+            className="text-2xl md:text-3xl font-bold mb-8"
+            style={{ color: '#0f172a' }}
           >
-            À la fin de ces 14 jours, tu auras :
+            À la fin de ces 14 jours, tu auras
           </h3>
           
-          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          <div className="flex flex-col items-start max-w-lg mx-auto space-y-4">
             {content.deliverables.map((deliverable, index) => (
-              <div key={index} className="flex items-start gap-3">
+              <div key={index} className="flex items-center gap-3">
                 <CheckCircle2 
-                  className="w-6 h-6 flex-shrink-0 mt-0.5" 
+                  className="w-6 h-6 flex-shrink-0" 
                   style={{ color: greenColor }}
                 />
                 <span 
-                  className="text-base md:text-lg"
+                  className="text-lg text-left"
                   style={{ color: '#374151' }}
                 >
                   {deliverable}
