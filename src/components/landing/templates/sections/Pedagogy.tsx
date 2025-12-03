@@ -1,13 +1,16 @@
 import { PedagogyContent } from '@/config/landingPageSchema';
-import { useTheme, getGradientStyle } from '@/theme/ThemeProvider';
+import { useTheme } from '@/theme/ThemeProvider';
 
 interface PedagogyProps {
   content: PedagogyContent;
 }
 
+// Dégradé harmonisé avec Hero/SolutionTimeframe
+const pillarGradient = 'linear-gradient(90deg, #ea580c 0%, #9333ea 100%)';
+const accentColor = '#ea580c';
+
 export function Pedagogy({ content }: PedagogyProps) {
   const { theme } = useTheme();
-  const gradientStyle = getGradientStyle(theme);
 
   return (
     <section 
@@ -45,7 +48,7 @@ export function Pedagogy({ content }: PedagogyProps) {
               <div 
                 className="text-4xl font-bold mb-4"
                 style={{ 
-                  background: gradientStyle,
+                  background: pillarGradient,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text'
@@ -78,7 +81,7 @@ export function Pedagogy({ content }: PedagogyProps) {
         {/* Shock Phrase */}
         <p 
           className="text-2xl md:text-3xl font-bold text-center"
-          style={{ color: theme.colors.primary }}
+          style={{ color: accentColor }}
         >
           {content.shockPhrase}
         </p>
