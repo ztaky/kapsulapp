@@ -31,7 +31,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
     return (
       <section 
         className="relative py-24 md:py-32 px-4 font-inter"
-        style={{ backgroundColor: '#fef8f3' }}
+        style={{ backgroundColor: '#fef8f3', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
       >
         <div className="max-w-6xl mx-auto text-center">
           <h2 
@@ -70,7 +70,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
   return (
     <section 
       className="relative py-24 md:py-32 px-4 font-inter"
-      style={{ backgroundColor: bgColor }}
+      style={{ backgroundColor: bgColor, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Headline with gradient part */}

@@ -16,6 +16,7 @@ export function Program({ content }: ProgramProps) {
       className="relative py-24 md:py-32 px-4 font-inter"
       style={{ 
         backgroundColor: '#fdfbf7',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         backgroundImage: `
           linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
           linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)

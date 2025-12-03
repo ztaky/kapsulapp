@@ -15,7 +15,7 @@ export function Hero({ content }: HeroProps) {
   const buttonGradient = 'linear-gradient(135deg, #ea580c 0%, #9333ea 100%)';
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-24 md:py-32 overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-24 md:py-32 overflow-hidden font-inter" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Grid background pattern */}
       <div 
         className="absolute inset-0 z-0"
