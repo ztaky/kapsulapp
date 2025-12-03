@@ -19,6 +19,7 @@ interface InteractiveToolEditorProps {
   toolId: string | null;
   toolConfig: any;
   organizationId?: string;
+  lessonId?: string;
   onChange: (toolId: string | null, toolConfig: any) => void;
 }
 
@@ -30,7 +31,7 @@ const TOOL_TYPES = [
   { id: "rich_content", label: "📝 Contenu Enrichi", icon: FileText, description: "Texte formaté" },
 ];
 
-export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onChange }: InteractiveToolEditorProps) {
+export function InteractiveToolEditor({ toolId, toolConfig, organizationId, lessonId, onChange }: InteractiveToolEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [mode, setMode] = useState<"library" | "create" | "edit">("library");
   const [newToolType, setNewToolType] = useState<string>("ai_tool");
@@ -40,30 +41,33 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
   const [previewToolId, setPreviewToolId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  // Fetch existing tools from library
+  // Fetch existing tools from library (filtered by lesson)
   const { data: tools, isLoading: toolsLoading } = useQuery({
-    queryKey: ["interactive-tools", organizationId],
+    queryKey: ["interactive-tools", organizationId, lessonId],
     queryFn: async () => {
-      if (!organizationId) return [];
+      if (!organizationId || !lessonId) return [];
       const { data, error } = await supabase
         .from("interactive_tools")
         .select("*")
         .eq("organization_id", organizationId)
+        .eq("lesson_id", lessonId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!organizationId,
+    enabled: !!organizationId && !!lessonId,
   });
 
-  // Save tool to library
+  // Save tool to library (specific to lesson)
   const saveToolMutation = useMutation({
     mutationFn: async ({ name, type, config }: { name: string; type: string; config: any }) => {
       if (!organizationId) throw new Error("Organization ID required");
+      if (!lessonId) throw new Error("Lesson ID required");
       const { data, error } = await supabase
         .from("interactive_tools")
         .insert({
           organization_id: organizationId,
+          lesson_id: lessonId,
           name,
           tool_type: type,
           config,
@@ -74,8 +78,8 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId] });
-      toast.success("Outil sauvegardé dans la bibliothèque");
+      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId, lessonId] });
+      toast.success("Outil sauvegardé");
       // Select the newly created tool
       onChange(data.tool_type, data.config);
       setMode("library");
@@ -99,7 +103,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId] });
+      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId, lessonId] });
       toast.success("Outil mis à jour");
       onChange(data.tool_type, data.config);
       setMode("library");
@@ -120,7 +124,7 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, onCh
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId] });
+      queryClient.invalidateQueries({ queryKey: ["interactive-tools", organizationId, lessonId] });
       toast.success("Outil supprimé");
     },
   });
