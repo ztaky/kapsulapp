@@ -74,15 +74,15 @@ export function FAQ({ content }: FAQProps) {
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                   className="flex items-center gap-4 w-full text-left"
                 >
-                  {/* Plus/Minus icon - larger */}
+                  {/* Plus/Minus icon */}
                   <span 
-                    className="text-2xl font-bold flex-shrink-0"
+                    className={`text-xl flex-shrink-0 ${isOpen ? 'font-bold' : 'font-normal'}`}
                     style={{ color: currentColor }}
                   >
                     {isOpen ? '—' : '+'}
                   </span>
                   <span 
-                    className="text-xl md:text-2xl font-bold"
+                    className={`text-xl md:text-2xl ${isOpen ? 'font-bold' : 'font-normal'}`}
                     style={{ color: currentColor }}
                   >
                     {item.question}
