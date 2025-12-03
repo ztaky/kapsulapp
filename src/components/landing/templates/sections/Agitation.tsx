@@ -1,6 +1,8 @@
 import { AgitationContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
 import { XCircle, AlertTriangle } from 'lucide-react';
+import stressedIllustration from '@/assets/agitation-stressed.png';
+import confusedIllustration from '@/assets/agitation-confused.png';
 
 interface AgitationProps {
   content: AgitationContent;
@@ -57,6 +59,20 @@ export function Agitation({ content }: AgitationProps) {
                 {content.supportingText}
               </p>
             )}
+          </div>
+
+          {/* Illustrations */}
+          <div className="flex justify-center items-center gap-8 md:gap-16 mb-12">
+            <img 
+              src={stressedIllustration} 
+              alt="Personne stressée" 
+              className="w-28 md:w-36 lg:w-44 h-auto"
+            />
+            <img 
+              src={confusedIllustration} 
+              alt="Personne confuse" 
+              className="w-28 md:w-36 lg:w-44 h-auto"
+            />
           </div>
 
           {/* Two Columns of Pain Points */}
