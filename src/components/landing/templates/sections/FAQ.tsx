@@ -1,6 +1,6 @@
 import { FAQContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
-import { Minus, Plus } from 'lucide-react';
+import { Minus } from 'lucide-react';
 import { useState } from 'react';
 
 interface FAQProps {
@@ -12,7 +12,7 @@ function renderAnswer(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} style={{ fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+      return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
     }
     return <span key={i}>{part}</span>;
   });
@@ -20,37 +20,38 @@ function renderAnswer(text: string) {
 
 export function FAQ({ content }: FAQProps) {
   const { theme } = useTheme();
-  const [openIndex, setOpenIndex] = useState<number | null>(null); // Closed by default
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   // Parse headline to find gradient word (between ** **)
   const headlineParts = content.headline.split(/(\*\*[^*]+\*\*)/g);
 
   return (
     <section 
-      className="relative py-24 md:py-32 px-4 font-inter"
+      className="relative py-20 md:py-28 px-4"
       style={{ backgroundColor: '#ffffff', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {/* Headline with gradient word */}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal mb-16">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl mb-12 md:mb-16">
           {headlineParts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               return (
                 <span 
                   key={i}
-                  className="font-normal italic"
+                  className="italic"
                   style={{ 
-                    background: 'linear-gradient(90deg, #f97316, #ec4899, #8b5cf6)',
+                    background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
+                    backgroundClip: 'text',
+                    fontWeight: 400
                   }}
                 >
                   {part.slice(2, -2)}
                 </span>
               );
             }
-            return <span key={i} style={{ color: '#1e1b4b', fontWeight: 700 }}>{part}</span>;
+            return <span key={i} style={{ color: '#1e1b4b', fontWeight: 400 }}>{part}</span>;
           })}
         </h2>
 
@@ -63,23 +64,15 @@ export function FAQ({ content }: FAQProps) {
                 {/* Question - clickable */}
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="flex items-start gap-3 w-full text-left"
+                  className="flex items-start gap-4 w-full text-left group"
                 >
-                  {isOpen ? (
-                    <Minus 
-                      className="w-5 h-5 flex-shrink-0 mt-1"
-                      style={{ color: theme.colors.primary }}
-                      strokeWidth={3}
-                    />
-                  ) : (
-                    <Plus 
-                      className="w-5 h-5 flex-shrink-0 mt-1"
-                      style={{ color: theme.colors.primary }}
-                      strokeWidth={3}
-                    />
-                  )}
+                  <Minus 
+                    className="w-4 h-4 flex-shrink-0 mt-1.5"
+                    style={{ color: theme.colors.primary }}
+                    strokeWidth={3}
+                  />
                   <h3 
-                    className="text-lg md:text-xl font-bold"
+                    className="text-base md:text-lg font-semibold"
                     style={{ color: theme.colors.primary }}
                   >
                     {item.question}
@@ -89,10 +82,10 @@ export function FAQ({ content }: FAQProps) {
                 {/* Answer - only visible when open */}
                 {isOpen && (
                   <div 
-                    className="pl-8 mt-3 animate-in fade-in slide-in-from-top-2 duration-200"
+                    className="pl-8 mt-3"
                     style={{ color: '#1e1b4b' }}
                   >
-                    <p className="text-base leading-relaxed whitespace-pre-line">
+                    <p className="text-sm md:text-base leading-relaxed whitespace-pre-line">
                       {renderAnswer(item.answer)}
                     </p>
                   </div>
