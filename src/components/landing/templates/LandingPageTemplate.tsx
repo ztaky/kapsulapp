@@ -73,7 +73,7 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections, lan
 
   return (
     <ThemeProvider theme={theme}>
-      <div className="landing-page-container">
+      <div className="landing-page-container font-inter" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}>
         {/* Section 1 - Hero (always shown) */}
         <Hero content={content.hero} />
 
