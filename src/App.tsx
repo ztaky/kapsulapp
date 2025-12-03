@@ -54,7 +54,6 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminLeads from "./pages/admin/AdminLeads";
 import FAQ from "./pages/FAQ";
 import Roadmap from "./pages/Roadmap";
-import TestLandingPage from "./pages/TestLandingPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 
 // Legal pages for Kapsul SaaS
@@ -161,9 +160,6 @@ const App = () => (
           
           {/* Public Course Sales Page */}
           <Route path="/school/:slug/course/:courseId" element={<CourseSalesPage />} />
-          
-          {/* Test Landing Page */}
-          <Route path="/test-landing" element={<TestLandingPage />} />
           
           {/* Payment Success */}
           <Route path="/payment-success" element={<PaymentSuccess />} />
