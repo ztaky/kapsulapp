@@ -25,7 +25,7 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
           '--color-text-light': theme.colors.textLight,
           '--color-accent-green': theme.colors.accentGreen,
           '--color-accent-red': theme.colors.accentRed,
-          '--font-family': theme.fonts.family,
+          '--font-family': 'Inter',
           '--font-heading-weight': theme.fonts.heading,
           '--font-body-weight': theme.fonts.body,
         } as React.CSSProperties}
