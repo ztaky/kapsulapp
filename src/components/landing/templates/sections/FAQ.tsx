@@ -27,15 +27,15 @@ export function FAQ({ content }: FAQProps) {
 
   return (
     <section 
-      className="relative py-20 md:py-28 px-4"
-      style={{ backgroundColor: '#ffffff' }}
+      className="relative py-20 md:py-28 px-4 font-inter"
+      style={{ 
+        backgroundColor: '#ffffff',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+      }}
     >
       <div className="max-w-5xl mx-auto px-6 md:px-20">
         {/* Headline - left aligned, larger size */}
-        <h2 
-          className="text-4xl md:text-5xl lg:text-6xl mb-12 md:mb-16 text-left"
-          style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
-        >
+        <h2 className="text-4xl md:text-5xl lg:text-6xl mb-12 md:mb-16 text-left">
           {headlineParts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               return (
@@ -58,10 +58,7 @@ export function FAQ({ content }: FAQProps) {
         </h2>
 
         {/* Questions - accordion with more spacing */}
-        <div 
-          className="space-y-10"
-          style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
-        >
+        <div className="space-y-10">
           {content.questions.map((item, index) => {
             const isOpen = openIndex === index;
             const currentColor = isOpen ? openColor : closedColor;
