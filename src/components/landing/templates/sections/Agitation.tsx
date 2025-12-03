@@ -61,83 +61,89 @@ export function Agitation({ content }: AgitationProps) {
             )}
           </div>
 
-          {/* Illustrations */}
-          <div className="flex justify-center items-center gap-8 md:gap-16 mb-12">
-            <img 
-              src={stressedIllustration} 
-              alt="Personne stressée" 
-              className="w-28 md:w-36 lg:w-44 h-auto"
-            />
-            <img 
-              src={confusedIllustration} 
-              alt="Personne confuse" 
-              className="w-28 md:w-36 lg:w-44 h-auto"
-            />
-          </div>
-
-          {/* Two Columns of Pain Points */}
+          {/* Two Columns with Illustrations + Pain Points */}
           <div className="grid md:grid-cols-2 gap-8 md:gap-12">
             {/* Left Column - Overwhelmed */}
-            {content.overwhelmedPains && content.overwhelmedPains.length > 0 && (
-              <div className="space-y-4">
-                {content.overwhelmedPains.map((pain, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start gap-3"
-                  >
-                    <XCircle 
-                      className="w-5 h-5 flex-shrink-0 mt-0.5" 
-                      style={{ color: '#dc2626' }}
-                    />
-                    <div>
-                      <p 
-                        className="font-semibold text-sm md:text-base"
-                        style={{ color: theme.colors.textLight }}
-                      >
-                        {pain.title}
-                      </p>
-                      <p 
-                        className="text-sm"
-                        style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                      >
-                        {pain.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+            <div className="flex flex-col items-center">
+              {/* Illustration centered above column */}
+              <div className="mb-8">
+                <img 
+                  src={confusedIllustration} 
+                  alt="Personne débordée" 
+                  className="w-28 md:w-36 lg:w-44 h-auto"
+                />
               </div>
-            )}
+              {content.overwhelmedPains && content.overwhelmedPains.length > 0 && (
+                <div className="space-y-4 w-full">
+                  {content.overwhelmedPains.map((pain, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-start gap-3"
+                    >
+                      <XCircle 
+                        className="w-5 h-5 flex-shrink-0 mt-0.5" 
+                        style={{ color: '#dc2626' }}
+                      />
+                      <div>
+                        <p 
+                          className="font-semibold text-sm md:text-base"
+                          style={{ color: theme.colors.textLight }}
+                        >
+                          {pain.title}
+                        </p>
+                        <p 
+                          className="text-sm"
+                          style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                        >
+                          {pain.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Right Column - FOMO */}
-            {content.fomoPains && content.fomoPains.length > 0 && (
-              <div className="space-y-4">
-                {content.fomoPains.map((pain, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start gap-3"
-                  >
-                    <AlertTriangle 
-                      className="w-5 h-5 flex-shrink-0 mt-0.5" 
-                      style={{ color: '#d97706' }}
-                    />
-                    <div>
-                      <p 
-                        className="font-semibold text-sm md:text-base"
-                        style={{ color: theme.colors.textLight }}
-                      >
-                        {pain.title}
-                      </p>
-                      <p 
-                        className="text-sm"
-                        style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                      >
-                        {pain.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+            <div className="flex flex-col items-center">
+              {/* Illustration centered above column */}
+              <div className="mb-8">
+                <img 
+                  src={stressedIllustration} 
+                  alt="Personne stressée" 
+                  className="w-28 md:w-36 lg:w-44 h-auto"
+                />
               </div>
-            )}
+              {content.fomoPains && content.fomoPains.length > 0 && (
+                <div className="space-y-4 w-full">
+                  {content.fomoPains.map((pain, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-start gap-3"
+                    >
+                      <AlertTriangle 
+                        className="w-5 h-5 flex-shrink-0 mt-0.5" 
+                        style={{ color: '#d97706' }}
+                      />
+                      <div>
+                        <p 
+                          className="font-semibold text-sm md:text-base"
+                          style={{ color: theme.colors.textLight }}
+                        >
+                          {pain.title}
+                        </p>
+                        <p 
+                          className="text-sm"
+                          style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                        >
+                          {pain.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
