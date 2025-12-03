@@ -11,13 +11,10 @@ export function Program({ content }: ProgramProps) {
   const purpleColor = '#9333ea';
   const greenColor = '#10b981';
 
-  // Helper to format day content - extract title and description
-  const formatDayContent = (dayText: string, dayContent: string) => {
-    // Extract title part (e.g., "Les fondations" from "Jour 1-2 : Les fondations")
-    const titleMatch = dayText.match(/Jour \d+(?:-\d+)?\s*:\s*(.+)/i);
-    const title = titleMatch ? titleMatch[1] : dayText;
-    
-    return { title, description: dayContent };
+  // Extract day number from day string (e.g., "Jour 1-2 : Les fondations" -> "1-2")
+  const extractDayNumber = (dayText: string) => {
+    const match = dayText.match(/Jour\s*(\d+(?:-\d+)?)/i);
+    return match ? match[1] : dayText;
   };
 
   return (
@@ -33,7 +30,7 @@ export function Program({ content }: ProgramProps) {
       }}
     >
       <div className="max-w-6xl mx-auto">
-        {/* Headline */}
+        {/* Headline - "La méthode" + gradient text */}
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-4">
           <span style={{ color: '#1a1a1a' }}>La méthode </span>
           <span 
@@ -44,7 +41,7 @@ export function Program({ content }: ProgramProps) {
               backgroundClip: 'text'
             }}
           >
-            {content.headline.includes('IA Mastery') ? 'IA Mastery' : content.headline}
+            {content.headline}
           </span>
         </h2>
 
@@ -56,14 +53,13 @@ export function Program({ content }: ProgramProps) {
           {content.subheadline}
         </p>
 
-        {/* Two columns - Semaine 1 & 2 */}
+        {/* Two columns - Assistant opérationnel & Partenaire créatif */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           {content.weeks.map((week, weekIndex) => {
-            const isWeek1 = weekIndex === 0;
-            const accentColor = isWeek1 ? orangeColor : purpleColor;
-            const weekSubtitle = isWeek1 
-              ? "L'IA devient ton assistant opérationnel"
-              : "L'IA devient ton partenaire créatif";
+            const isFirstColumn = weekIndex === 0;
+            const accentColor = isFirstColumn ? orangeColor : purpleColor;
+            // Use the week title as the main heading
+            const columnTitle = week.title;
 
             return (
               <div 
@@ -75,37 +71,43 @@ export function Program({ content }: ProgramProps) {
                   border: '1px solid rgba(0,0,0,0.05)'
                 }}
               >
-                {/* Week title */}
+                {/* Column title - bold black */}
                 <h3 
                   className="text-2xl md:text-3xl font-bold mb-2"
                   style={{ color: '#1a1a1a' }}
                 >
-                  {week.title}
+                  {columnTitle}
                 </h3>
 
-                {/* Week subtitle with accent color */}
+                {/* Subtitle with accent color - same as title */}
                 <p 
-                  className="text-lg font-medium mb-6"
+                  className="text-base font-medium mb-8"
                   style={{ color: accentColor }}
                 >
-                  {weekSubtitle}
+                  {columnTitle}
                 </p>
 
-                {/* Days list */}
-                <div className="space-y-4">
+                {/* Days list - just number + description */}
+                <div className="space-y-6">
                   {week.days.map((day, dayIndex) => {
-                    const { title, description } = formatDayContent(day.day, day.content);
+                    const dayNumber = extractDayNumber(day.day);
                     return (
                       <div key={dayIndex} className="flex items-start gap-3">
                         <div 
-                          className="w-2 h-2 rounded-full mt-2.5 flex-shrink-0"
+                          className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
                           style={{ backgroundColor: accentColor }}
                         />
                         <div>
-                          <p className="font-semibold text-gray-900">
-                            {day.day}
+                          <p 
+                            className="font-bold text-base mb-1"
+                            style={{ color: '#1a1a1a' }}
+                          >
+                            {dayNumber}
                           </p>
-                          <p className="text-gray-600 text-sm leading-relaxed">
+                          <p 
+                            className="text-sm leading-relaxed"
+                            style={{ color: '#4b5563' }}
+                          >
                             {day.content}
                           </p>
                         </div>
