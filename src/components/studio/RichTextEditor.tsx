@@ -6,17 +6,29 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
 import { 
   Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, 
-  Link as LinkIcon, Image as ImageIcon, Undo, Redo 
+  Link as LinkIcon, Image as ImageIcon, Undo, Redo, Upload, Loader2 
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  organizationId?: string;
 }
 
-export function RichTextEditor({ content, onChange, placeholder = "Écrivez votre contenu..." }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, placeholder = "Écrivez votre contenu...", organizationId }: RichTextEditorProps) {
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -67,10 +79,66 @@ export function RichTextEditor({ content, onChange, placeholder = "Écrivez votr
     }
   };
 
-  const addImage = () => {
-    const url = window.prompt('URL de l\'image:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validation du type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Veuillez sélectionner une image");
+      return;
+    }
+
+    // Validation de la taille (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${organizationId || 'public'}/editor/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('lesson-resources')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('lesson-resources')
+        .getPublicUrl(filePath);
+
+      editor.chain().focus().setImage({ src: publicUrl }).run();
+      setImageDialogOpen(false);
+      toast.success("Image ajoutée");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Erreur lors de l'upload");
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleUrlSubmit = () => {
+    if (!imageUrl.trim()) {
+      toast.error("Veuillez entrer une URL");
+      return;
+    }
+    try {
+      new URL(imageUrl);
+      editor.chain().focus().setImage({ src: imageUrl }).run();
+      setImageDialogOpen(false);
+      setImageUrl('');
+      toast.success("Image ajoutée");
+    } catch {
+      toast.error("URL invalide");
     }
   };
 
@@ -153,7 +221,7 @@ export function RichTextEditor({ content, onChange, placeholder = "Écrivez votr
           type="button"
           variant="ghost"
           size="sm"
-          onClick={addImage}
+          onClick={() => setImageDialogOpen(true)}
         >
           <ImageIcon className="h-4 w-4" />
         </Button>
@@ -178,6 +246,66 @@ export function RichTextEditor({ content, onChange, placeholder = "Écrivez votr
         </Button>
       </div>
       <EditorContent editor={editor} />
+
+      {/* Dialog d'ajout d'image */}
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ajouter une image</DialogTitle>
+          </DialogHeader>
+          
+          <Tabs defaultValue="upload" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload" className="gap-2">
+                <Upload className="h-4 w-4" />
+                Uploader
+              </TabsTrigger>
+              <TabsTrigger value="url" className="gap-2">
+                <LinkIcon className="h-4 w-4" />
+                URL
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload" className="mt-4">
+              <Card 
+                className="border-dashed border-2 p-8 text-center cursor-pointer hover:border-primary transition-all"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                {uploading ? (
+                  <Loader2 className="h-10 w-10 mx-auto animate-spin text-primary" />
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-sm font-medium">Cliquez pour uploader</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      PNG, JPG, GIF, WebP • Max 5MB
+                    </p>
+                  </>
+                )}
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="url" className="mt-4 space-y-4">
+              <Input
+                placeholder="https://example.com/image.jpg"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
+              />
+              <Button onClick={handleUrlSubmit} className="w-full">
+                Ajouter l'image
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

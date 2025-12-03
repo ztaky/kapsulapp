@@ -267,6 +267,7 @@ export default function LessonEditor() {
                     content={formData.content_text}
                     onChange={(content) => setFormData({ ...formData, content_text: content })}
                     placeholder="Écrivez le contenu de votre leçon..."
+                    organizationId={organization?.id}
                   />
                 </div>
               </TabsContent>
