@@ -276,6 +276,7 @@ export default function LessonEditor() {
                   toolId={formData.tool_id}
                   toolConfig={formData.tool_config}
                   organizationId={organization?.id}
+                  lessonId={lessonId}
                   onChange={(toolId, toolConfig) =>
                     setFormData({ ...formData, tool_id: toolId, tool_config: toolConfig })
                   }
