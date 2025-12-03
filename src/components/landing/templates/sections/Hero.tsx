@@ -10,9 +10,9 @@ interface HeroProps {
 export function Hero({ content }: HeroProps) {
   const { theme } = useTheme();
 
-  // Custom gradient: amber orange → dark purple/magenta
-  const titleGradient = 'linear-gradient(90deg, #d97706 0%, #840a85 100%)';
-  const buttonGradient = 'linear-gradient(135deg, #d97706 0%, #840a85 100%)';
+  // Custom gradient: warm orange → fuchsia (Option 2 - chaud et énergique)
+  const titleGradient = 'linear-gradient(90deg, #ea580c 0%, #c026d3 100%)';
+  const buttonGradient = 'linear-gradient(135deg, #ea580c 0%, #c026d3 100%)';
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-24 md:py-32 overflow-hidden">
