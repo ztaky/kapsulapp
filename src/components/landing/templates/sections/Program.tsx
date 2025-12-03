@@ -81,10 +81,10 @@ export function Program({ content }: ProgramProps) {
                   {week.days.map((day, dayIndex) => (
                     <div key={dayIndex}>
                       <p 
-                        className="font-bold text-lg mb-1"
-                        style={{ color: '#0f172a' }}
+                        className="text-lg mb-1"
+                        style={{ color: '#0f172a', fontWeight: 700 }}
                       >
-                        {day.day}
+                        <strong>{day.day}</strong>
                       </p>
                       <p 
                         className="text-gray-600 leading-relaxed"
