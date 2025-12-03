@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
+        'inter': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
         'jakarta': ['Plus Jakarta Sans', 'sans-serif'],
         'gotham': ['Montserrat', 'sans-serif'],
       },
