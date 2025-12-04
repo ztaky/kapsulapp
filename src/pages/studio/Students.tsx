@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AddStudentDialog } from "@/components/studio/AddStudentDialog";
+import { ImportStudentsCSVDialog } from "@/components/studio/ImportStudentsCSVDialog";
 import { StudentActionsDropdown } from "@/components/studio/StudentActionsDropdown";
 import { Search, Filter } from "lucide-react";
 
@@ -151,10 +152,16 @@ export default function StudioStudents() {
             </p>
           </div>
           {currentOrg && (
-            <AddStudentDialog 
-              organizationId={currentOrg.id} 
-              organizationName={currentOrg.name} 
-            />
+            <div className="flex items-center gap-2">
+              <ImportStudentsCSVDialog 
+                organizationId={currentOrg.id} 
+                organizationName={currentOrg.name} 
+              />
+              <AddStudentDialog 
+                organizationId={currentOrg.id} 
+                organizationName={currentOrg.name} 
+              />
+            </div>
           )}
         </div>
       </div>
