@@ -10,12 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
 import { SalesChatWidget } from "@/components/sales/SalesChatWidget";
-
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const { trackAddToCart, trackInitiateCheckout } = useTrackEvent();
+  const {
+    trackAddToCart,
+    trackInitiateCheckout
+  } = useTrackEvent();
 
   // Handle payment canceled
   useEffect(() => {
@@ -25,12 +27,10 @@ const Index = () => {
       window.history.replaceState({}, "", "/");
     }
   }, [searchParams]);
-  
   const handleFounderCheckout = async () => {
     // Track AddToCart + InitiateCheckout before redirecting to Stripe
     trackAddToCart("Offre Fondateur", 297, "EUR");
     trackInitiateCheckout("Offre Fondateur", 297, "EUR");
-    
     setCheckoutLoading(true);
     try {
       const {
@@ -111,9 +111,7 @@ const Index = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border gradient-border mb-8">
             <span className="text-lg">✨</span>
-            <span className="text-sm font-medium text-foreground">
-              La nouvelle norme pour les formateurs en ligne
-            </span>
+            <span className="text-sm font-medium text-foreground">Votre Assistant Pédagogique IA</span>
           </div>
 
           {/* H1 */}
@@ -265,24 +263,45 @@ const Index = () => {
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { icon: BookOpen, label: "Formations illimitées", desc: "Créez autant de cours que vous voulez" },
-              { icon: Wand2, label: "IA intégrée", desc: "Landing pages, quiz, outils générés" },
-              { icon: Mail, label: "Email marketing", desc: "Séquences automatiques brandées" },
-              { icon: CreditCard, label: "Paiements Stripe", desc: "0% commission plateforme" },
-              { icon: Palette, label: "Branding complet", desc: "Logo, couleurs, domaine perso" },
-              { icon: BarChart3, label: "Analytics temps réel", desc: "Ventes, progression, engagement" },
-              { icon: Award, label: "Certificats", desc: "Diplômes PDF automatiques" },
-              { icon: MessageCircle, label: "Support IA 24/7", desc: "Assistant pour vos élèves" },
-            ].map((feature, i) => (
-              <div key={i} className="bg-card rounded-2xl p-5 border border-border hover:border-border/80 hover:shadow-card transition-all group">
+            {[{
+            icon: BookOpen,
+            label: "Formations illimitées",
+            desc: "Créez autant de cours que vous voulez"
+          }, {
+            icon: Wand2,
+            label: "IA intégrée",
+            desc: "Landing pages, quiz, outils générés"
+          }, {
+            icon: Mail,
+            label: "Email marketing",
+            desc: "Séquences automatiques brandées"
+          }, {
+            icon: CreditCard,
+            label: "Paiements Stripe",
+            desc: "0% commission plateforme"
+          }, {
+            icon: Palette,
+            label: "Branding complet",
+            desc: "Logo, couleurs, domaine perso"
+          }, {
+            icon: BarChart3,
+            label: "Analytics temps réel",
+            desc: "Ventes, progression, engagement"
+          }, {
+            icon: Award,
+            label: "Certificats",
+            desc: "Diplômes PDF automatiques"
+          }, {
+            icon: MessageCircle,
+            label: "Support IA 24/7",
+            desc: "Assistant pour vos élèves"
+          }].map((feature, i) => <div key={i} className="bg-card rounded-2xl p-5 border border-border hover:border-border/80 hover:shadow-card transition-all group">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF512F]/10 to-[#DD2476]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-6 h-6 text-[#DD2476]" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-bold text-foreground mb-1">{feature.label}</h3>
                 <p className="text-sm text-muted-foreground">{feature.desc}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -315,13 +334,11 @@ const Index = () => {
               {/* Course Editor Mockup */}
               <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                 <div className="space-y-2">
-                  {["Module 1 : Les fondamentaux", "Module 2 : Stratégies avancées", "Module 3 : Mise en pratique"].map((m, i) => (
-                    <div key={i} className="bg-white/5 rounded-xl p-3 flex items-center gap-3 group-hover:bg-white/10 transition-colors">
+                  {["Module 1 : Les fondamentaux", "Module 2 : Stratégies avancées", "Module 3 : Mise en pratique"].map((m, i) => <div key={i} className="bg-white/5 rounded-xl p-3 flex items-center gap-3 group-hover:bg-white/10 transition-colors">
                       <GripVertical className="w-4 h-4 text-white/40" />
                       <span className="text-white/80 text-sm font-medium flex-1">{m}</span>
                       <span className="text-white/40 text-xs">{3 + i} leçons</span>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </div>
             </div>
@@ -422,9 +439,9 @@ const Index = () => {
                 </div>
               </div>
               <div className="h-20 flex items-end gap-1">
-                {[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 88, 100].map((h, i) => (
-                  <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t opacity-80" style={{ height: `${h}%` }} />
-                ))}
+                {[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 88, 100].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t opacity-80" style={{
+                height: `${h}%`
+              }} />)}
               </div>
             </div>
 
@@ -1122,52 +1139,38 @@ const GuaranteeSection = () => {
 // FAQ SECTION COMPONENT
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  
-  const faqs = [
-    {
-      question: "Qu'est-ce que l'offre Founder ?",
-      answer: "Accès PRO à vie pour 297€ au lieu de 804€/an. Limité aux 100 premiers. Expire le 31 décembre 2024."
-    },
-    {
-      question: "Puis-je être remboursé ?",
-      answer: "Oui, remboursement intégral sous 30 jours si Kapsul ne te convient pas. Sans condition."
-    },
-    {
-      question: "Ai-je besoin de compétences techniques ?",
-      answer: "Non, Kapsul est conçu pour les non-techniciens. L'IA génère tes landing pages, quiz et outils en quelques clics."
-    },
-    {
-      question: "Comment héberger mes vidéos de formation ?",
-      answer: "Kapsul ne stocke pas les vidéos (trop coûteux). Héberge-les gratuitement sur YouTube (non listé) ou Vimeo, puis colle le lien. Un guide est inclus."
-    },
-    {
-      question: "Quels outils pédagogiques sont disponibles ?",
-      answer: "Vidéos, quiz interactifs, ressources téléchargeables, et outils IA personnalisés pour engager tes étudiants."
-    },
-    {
-      question: "Combien de formations puis-je créer ?",
-      answer: "Illimité. Le plan Founder (= PRO à 67€/mois dès janvier) inclut jusqu'à 1 000 étudiants et 5 000 crédits IA/mois."
-    },
-    {
-      question: "Comment mes étudiants accèdent-ils aux formations ?",
-      answer: "Ils reçoivent un email automatique avec leurs identifiants et accèdent à leur espace sur ton domaine personnalisé."
-    },
-    {
-      question: "Puis-je suivre la progression de mes étudiants ?",
-      answer: "Oui, tableau de bord complet : progression par module, taux de complétion, statistiques de vente."
-    },
-    {
-      question: "Comment recevoir les paiements ?",
-      answer: "Via Stripe Connect. Tu connectes ton compte en 2 clics, les paiements arrivent directement chez toi."
-    },
-    {
-      question: "Y a-t-il des frais de transaction ?",
-      answer: "0% de commission Kapsul. Seul Stripe facture ~2,9% + 0,25€ par transaction (standard)."
-    }
-  ];
-
-  return (
-    <section id="faq" className="py-24 px-6 bg-muted/30">
+  const faqs = [{
+    question: "Qu'est-ce que l'offre Founder ?",
+    answer: "Accès PRO à vie pour 297€ au lieu de 804€/an. Limité aux 100 premiers. Expire le 31 décembre 2024."
+  }, {
+    question: "Puis-je être remboursé ?",
+    answer: "Oui, remboursement intégral sous 30 jours si Kapsul ne te convient pas. Sans condition."
+  }, {
+    question: "Ai-je besoin de compétences techniques ?",
+    answer: "Non, Kapsul est conçu pour les non-techniciens. L'IA génère tes landing pages, quiz et outils en quelques clics."
+  }, {
+    question: "Comment héberger mes vidéos de formation ?",
+    answer: "Kapsul ne stocke pas les vidéos (trop coûteux). Héberge-les gratuitement sur YouTube (non listé) ou Vimeo, puis colle le lien. Un guide est inclus."
+  }, {
+    question: "Quels outils pédagogiques sont disponibles ?",
+    answer: "Vidéos, quiz interactifs, ressources téléchargeables, et outils IA personnalisés pour engager tes étudiants."
+  }, {
+    question: "Combien de formations puis-je créer ?",
+    answer: "Illimité. Le plan Founder (= PRO à 67€/mois dès janvier) inclut jusqu'à 1 000 étudiants et 5 000 crédits IA/mois."
+  }, {
+    question: "Comment mes étudiants accèdent-ils aux formations ?",
+    answer: "Ils reçoivent un email automatique avec leurs identifiants et accèdent à leur espace sur ton domaine personnalisé."
+  }, {
+    question: "Puis-je suivre la progression de mes étudiants ?",
+    answer: "Oui, tableau de bord complet : progression par module, taux de complétion, statistiques de vente."
+  }, {
+    question: "Comment recevoir les paiements ?",
+    answer: "Via Stripe Connect. Tu connectes ton compte en 2 clics, les paiements arrivent directement chez toi."
+  }, {
+    question: "Y a-t-il des frais de transaction ?",
+    answer: "0% de commission Kapsul. Seul Stripe facture ~2,9% + 0,25€ par transaction (standard)."
+  }];
+  return <section id="faq" className="py-24 px-6 bg-muted/30">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Questions <span className="gradient-text">fréquentes</span>
@@ -1177,42 +1180,22 @@ const FAQSection = () => {
         </p>
 
         <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className={`bg-card rounded-2xl border transition-all overflow-hidden ${
-                openIndex === index 
-                  ? "border-[#DD2476]/50 shadow-lg shadow-[#DD2476]/10" 
-                  : "border-border hover:border-border/80"
-              }`}
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full p-6 flex items-center justify-between text-left"
-              >
+          {faqs.map((faq, index) => <div key={index} className={`bg-card rounded-2xl border transition-all overflow-hidden ${openIndex === index ? "border-[#DD2476]/50 shadow-lg shadow-[#DD2476]/10" : "border-border hover:border-border/80"}`}>
+              <button onClick={() => setOpenIndex(openIndex === index ? null : index)} className="w-full p-6 flex items-center justify-between text-left">
                 <span className="text-lg font-semibold text-foreground pr-4">
                   {faq.question}
                 </span>
-                <ChevronDown
-                  className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${
-                    openIndex === index ? "rotate-180 text-[#DD2476]" : ""
-                  }`}
-                />
+                <ChevronDown className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${openIndex === index ? "rotate-180 text-[#DD2476]" : ""}`} />
               </button>
               
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  openIndex === index ? "max-h-40" : "max-h-0"
-                }`}
-              >
+              <div className={`overflow-hidden transition-all duration-200 ${openIndex === index ? "max-h-40" : "max-h-0"}`}>
                 <div className="px-6 pb-6">
                   <p className="text-muted-foreground leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
               </div>
-            </div>
-          ))}
+            </div>)}
         </div>
 
         <p className="text-center mt-10 text-muted-foreground">
@@ -1222,8 +1205,6 @@ const FAQSection = () => {
           </a>
         </p>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Index;
