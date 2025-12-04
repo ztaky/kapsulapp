@@ -38,6 +38,21 @@ export function StudentCoursesDialog({
 }: StudentCoursesDialogProps) {
   const queryClient = useQueryClient();
 
+  // Fetch organization info
+  const { data: organization } = useQuery({
+    queryKey: ["organization", organizationId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("name, slug")
+        .eq("id", organizationId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: open,
+  });
+
   // Fetch all courses for this organization
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["org-courses", organizationId],
@@ -109,12 +124,35 @@ export function StudentCoursesDialog({
     enabled: open,
   });
 
+  const sendEnrollmentNotification = async (courseTitle: string, coachName: string | null) => {
+    if (!organization || !student.profiles?.email) return;
+
+    try {
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-enrollment-notification`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentEmail: student.profiles.email,
+            studentName: student.profiles.full_name,
+            courseTitles: [courseTitle],
+            organizationName: organization.name,
+            organizationSlug: organization.slug,
+            coachName,
+          }),
+        }
+      );
+    } catch (error) {
+      console.error("Failed to send enrollment notification:", error);
+    }
+  };
+
   const toggleEnrollment = useMutation({
-    mutationFn: async ({ courseId, enable }: { courseId: string; enable: boolean }) => {
+    mutationFn: async ({ courseId, enable, courseTitle }: { courseId: string; enable: boolean; courseTitle: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (enable) {
-        // Get current user for granted_by
-        const { data: { user } } = await supabase.auth.getUser();
-        
         const { error } = await supabase
           .from("course_enrollments")
           .upsert({
@@ -127,6 +165,20 @@ export function StudentCoursesDialog({
           });
 
         if (error) throw error;
+
+        // Get coach name for notification
+        let coachName: string | null = null;
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
+          coachName = profile?.full_name || null;
+        }
+
+        // Send notification email
+        sendEnrollmentNotification(courseTitle, coachName);
       } else {
         const { error } = await supabase
           .from("course_enrollments")
@@ -151,9 +203,23 @@ export function StudentCoursesDialog({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Get coach name
+      let coachName: string | null = null;
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+        coachName = profile?.full_name || null;
+      }
+
       const coursesToEnroll = courses?.filter(
-        (course) => !purchases?.includes(course.id)
+        (course) => !purchases?.includes(course.id) && 
+                    !enrollments?.some(e => e.course_id === course.id && e.is_active)
       ) || [];
+
+      const newCourseTitles: string[] = [];
 
       for (const course of coursesToEnroll) {
         const { error } = await supabase
@@ -167,7 +233,32 @@ export function StudentCoursesDialog({
             onConflict: "user_id,course_id",
           });
 
-        if (error) throw error;
+        if (!error) {
+          newCourseTitles.push(course.title);
+        }
+      }
+
+      // Send single notification with all new courses
+      if (newCourseTitles.length > 0 && organization && student.profiles?.email) {
+        try {
+          await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-enrollment-notification`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                studentEmail: student.profiles.email,
+                studentName: student.profiles.full_name,
+                courseTitles: newCourseTitles,
+                organizationName: organization.name,
+                organizationSlug: organization.slug,
+                coachName,
+              }),
+            }
+          );
+        } catch (error) {
+          console.error("Failed to send enrollment notification:", error);
+        }
       }
     },
     onSuccess: () => {
@@ -281,6 +372,7 @@ export function StudentCoursesDialog({
                           toggleEnrollment.mutate({
                             courseId: course.id,
                             enable: checked,
+                            courseTitle: course.title,
                           })
                         }
                         disabled={toggleEnrollment.isPending}
