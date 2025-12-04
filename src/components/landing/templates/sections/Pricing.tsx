@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { PricingContent } from '@/config/landingPageSchema';
-import { useTheme, getGradientStyle } from '@/theme/ThemeProvider';
-import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { ArrowRightCircle } from 'lucide-react';
 
 interface PricingProps {
   content: PricingContent;
@@ -12,8 +11,6 @@ interface PricingProps {
 }
 
 export function Pricing({ content, landingSlug }: PricingProps) {
-  const { theme } = useTheme();
-  const gradientStyle = getGradientStyle(theme);
   const [cgvAccepted, setCgvAccepted] = useState(false);
 
   const handleCtaClick = (e: React.MouseEvent) => {
@@ -37,22 +34,36 @@ export function Pricing({ content, landingSlug }: PricingProps) {
 
   return (
     <section 
-      className="relative py-24 md:py-32 px-4 font-inter"
-      style={{ backgroundColor: theme.colors.bgLight, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
+      className="relative py-20 md:py-28 px-4 font-inter"
+      style={{ 
+        backgroundColor: '#f8f9fa', 
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+        backgroundImage: `
+          linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: '40px 40px'
+      }}
     >
-      <div className="max-w-6xl mx-auto">
-        {/* Headline */}
-        <h2 
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6"
-          style={{ color: theme.colors.textDark }}
-        >
-          {content.headline}
+      <div className="max-w-4xl mx-auto">
+        {/* Titre avec dégradé */}
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-4">
+          <span 
+            style={{ 
+              background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
+            {content.headline}
+          </span>
         </h2>
 
-        {/* Subheadline */}
+        {/* Sous-titre */}
         <p 
-          className="text-xl md:text-2xl text-center mb-16 max-w-4xl mx-auto"
-          style={{ color: theme.colors.textDark }}
+          className="text-lg md:text-xl text-center mb-12 font-medium"
+          style={{ color: '#1e1b4b' }}
         >
           {content.subheadline}
         </p>
@@ -63,13 +74,12 @@ export function Pricing({ content, landingSlug }: PricingProps) {
             id="cgv-accept-pricing" 
             checked={cgvAccepted} 
             onCheckedChange={(checked) => setCgvAccepted(checked === true)}
-            className="border-current"
-            style={{ borderColor: theme.colors.textDark }}
+            className="border-gray-400"
           />
           <label 
             htmlFor="cgv-accept-pricing" 
             className="text-sm cursor-pointer text-left"
-            style={{ color: theme.colors.textDark }}
+            style={{ color: '#1e1b4b' }}
           >
             {"J'accepte les "}
             <a 
@@ -77,7 +87,7 @@ export function Pricing({ content, landingSlug }: PricingProps) {
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
-              style={{ color: theme.colors.primary }}
+              style={{ color: '#f97316' }}
             >
               CGV
             </a>
@@ -87,7 +97,7 @@ export function Pricing({ content, landingSlug }: PricingProps) {
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
-              style={{ color: theme.colors.primary }}
+              style={{ color: '#f97316' }}
             >
               Politique de Confidentialité
             </a>
@@ -97,83 +107,126 @@ export function Pricing({ content, landingSlug }: PricingProps) {
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
-              style={{ color: theme.colors.primary }}
+              style={{ color: '#f97316' }}
             >
               Mentions Légales
             </a>
           </label>
         </div>
 
-        {/* Offers */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        {/* Offres */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {content.offers.map((offer, index) => {
             const isHighlighted = !!offer.ribbon;
             return (
               <div 
                 key={index}
-                className="p-10 rounded-3xl shadow-2xl relative"
+                className="relative bg-white rounded-lg overflow-hidden"
                 style={{ 
-                  backgroundColor: isHighlighted ? theme.colors.bgLight : theme.colors.textLight,
-                  border: isHighlighted ? `3px solid ${theme.colors.primary}` : `2px solid ${theme.colors.textDark}1a`
+                  border: isHighlighted ? '3px solid #ef4444' : '2px solid #e5e7eb'
                 }}
               >
+                {/* Ribbon diagonal */}
                 {offer.ribbon && (
                   <div 
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full text-sm font-bold"
-                    style={{ 
-                      background: offer.ribbonColor || gradientStyle,
-                      color: theme.colors.textLight
-                    }}
+                    className="absolute top-0 right-0 overflow-hidden"
+                    style={{ width: '100px', height: '100px' }}
                   >
-                    {offer.ribbon}
+                    <div 
+                      className="absolute text-white text-xs font-bold py-1 text-center"
+                      style={{ 
+                        background: '#ef4444',
+                        width: '150px',
+                        transform: 'rotate(45deg)',
+                        top: '22px',
+                        right: '-40px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      {offer.ribbon}
+                    </div>
                   </div>
                 )}
 
-                <h3 
-                  className="text-3xl md:text-4xl font-bold mb-4"
-                  style={{ color: theme.colors.textDark }}
-                >
-                  {offer.name}
-                </h3>
-
-                <div className="mb-8">
-                  <span 
-                    className="text-5xl md:text-6xl font-bold"
-                    style={{ color: theme.colors.primary }}
+                {/* Contenu de la carte */}
+                <div className="p-8 pt-10 text-center">
+                  {/* Nom de l'offre */}
+                  <h3 
+                    className="text-xl font-bold tracking-wider mb-6"
+                    style={{ color: '#1e1b4b' }}
                   >
-                    {offer.price}€
-                  </span>
-                </div>
+                    {offer.name}
+                  </h3>
 
-                <ul className="space-y-4 mb-8">
-                  {offer.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 
-                        className="w-6 h-6 flex-shrink-0 mt-1" 
-                        style={{ color: theme.colors.accentGreen }}
-                      />
-                      <span 
-                        className="text-base md:text-lg"
-                        style={{ color: theme.colors.textDark }}
+                  {/* Prix */}
+                  <div className="mb-2">
+                    <span 
+                      className="text-2xl align-top"
+                      style={{ color: '#1e1b4b' }}
+                    >
+                      €
+                    </span>
+                    <span 
+                      className="text-6xl md:text-7xl font-bold"
+                      style={{ color: '#1e1b4b' }}
+                    >
+                      {offer.price}
+                    </span>
+                  </div>
+
+                  {/* Sous-prix */}
+                  <p 
+                    className="text-sm mb-8"
+                    style={{ color: '#6b7280' }}
+                  >
+                    ou 3x {Math.ceil(offer.price / 3)}€ sans frais
+                  </p>
+
+                  {/* Features */}
+                  <div className="border-t border-gray-200">
+                    {offer.features.map((feature, i) => (
+                      <div 
+                        key={i} 
+                        className="flex items-center justify-center gap-3 py-4 border-b border-gray-200"
                       >
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        <ArrowRightCircle 
+                          className="w-5 h-5 flex-shrink-0" 
+                          style={{ color: '#f97316' }}
+                          fill="#f97316"
+                          stroke="white"
+                        />
+                        <span 
+                          className="text-base"
+                          style={{ color: '#1e1b4b' }}
+                        >
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
 
-                <Button 
-                  size="lg"
-                  onClick={handleCtaClick}
-                  disabled={!cgvAccepted}
-                  className="w-full text-xl py-8 h-auto gradient-button shadow-xl hover:shadow-2xl transition-all rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ 
-                    background: isHighlighted ? gradientStyle : theme.colors.primary,
-                    color: theme.colors.textLight
-                  }}
-                >
-                  {offer.cta}
-                </Button>
+                  {/* CTA Button */}
+                  <Button 
+                    size="lg"
+                    onClick={handleCtaClick}
+                    disabled={!cgvAccepted}
+                    className="w-full max-w-xs mx-auto mt-8 text-lg py-6 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+                    style={{ 
+                      background: '#f97316',
+                      color: 'white'
+                    }}
+                  >
+                    {offer.cta}
+                  </Button>
+
+                  {/* Texte sous le CTA */}
+                  <p 
+                    className="text-sm mt-4"
+                    style={{ color: '#6b7280' }}
+                  >
+                    Payable en 3 fois sans frais
+                  </p>
+                </div>
               </div>
             );
           })}
