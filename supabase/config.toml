@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.generate-module-quiz]
 verify_jwt = false
+
+[functions.send-enrollment-notification]
+verify_jwt = false

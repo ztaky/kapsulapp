@@ -69,6 +69,20 @@ export function BulkAssignCoursesDialog({
     enabled: open,
   });
 
+  const { data: organization } = useQuery({
+    queryKey: ["organization", organizationId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("name, slug")
+        .eq("id", organizationId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: open,
+  });
+
   const resetState = () => {
     setSelectedCourses([]);
     setProgress(0);
@@ -89,6 +103,35 @@ export function BulkAssignCoursesDialog({
     );
   };
 
+  const sendEnrollmentNotification = async (
+    studentEmail: string,
+    studentName: string | null,
+    courseTitles: string[],
+    coachName: string | null
+  ) => {
+    if (!organization || courseTitles.length === 0) return;
+
+    try {
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-enrollment-notification`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentEmail,
+            studentName,
+            courseTitles,
+            organizationName: organization.name,
+            organizationSlug: organization.slug,
+            coachName,
+          }),
+        }
+      );
+    } catch (error) {
+      console.error("Failed to send enrollment notification:", error);
+    }
+  };
+
   const handleAssign = async () => {
     if (selectedCourses.length === 0) {
       toast({
@@ -104,9 +147,24 @@ export function BulkAssignCoursesDialog({
     setResults([]);
 
     const { data: { user } } = await supabase.auth.getUser();
+    
+    // Get coach name
+    let coachName: string | null = null;
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+      coachName = profile?.full_name || null;
+    }
+
     const allResults: AssignResult[] = [];
     const totalOperations = selectedStudents.length * selectedCourses.length;
     let completedOperations = 0;
+
+    // Track new enrollments per student for notifications
+    const newEnrollmentsPerStudent: Map<string, { email: string; name: string | null; courses: string[] }> = new Map();
 
     for (const student of selectedStudents) {
       for (const courseId of selectedCourses) {
@@ -136,7 +194,6 @@ export function BulkAssignCoursesDialog({
           });
 
           if (error) {
-            // Check if it's a duplicate error
             if (error.code === "23505") {
               allResults.push({
                 email: student.profiles?.email || "",
@@ -155,6 +212,17 @@ export function BulkAssignCoursesDialog({
               success: true,
               message: "Inscrit",
             });
+
+            // Track for notification
+            const studentKey = student.user_id;
+            if (!newEnrollmentsPerStudent.has(studentKey)) {
+              newEnrollmentsPerStudent.set(studentKey, {
+                email: student.profiles?.email || "",
+                name: student.profiles?.full_name || null,
+                courses: [],
+              });
+            }
+            newEnrollmentsPerStudent.get(studentKey)!.courses.push(courseName);
           }
         } catch (error) {
           allResults.push({
@@ -168,6 +236,18 @@ export function BulkAssignCoursesDialog({
         completedOperations++;
         setProgress((completedOperations / totalOperations) * 100);
         setResults([...allResults]);
+      }
+    }
+
+    // Send email notifications for each student with new enrollments
+    for (const [, studentData] of newEnrollmentsPerStudent) {
+      if (studentData.courses.length > 0) {
+        sendEnrollmentNotification(
+          studentData.email,
+          studentData.name,
+          studentData.courses,
+          coachName
+        );
       }
     }
 
