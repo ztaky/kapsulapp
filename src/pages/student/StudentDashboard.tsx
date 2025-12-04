@@ -39,6 +39,7 @@ const StudentDashboard = () => {
   const fetchUserCourses = async (userId: string) => {
     setLoading(true);
 
+    // 1. Récupérer les cours achetés
     const { data: purchases, error: purchasesError } = await supabase
       .from("purchases")
       .select(`
@@ -54,17 +55,46 @@ const StudentDashboard = () => {
           )
         )
       `)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .eq("status", "completed");
 
-    if (purchasesError) {
-      console.error(purchasesError);
+    // 2. Récupérer les cours inscrits manuellement
+    const { data: enrollments, error: enrollmentsError } = await supabase
+      .from("course_enrollments")
+      .select(`
+        course_id,
+        courses (
+          id,
+          title,
+          description,
+          cover_image,
+          organization_id,
+          organizations (
+            slug
+          )
+        )
+      `)
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (purchasesError || enrollmentsError) {
+      console.error(purchasesError || enrollmentsError);
       setLoading(false);
       return;
     }
 
+    // 3. Fusionner et dédupliquer les cours
+    const allCourses = new Map<string, any>();
+    purchases?.forEach((p: any) => {
+      if (p.courses) allCourses.set(p.courses.id, p.courses);
+    });
+    enrollments?.forEach((e: any) => {
+      if (e.courses) allCourses.set(e.courses.id, e.courses);
+    });
+    const uniqueCourses = Array.from(allCourses.values());
+
     const coursesWithProgress = await Promise.all(
-      purchases.map(async (purchase: any) => {
-        const course = purchase.courses;
+      uniqueCourses.map(async (course: any) => {
 
         const { count: totalLessons } = await supabase
           .from("lessons")

@@ -27,6 +27,7 @@ const StudentCertificates = () => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
+      // 1. Récupérer les cours achetés
       const { data: purchases } = await supabase
         .from("purchases")
         .select(`
@@ -38,12 +39,37 @@ const StudentCertificates = () => {
             cover_image
           )
         `)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("status", "completed");
 
-      if (purchases) {
+      // 2. Récupérer les cours inscrits manuellement
+      const { data: enrollments } = await supabase
+        .from("course_enrollments")
+        .select(`
+          course_id,
+          courses (
+            id,
+            title,
+            description,
+            cover_image
+          )
+        `)
+        .eq("user_id", user.id)
+        .eq("is_active", true);
+
+      // 3. Fusionner et dédupliquer
+      const allCourses = new Map<string, any>();
+      purchases?.forEach((p: any) => {
+        if (p.courses) allCourses.set(p.courses.id, p.courses);
+      });
+      enrollments?.forEach((e: any) => {
+        if (e.courses) allCourses.set(e.courses.id, e.courses);
+      });
+      const uniqueCourses = Array.from(allCourses.values());
+
+      if (uniqueCourses.length > 0) {
         const completedCourses = await Promise.all(
-          purchases.map(async (purchase: any) => {
-            const course = purchase.courses;
+          uniqueCourses.map(async (course: any) => {
 
             const { count: totalLessons } = await supabase
               .from("lessons")
