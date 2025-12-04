@@ -1,4 +1,4 @@
-import { LayoutDashboard, GraduationCap, Users, Palette, Bot, LogOut, Sparkles, MessageCircleQuestion, Scale, Mail } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Users, Palette, Bot, LogOut, Sparkles, MessageCircleQuestion, Scale, Mail, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +60,11 @@ const navItems = [
     title: "Emails",
     url: "/emails",
     icon: Mail,
+  },
+  {
+    title: "Analytics",
+    url: "/analytics",
+    icon: BarChart3,
   },
   {
     title: "Pages légales",

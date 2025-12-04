@@ -21,6 +21,7 @@ import LandingPageFullEditor from "./pages/studio/LandingPageFullEditor";
 import LegalPages from "./pages/studio/LegalPages";
 import StudioSupport from "./pages/studio/Support";
 import StudioEmails from "./pages/studio/Emails";
+import StudioAnalytics from "./pages/studio/Analytics";
 import LearningSpace from "./pages/learning/LearningSpace";
 import StudentLayout from "./pages/student/StudentLayout";
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -139,6 +140,7 @@ const App = () => (
             <Route path="landing-pages/:pageId/edit" element={<LandingPageFullEditor />} />
             <Route path="legal" element={<LegalPages />} />
             <Route path="emails" element={<StudioEmails />} />
+            <Route path="analytics" element={<StudioAnalytics />} />
             <Route path="branding" element={<StudioBranding />} />
             <Route path="support/*" element={<StudioSupport />} />
           </Route>
