@@ -1,78 +1,65 @@
 import { InstructorContent } from '@/config/landingPageSchema';
 import { useTheme } from '@/theme/ThemeProvider';
-import { CheckCircle2, User } from 'lucide-react';
+import { Monitor } from 'lucide-react';
+import instructorPhoto from '@/assets/instructor-photo.png';
 
 interface InstructorProps {
   content: InstructorContent;
-  trainerPhoto?: string; // Photo from trainerInfo for backward compatibility
+  trainerPhoto?: string;
 }
 
 export function Instructor({ content, trainerPhoto }: InstructorProps) {
   const { theme } = useTheme();
   
-  // Use photo from content first, then fallback to trainerPhoto prop
-  const photoUrl = content.photo || trainerPhoto;
-  const hasPhoto = photoUrl && photoUrl.trim() !== '';
+  const credentials = [
+    "23 ans d'entrepreneuriat (j'ai vécu tous les hauts et les bas)",
+    "DU en Astrophysique (la complexité technique, je connais)",
+    "Autrice « Le Leadership Émotionnel » (je comprends les leaders)",
+    "Conférencière IA (MEDEF, entreprises, événements)",
+    "Fondatrice Harmonia – IA Éthique (lancement 2026)"
+  ];
 
   return (
     <section 
-      className="relative py-24 md:py-32 px-4 font-inter"
-      style={{ backgroundColor: theme.colors.bgDark, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
+      className="relative py-20 md:py-28 px-4 font-inter"
+      style={{ backgroundColor: '#1a1f2e', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       <div className="max-w-6xl mx-auto">
-        {/* Headline */}
-        <h2 
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-16"
-          style={{ color: theme.colors.textLight }}
-        >
-          {content.headline}
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Photo */}
-          <div className="flex justify-center">
-            <div 
-              className="w-64 h-64 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Left Content */}
+          <div>
+            {/* Title */}
+            <h2 
+              className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
+              style={{ color: '#ffffff' }}
+            >
+              Qui suis-je ?
+            </h2>
+            
+            {/* Name with gradient */}
+            <h3 
+              className="text-2xl md:text-3xl font-bold mb-8"
               style={{ 
-                border: `4px solid ${theme.colors.primary}`,
-                backgroundColor: hasPhoto ? 'transparent' : theme.colors.bgLight
+                background: 'linear-gradient(90deg, #d4a574, #c4956a)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
               }}
             >
-              {hasPhoto ? (
-                <img 
-                  src={photoUrl} 
-                  alt={content.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User 
-                  className="w-24 h-24"
-                  style={{ color: theme.colors.primary, opacity: 0.5 }}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div>
-            <h3 
-              className="text-3xl md:text-4xl font-bold mb-8"
-              style={{ color: theme.colors.textLight }}
-            >
-              {content.name}
+              Zaheda TAKY
             </h3>
 
             {/* Credentials */}
-            <ul className="space-y-4 mb-8">
-              {content.credentials.map((cred, index) => (
+            <ul className="space-y-3 mb-12">
+              {credentials.map((cred, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <CheckCircle2 
-                    className="w-6 h-6 flex-shrink-0 mt-1" 
-                    style={{ color: theme.colors.accentGreen }}
+                  <span 
+                    className="w-2 h-2 rounded-full flex-shrink-0 mt-2"
+                    style={{ backgroundColor: '#d4a574' }}
                   />
                   <span 
-                    className="text-lg"
-                    style={{ color: theme.colors.textLight }}
+                    className="text-base md:text-lg"
+                    style={{ color: '#e0e0e0' }}
                   >
                     {cred}
                   </span>
@@ -81,35 +68,66 @@ export function Instructor({ content, trainerPhoto }: InstructorProps) {
             </ul>
 
             {/* Mission */}
-            <div className="mb-8">
+            <div className="text-center mb-12">
+              <div className="flex justify-center mb-4">
+                <div 
+                  className="w-16 h-16 flex items-center justify-center"
+                  style={{ color: '#d4a574' }}
+                >
+                  <Monitor className="w-12 h-12" strokeWidth={1.5} />
+                </div>
+              </div>
               <h4 
-                className="text-2xl font-bold mb-4"
-                style={{ color: theme.colors.primary }}
+                className="text-xl md:text-2xl font-bold mb-4"
+                style={{ 
+                  background: 'linear-gradient(90deg, #d4a574, #c4956a)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
               >
-                Ma mission :
+                Ma mission
               </h4>
               <p 
-                className="text-lg leading-relaxed"
-                style={{ color: theme.colors.textLight }}
+                className="text-base md:text-lg leading-relaxed max-w-md mx-auto"
+                style={{ color: '#e0e0e0' }}
               >
-                {content.mission}
+                Transformer les entrepreneurs débordés en dirigeants décuplés grâce à l'IA.
               </p>
             </div>
 
             {/* Difference */}
-            <div>
+            <div className="text-center">
               <h4 
-                className="text-2xl font-bold mb-4"
-                style={{ color: theme.colors.primary }}
+                className="text-xl md:text-2xl font-bold mb-4"
+                style={{ 
+                  background: 'linear-gradient(90deg, #d4a574, #c4956a)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
               >
-                Ma différence :
+                Ma différence
               </h4>
-              <p 
-                className="text-lg leading-relaxed"
-                style={{ color: theme.colors.textLight }}
+              <div 
+                className="text-base md:text-lg leading-relaxed max-w-lg mx-auto space-y-1"
+                style={{ color: '#e0e0e0' }}
               >
-                {content.difference}
-              </p>
+                <p>J'ai vécu ton blocage.</p>
+                <p>Je sais exactement comment le briser.</p>
+                <p>Ma pédagogie transforme l'IA en assistant personnel, pas en outil compliqué.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right - Photo */}
+          <div className="flex justify-center lg:justify-end">
+            <div className="relative">
+              <img 
+                src={instructorPhoto} 
+                alt="Zaheda TAKY"
+                className="w-80 md:w-96 h-auto object-contain"
+              />
             </div>
           </div>
         </div>
