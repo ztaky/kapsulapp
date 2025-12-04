@@ -11,31 +11,32 @@ export function Guarantee({ content }: GuaranteeProps) {
 
   return (
     <section 
-      className="relative py-24 md:py-32 px-4 font-inter"
+      className="relative py-20 md:py-28 px-4 font-inter"
       style={{ backgroundColor: '#fef8f3', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-3xl mx-auto text-center">
         <Shield 
-          className="w-24 h-24 mx-auto mb-8" 
+          className="w-16 h-16 mx-auto mb-6" 
+          strokeWidth={1.5}
           style={{ color: theme.colors.accentGreen }}
         />
         <h2 
-          className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6"
           style={{ color: theme.colors.textDark }}
         >
-          {content.title}
+          Ta Garantie Sans Risque
         </h2>
         <p 
-          className="text-xl md:text-2xl mb-8 leading-relaxed"
+          className="text-lg md:text-xl mb-6 leading-relaxed max-w-2xl mx-auto"
           style={{ color: theme.colors.textDark }}
         >
-          {content.description}
+          Lance-toi sans hésiter, je te soutiens. Si IA Mastery ne comble pas tes attentes, dis-le moi. Tu as 30 jours pour changer d'avis, et je te rembourse intégralement, sans aucune question.
         </p>
         <p 
-          className="text-2xl md:text-3xl font-bold"
+          className="text-xl md:text-2xl font-semibold"
           style={{ color: theme.colors.primary }}
         >
-          {content.riskPhrase}
+          Le seul risque : passer à côté.
         </p>
       </div>
     </section>
