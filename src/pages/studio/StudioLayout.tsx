@@ -2,6 +2,7 @@ import { Navigate, Outlet, useParams } from "react-router-dom";
 import { useOrganizationRole, useUserOrganizations } from "@/hooks/useUserRole";
 import { StudioSidebar } from "@/components/studio/StudioSidebar";
 import { SupportChatWidget } from "@/components/support/SupportChatWidget";
+import { GlobalSearch } from "@/components/studio/GlobalSearch";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -48,13 +49,17 @@ export default function StudioLayout() {
         
         <main className="flex-1 flex flex-col bg-transparent overflow-hidden">
           <header className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-sm shrink-0">
-            <div className="flex h-16 items-center justify-between px-8">
-              <div>
+            <div className="flex h-16 items-center justify-between gap-4 px-8">
+              <div className="shrink-0">
                 <p className="text-xs font-medium text-slate-500 tracking-wide uppercase">Studio</p>
                 <h1 className="text-base font-bold text-slate-900 tracking-tight">{currentOrg.name}</h1>
               </div>
               
-              <Button variant="outline" size="sm" className="rounded-full border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700" asChild>
+              <div className="flex-1 max-w-md">
+                <GlobalSearch organizationId={currentOrg.id} />
+              </div>
+              
+              <Button variant="outline" size="sm" className="rounded-full border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700 shrink-0" asChild>
                 <a href={`/school/${currentOrg.slug}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Voir l'académie
