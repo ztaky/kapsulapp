@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
 import { useQuery } from "@tanstack/react-query";
@@ -12,13 +13,42 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AddStudentDialog } from "@/components/studio/AddStudentDialog";
 import { StudentActionsDropdown } from "@/components/studio/StudentActionsDropdown";
+import { Search, Filter } from "lucide-react";
 
 export default function StudioStudents() {
   const { slug } = useParams<{ slug: string }>();
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [accessFilter, setAccessFilter] = useState<"all" | "with-access" | "no-access">("all");
+  const [courseFilter, setCourseFilter] = useState<string>("all");
+
+  // Fetch courses for filter dropdown
+  const { data: courses } = useQuery({
+    queryKey: ["org-courses-filter", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg?.id) return [];
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title")
+        .eq("organization_id", currentOrg.id)
+        .order("title");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!currentOrg?.id,
+  });
 
   // Fetch students with their course access counts
   const { data: students } = useQuery({
@@ -61,13 +91,14 @@ export default function StudioStudents() {
             .eq("user_id", member.user_id)
             .eq("is_active", true);
 
-          const purchasedCourseIds = new Set(purchases?.map((p) => p.course_id) || []);
-          const enrolledCourseIds = new Set(enrollments?.map((e) => e.course_id) || []);
-          const accessibleCourses = new Set([...purchasedCourseIds, ...enrolledCourseIds]);
+          const purchasedCourseIds = purchases?.map((p) => p.course_id) || [];
+          const enrolledCourseIds = enrollments?.map((e) => e.course_id) || [];
+          const accessibleCourseIds = [...new Set([...purchasedCourseIds, ...enrolledCourseIds])];
 
           return {
             ...member,
-            accessibleCoursesCount: accessibleCourses.size,
+            accessibleCoursesCount: accessibleCourseIds.length,
+            accessibleCourseIds,
             totalCourses: totalCourses || 0,
           };
         })
@@ -77,6 +108,34 @@ export default function StudioStudents() {
     },
     enabled: !!currentOrg?.id,
   });
+
+  // Filter students
+  const filteredStudents = useMemo(() => {
+    if (!students) return [];
+
+    return students.filter((student: any) => {
+      // Search filter
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        !searchQuery ||
+        student.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+        student.profiles?.email?.toLowerCase().includes(searchLower);
+
+      // Access filter
+      const hasAccess = student.accessibleCoursesCount > 0;
+      const matchesAccess =
+        accessFilter === "all" ||
+        (accessFilter === "with-access" && hasAccess) ||
+        (accessFilter === "no-access" && !hasAccess);
+
+      // Course filter
+      const matchesCourse =
+        courseFilter === "all" ||
+        student.accessibleCourseIds?.includes(courseFilter);
+
+      return matchesSearch && matchesAccess && matchesCourse;
+    });
+  }, [students, searchQuery, accessFilter, courseFilter]);
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -100,6 +159,62 @@ export default function StudioStudents() {
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher par nom ou email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Select value={accessFilter} onValueChange={(v: any) => setAccessFilter(v)}>
+            <SelectTrigger className="w-[160px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Accès" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous</SelectItem>
+              <SelectItem value="with-access">Avec accès</SelectItem>
+              <SelectItem value="no-access">Sans accès</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={courseFilter} onValueChange={setCourseFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrer par cours" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les cours</SelectItem>
+              {courses?.map((course) => (
+                <SelectItem key={course.id} value={course.id}>
+                  {course.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <span>{filteredStudents.length} étudiant{filteredStudents.length > 1 ? "s" : ""}</span>
+        {(searchQuery || accessFilter !== "all" || courseFilter !== "all") && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setAccessFilter("all");
+              setCourseFilter("all");
+            }}
+            className="text-primary hover:underline"
+          >
+            Réinitialiser les filtres
+          </button>
+        )}
+      </div>
+
       <div className="rounded-3xl border border-slate-100 shadow-premium bg-white overflow-hidden">
         <Table>
           <TableHeader>
@@ -112,7 +227,7 @@ export default function StudioStudents() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students?.map((member: any) => (
+            {filteredStudents.map((member: any) => (
               <TableRow key={member.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -148,12 +263,16 @@ export default function StudioStudents() {
         </Table>
       </div>
 
-      {students?.length === 0 && (
+      {filteredStudents.length === 0 && (
         <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 border-dashed bg-white/50">
           <div className="text-center">
-            <p className="text-lg font-medium text-slate-900">Aucun étudiant</p>
+            <p className="text-lg font-medium text-slate-900">
+              {students?.length === 0 ? "Aucun étudiant" : "Aucun résultat"}
+            </p>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Les étudiants apparaîtront ici après inscription
+              {students?.length === 0
+                ? "Les étudiants apparaîtront ici après inscription"
+                : "Modifiez vos filtres pour voir plus de résultats"}
             </p>
           </div>
         </div>
