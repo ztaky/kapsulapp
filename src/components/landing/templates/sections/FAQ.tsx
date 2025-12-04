@@ -95,11 +95,33 @@ export function FAQ({ content }: FAQProps) {
                       {renderAnswer(item.answer)}
                     </p>
                   </div>
-                )}
+            )}
               </div>
             );
           })}
         </div>
+
+        {/* CTA Section */}
+        {content.cta && (
+          <div className="mt-16 md:mt-20 flex flex-col items-center">
+            <a
+              href="#pricing"
+              className="inline-block px-8 py-4 rounded-xl text-white font-bold text-lg md:text-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              style={{
+                background: 'linear-gradient(90deg, #ea580c, #db2777, #7c3aed)',
+                boxShadow: '0 10px 40px rgba(234, 88, 12, 0.3)'
+              }}
+            >
+              {content.cta}
+            </a>
+            <p 
+              className="mt-4 text-sm"
+              style={{ color: '#6b7280' }}
+            >
+              Accès immédiat · Paiement sécurisé
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
