@@ -112,7 +112,7 @@ export function FAQ({ content }: FAQProps) {
                 boxShadow: '0 10px 40px rgba(234, 88, 12, 0.3)'
               }}
             >
-              {content.cta}
+              Je suis prêt(e) à gagner 20h / semaine avec l'IA
             </a>
             <p 
               className="mt-4 text-sm"
