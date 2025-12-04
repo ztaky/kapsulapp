@@ -126,27 +126,6 @@ export function Pricing({ content, landingSlug }: PricingProps) {
                   border: isHighlighted ? '3px solid #ef4444' : '2px solid #e5e7eb'
                 }}
               >
-                {/* Ribbon diagonal */}
-                {offer.ribbon && (
-                  <div 
-                    className="absolute top-0 right-0 overflow-hidden"
-                    style={{ width: '100px', height: '100px' }}
-                  >
-                    <div 
-                      className="absolute text-white text-xs font-bold py-1 text-center"
-                      style={{ 
-                        background: '#ef4444',
-                        width: '150px',
-                        transform: 'rotate(45deg)',
-                        top: '22px',
-                        right: '-40px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      {offer.ribbon}
-                    </div>
-                  </div>
-                )}
 
                 {/* Contenu de la carte */}
                 <div className="p-8 pt-10 text-center">
