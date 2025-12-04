@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useUserOrganizations } from "@/hooks/useUserRole";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -24,16 +25,21 @@ import {
 import { AddStudentDialog } from "@/components/studio/AddStudentDialog";
 import { ImportStudentsCSVDialog } from "@/components/studio/ImportStudentsCSVDialog";
 import { StudentActionsDropdown } from "@/components/studio/StudentActionsDropdown";
+import { StudentsBulkActionBar } from "@/components/studio/StudentsBulkActionBar";
+import { BulkAssignCoursesDialog } from "@/components/studio/BulkAssignCoursesDialog";
 import { Search, Filter } from "lucide-react";
 
 export default function StudioStudents() {
   const { slug } = useParams<{ slug: string }>();
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
+  const queryClient = useQueryClient();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [accessFilter, setAccessFilter] = useState<"all" | "with-access" | "no-access">("all");
   const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
 
   // Fetch courses for filter dropdown
   const { data: courses } = useQuery({
@@ -138,6 +144,38 @@ export default function StudioStudents() {
     });
   }, [students, searchQuery, accessFilter, courseFilter]);
 
+  // Selection helpers
+  const toggleStudentSelection = (studentId: string) => {
+    setSelectedStudentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(studentId)) {
+        next.delete(studentId);
+      } else {
+        next.add(studentId);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedStudentIds.size === filteredStudents.length) {
+      setSelectedStudentIds(new Set());
+    } else {
+      setSelectedStudentIds(new Set(filteredStudents.map((s: any) => s.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedStudentIds(new Set());
+  };
+
+  const selectedStudents = useMemo(() => {
+    return filteredStudents.filter((s: any) => selectedStudentIds.has(s.id));
+  }, [filteredStudents, selectedStudentIds]);
+
+  const allSelected = filteredStudents.length > 0 && selectedStudentIds.size === filteredStudents.length;
+  const someSelected = selectedStudentIds.size > 0 && selectedStudentIds.size < filteredStudents.length;
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header - Premium Style */}
@@ -226,6 +264,18 @@ export default function StudioStudents() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) {
+                      (el as any).indeterminate = someSelected;
+                    }
+                  }}
+                  onCheckedChange={toggleAllSelection}
+                  aria-label="Tout sélectionner"
+                />
+              </TableHead>
               <TableHead>Étudiant</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Cours</TableHead>
@@ -235,7 +285,17 @@ export default function StudioStudents() {
           </TableHeader>
           <TableBody>
             {filteredStudents.map((member: any) => (
-              <TableRow key={member.id}>
+              <TableRow 
+                key={member.id}
+                className={selectedStudentIds.has(member.id) ? "bg-muted/50" : ""}
+              >
+                <TableCell>
+                  <Checkbox
+                    checked={selectedStudentIds.has(member.id)}
+                    onCheckedChange={() => toggleStudentSelection(member.id)}
+                    aria-label={`Sélectionner ${member.profiles?.full_name || member.profiles?.email}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -283,6 +343,24 @@ export default function StudioStudents() {
             </p>
           </div>
         </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      <StudentsBulkActionBar
+        selectedCount={selectedStudentIds.size}
+        onClear={clearSelection}
+        onAssignCourses={() => setBulkAssignOpen(true)}
+      />
+
+      {/* Bulk Assign Courses Dialog */}
+      {currentOrg && (
+        <BulkAssignCoursesDialog
+          open={bulkAssignOpen}
+          onOpenChange={setBulkAssignOpen}
+          organizationId={currentOrg.id}
+          selectedStudents={selectedStudents}
+          onComplete={clearSelection}
+        />
       )}
     </div>
   );
