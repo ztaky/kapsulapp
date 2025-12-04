@@ -78,15 +78,16 @@ export default function LearningSpace() {
     enabled: !!session?.user.id,
   });
 
-  const { data: hasPurchased, isLoading: purchaseLoading } = useQuery({
-    queryKey: ["has-purchased", courseId, session?.user?.id],
+  const { data: hasAccess, isLoading: accessLoading } = useQuery({
+    queryKey: ["has-course-access", courseId, session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id || !course) return true;
 
       // Si le cours est gratuit, accès direct
       if (course.price === 0) return true;
 
-      const { data } = await supabase
+      // Check purchase
+      const { data: purchase } = await supabase
         .from("purchases")
         .select("id")
         .eq("user_id", session.user.id)
@@ -94,7 +95,18 @@ export default function LearningSpace() {
         .eq("status", "completed")
         .maybeSingle();
 
-      return !!data;
+      if (purchase) return true;
+
+      // Check manual enrollment
+      const { data: enrollment } = await supabase
+        .from("course_enrollments")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("course_id", courseId)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      return !!enrollment;
     },
     enabled: !!session?.user?.id && !!courseId && !!course,
   });
@@ -137,7 +149,7 @@ export default function LearningSpace() {
     return <Navigate to="/auth" replace />;
   }
 
-  if (courseLoading || modulesLoading || purchaseLoading) {
+  if (courseLoading || modulesLoading || accessLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -150,7 +162,7 @@ export default function LearningSpace() {
   }
 
   // Vérifier l'accès au cours (achat requis)
-  if (!hasPurchased) {
+  if (!hasAccess) {
     return <Navigate to={`/school/${slug}/course/${courseId}`} replace />;
   }
 

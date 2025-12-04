@@ -13,18 +13,21 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AddStudentDialog } from "@/components/studio/AddStudentDialog";
+import { StudentActionsDropdown } from "@/components/studio/StudentActionsDropdown";
 
 export default function StudioStudents() {
   const { slug } = useParams<{ slug: string }>();
   const { organizations } = useUserOrganizations();
   const currentOrg = organizations.find((org) => org.slug === slug);
 
+  // Fetch students with their course access counts
   const { data: students } = useQuery({
     queryKey: ["studio-students", currentOrg?.id],
     queryFn: async () => {
       if (!currentOrg?.id) return [];
 
-      const { data, error } = await supabase
+      // Get students
+      const { data: members, error } = await supabase
         .from("organization_members")
         .select(`
           *,
@@ -34,7 +37,43 @@ export default function StudioStudents() {
         .eq("role", "student");
 
       if (error) throw error;
-      return data;
+
+      // Get total courses count
+      const { count: totalCourses } = await supabase
+        .from("courses")
+        .select("*", { count: "exact", head: true })
+        .eq("organization_id", currentOrg.id);
+
+      // Get access counts for each student
+      const studentsWithAccess = await Promise.all(
+        (members || []).map(async (member) => {
+          // Get purchases
+          const { data: purchases } = await supabase
+            .from("purchases")
+            .select("course_id")
+            .eq("user_id", member.user_id)
+            .eq("status", "completed");
+
+          // Get enrollments
+          const { data: enrollments } = await supabase
+            .from("course_enrollments")
+            .select("course_id")
+            .eq("user_id", member.user_id)
+            .eq("is_active", true);
+
+          const purchasedCourseIds = new Set(purchases?.map((p) => p.course_id) || []);
+          const enrolledCourseIds = new Set(enrollments?.map((e) => e.course_id) || []);
+          const accessibleCourses = new Set([...purchasedCourseIds, ...enrolledCourseIds]);
+
+          return {
+            ...member,
+            accessibleCoursesCount: accessibleCourses.size,
+            totalCourses: totalCourses || 0,
+          };
+        })
+      );
+
+      return studentsWithAccess;
     },
     enabled: !!currentOrg?.id,
   });
@@ -67,8 +106,9 @@ export default function StudioStudents() {
             <TableRow>
               <TableHead>Étudiant</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Statut</TableHead>
+              <TableHead>Cours</TableHead>
               <TableHead>Inscription</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -87,10 +127,20 @@ export default function StudioStudents() {
                 </TableCell>
                 <TableCell>{member.profiles?.email}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">Actif</Badge>
+                  <Badge variant={member.accessibleCoursesCount > 0 ? "default" : "secondary"}>
+                    {member.accessibleCoursesCount}/{member.totalCourses}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   {new Date(member.created_at).toLocaleDateString("fr-FR")}
+                </TableCell>
+                <TableCell>
+                  {currentOrg && (
+                    <StudentActionsDropdown
+                      student={member}
+                      organizationId={currentOrg.id}
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ))}
