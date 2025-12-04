@@ -27,7 +27,8 @@ const SECTION_ID_MAP: Record<string, string[]> = {
   'problem': ['agitation'],
   'method': ['solutionTimeframe', 'pedagogy'],
   'transformation': ['guarantee'],
-  'program': ['program', 'bonus'],
+  'program': ['program'],
+  'bonus': ['bonus'],
   'trainer': ['instructor'],
   'testimonials': ['testimonials'],
   'faq': ['faq', 'faqFinal'],
@@ -51,8 +52,9 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections, lan
     if (!enabledSections) return ALL_TEMPLATE_SECTIONS;
     
     const templateSections = new Set<string>();
-    // Always include hero and footer
+    // Always include hero, bonus and footer
     templateSections.add('hero');
+    templateSections.add('bonus');
     templateSections.add('footer');
     
     enabledSections.forEach(editorSection => {
