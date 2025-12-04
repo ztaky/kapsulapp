@@ -428,6 +428,10 @@ serve(async (req) => {
       console.log(`[unified-chat] Studio context length: ${context.studioContext.length} chars`);
     }
 
+    // Check if a specific tool is requested (non-streaming mode)
+    const forceTool = context.forceTool as string | undefined;
+    const useStreaming = !forceTool;
+
     // Build request body
     const requestBody: any = {
       model: 'google/gemini-2.5-flash',
@@ -435,17 +439,26 @@ serve(async (req) => {
         { role: 'system', content: systemPrompt },
         ...messages,
       ],
-      stream: true,
-      max_tokens: 8192, // Allow long responses to prevent truncation
+      stream: useStreaming,
+      max_tokens: 8192,
     };
 
     // Add tools for studio mode
     if (mode === 'studio') {
       requestBody.tools = studioTools;
-      requestBody.tool_choice = "auto";
+      
+      // Force a specific tool if requested
+      if (forceTool) {
+        requestBody.tool_choice = { 
+          type: "function", 
+          function: { name: forceTool } 
+        };
+      } else {
+        requestBody.tool_choice = "auto";
+      }
     }
 
-    console.log(`[unified-chat] Request body size: ${JSON.stringify(requestBody).length} chars, messages: ${messages.length}, max_tokens: 8192`);
+    console.log(`[unified-chat] Mode: ${mode}, Streaming: ${useStreaming}, ForceTool: ${forceTool || 'none'}`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -474,6 +487,38 @@ serve(async (req) => {
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
+    // Non-streaming: extract tool call result
+    if (!useStreaming) {
+      const data = await response.json();
+      console.log('[unified-chat] Non-streaming response received');
+      
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall && toolCall.function?.arguments) {
+        try {
+          const args = JSON.parse(toolCall.function.arguments);
+          return new Response(JSON.stringify({ 
+            toolName: toolCall.function.name,
+            data: args,
+            nearLimit 
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } catch (parseError) {
+          console.error('[unified-chat] Failed to parse tool arguments:', parseError);
+          throw new Error('Failed to parse AI response');
+        }
+      }
+      
+      // Fallback to content if no tool call
+      return new Response(JSON.stringify({ 
+        content: data.choices?.[0]?.message?.content,
+        nearLimit 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Streaming mode
     return new Response(response.body, {
       headers: { 
         ...corsHeaders, 
