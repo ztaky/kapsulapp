@@ -35,7 +35,7 @@ export function FAQ({ content }: FAQProps) {
     >
       <div className="max-w-5xl mx-auto px-6 md:px-20">
         {/* Headline - centered, bold */}
-        <h2 className="text-2xl md:text-3xl lg:text-4xl mb-12 md:mb-16 text-center font-bold">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl mb-12 md:mb-16 text-center font-bold">
           {headlineParts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               return (
