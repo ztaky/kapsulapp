@@ -114,101 +114,94 @@ export function Pricing({ content, landingSlug }: PricingProps) {
           </label>
         </div>
 
-        {/* Offres */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {content.offers.map((offer, index) => {
-            const isHighlighted = !!offer.ribbon;
-            return (
-              <div 
-                key={index}
-                className="relative bg-white rounded-lg overflow-hidden"
-                style={{ 
-                  border: isHighlighted ? '3px solid #ef4444' : '2px solid #e5e7eb'
-                }}
-              >
+        {/* Offre unique centrée */}
+        <div className="max-w-md mx-auto">
+          {content.offers.length > 0 && (
+            <div 
+              className="relative bg-white rounded-lg overflow-hidden"
+              style={{ border: '2px solid #e5e7eb' }}
+            >
+              {/* Contenu de la carte */}
+              <div className="p-8 pt-10 text-center">
+                {/* Nom de l'offre */}
+                <h3 
+                  className="text-xl font-bold tracking-wider mb-6"
+                  style={{ color: '#1e1b4b' }}
+                >
+                  {content.offers[0].name}
+                </h3>
 
-                {/* Contenu de la carte */}
-                <div className="p-8 pt-10 text-center">
-                  {/* Nom de l'offre */}
-                  <h3 
-                    className="text-xl font-bold tracking-wider mb-6"
+                {/* Prix */}
+                <div className="mb-2">
+                  <span 
+                    className="text-2xl align-top"
                     style={{ color: '#1e1b4b' }}
                   >
-                    {offer.name}
-                  </h3>
-
-                  {/* Prix */}
-                  <div className="mb-2">
-                    <span 
-                      className="text-2xl align-top"
-                      style={{ color: '#1e1b4b' }}
-                    >
-                      €
-                    </span>
-                    <span 
-                      className="text-6xl md:text-7xl font-bold"
-                      style={{ color: '#1e1b4b' }}
-                    >
-                      {offer.price}
-                    </span>
-                  </div>
-
-                  {/* Sous-prix */}
-                  <p 
-                    className="text-sm mb-8"
-                    style={{ color: '#6b7280' }}
+                    €
+                  </span>
+                  <span 
+                    className="text-6xl md:text-7xl font-bold"
+                    style={{ color: '#1e1b4b' }}
                   >
-                    ou 3x {Math.ceil(offer.price / 3)}€ sans frais
-                  </p>
-
-                  {/* Features */}
-                  <div className="border-t border-gray-200">
-                    {offer.features.map((feature, i) => (
-                      <div 
-                        key={i} 
-                        className="flex items-center justify-center gap-3 py-4 border-b border-gray-200"
-                      >
-                        <ArrowRightCircle 
-                          className="w-5 h-5 flex-shrink-0" 
-                          style={{ color: '#f97316' }}
-                          fill="#f97316"
-                          stroke="white"
-                        />
-                        <span 
-                          className="text-base"
-                          style={{ color: '#1e1b4b' }}
-                        >
-                          {feature}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* CTA Button */}
-                  <Button 
-                    size="lg"
-                    onClick={handleCtaClick}
-                    disabled={!cgvAccepted}
-                    className="w-full max-w-xs mx-auto mt-8 text-lg py-6 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
-                    style={{ 
-                      background: '#f97316',
-                      color: 'white'
-                    }}
-                  >
-                    {offer.cta}
-                  </Button>
-
-                  {/* Texte sous le CTA */}
-                  <p 
-                    className="text-sm mt-4"
-                    style={{ color: '#6b7280' }}
-                  >
-                    Payable en 3 fois sans frais
-                  </p>
+                    {content.offers[0].price}
+                  </span>
                 </div>
+
+                {/* Sous-prix */}
+                <p 
+                  className="text-sm mb-8"
+                  style={{ color: '#6b7280' }}
+                >
+                  ou 3x {Math.ceil(content.offers[0].price / 3)}€ sans frais
+                </p>
+
+                {/* Features */}
+                <div className="border-t border-gray-200">
+                  {content.offers[0].features.map((feature, i) => (
+                    <div 
+                      key={i} 
+                      className="flex items-center justify-center gap-3 py-4 border-b border-gray-200"
+                    >
+                      <ArrowRightCircle 
+                        className="w-5 h-5 flex-shrink-0" 
+                        style={{ color: '#f97316' }}
+                        fill="#f97316"
+                        stroke="white"
+                      />
+                      <span 
+                        className="text-base"
+                        style={{ color: '#1e1b4b' }}
+                      >
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA Button */}
+                <Button 
+                  size="lg"
+                  onClick={handleCtaClick}
+                  disabled={!cgvAccepted}
+                  className="w-full max-w-xs mx-auto mt-8 text-lg py-6 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+                  style={{ 
+                    background: '#f97316',
+                    color: 'white'
+                  }}
+                >
+                  {content.offers[0].cta}
+                </Button>
+
+                {/* Texte sous le CTA */}
+                <p 
+                  className="text-sm mt-4"
+                  style={{ color: '#6b7280' }}
+                >
+                  Payable en 3 fois sans frais
+                </p>
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
       </div>
     </section>
