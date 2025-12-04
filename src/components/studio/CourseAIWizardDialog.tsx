@@ -101,45 +101,46 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
     setIsGenerating(true);
     
     try {
-      const prompt = `Tu es un expert en création de formations en ligne. Génère un cours complet sur le sujet suivant.
+      const audienceLabel = {
+        debutant: "Débutants - aucune connaissance préalable",
+        intermediaire: "Intermédiaires - bases acquises",
+        avance: "Avancés - expérience significative",
+        professionnel: "Professionnels - experts du domaine"
+      }[wizardData.targetAudience] || wizardData.targetAudience;
 
-SUJET: ${wizardData.subject}
-PUBLIC CIBLE: ${wizardData.targetAudience === "debutant" ? "Débutants" : wizardData.targetAudience === "intermediaire" ? "Intermédiaires" : wizardData.targetAudience === "avance" ? "Avancés" : "Professionnels"}
+      const prompt = `Génère un cours complet avec l'outil create_complete_course.
+
+SUJET DU COURS: ${wizardData.subject}
+PUBLIC CIBLE: ${audienceLabel}
 OBJECTIFS D'APPRENTISSAGE: ${wizardData.objectives}
-NOMBRE DE MODULES: ${wizardData.moduleCount}
+NOMBRE DE MODULES SOUHAITÉS: ${wizardData.moduleCount}
 
-Génère un cours structuré avec:
-- Un titre accrocheur et professionnel
-- Une description détaillée (2-3 phrases)
-- ${wizardData.moduleCount} modules progressifs
-- 2-4 leçons par module avec du contenu textuel détaillé (minimum 200 mots par leçon)
-- Un quiz à la fin de chaque module (dernière leçon du module)
-
-Pour chaque quiz, inclus 3-5 questions avec 4 réponses possibles et l'index de la bonne réponse.`;
+INSTRUCTIONS:
+- Crée exactement ${wizardData.moduleCount} modules progressifs
+- Chaque module doit avoir 2-4 leçons avec du contenu pédagogique détaillé
+- Ajoute un quiz (has_quiz: true) à la dernière leçon de chaque module
+- Le contenu de chaque leçon doit faire minimum 250 mots, structuré avec objectif, points clés et exemples
+- Adapte le vocabulaire et les exemples au public cible`;
 
       const { data, error } = await supabase.functions.invoke("unified-chat", {
         body: {
           messages: [{ role: "user", content: prompt }],
           mode: "studio",
+          forceTool: "create_complete_course",
         },
       });
 
       if (error) throw error;
 
-      // Parse the streamed response
-      const responseText = typeof data === "string" ? data : JSON.stringify(data);
-      
-      // Try to extract JSON from the response
-      const jsonMatch = responseText.match(/```json\n?([\s\S]*?)\n?```/) || 
-                       responseText.match(/\{[\s\S]*"course"[\s\S]*"modules"[\s\S]*\}/);
-      
       let courseData: GeneratedCourseData;
       
-      if (jsonMatch) {
-        const jsonStr = jsonMatch[1] || jsonMatch[0];
-        courseData = JSON.parse(jsonStr);
+      // The response should contain the tool call data directly
+      if (data?.toolName === "create_complete_course" && data?.data) {
+        courseData = data.data as GeneratedCourseData;
+      } else if (data?.data?.course && data?.data?.modules) {
+        courseData = data.data as GeneratedCourseData;
       } else {
-        // Generate a default structure if parsing fails
+        console.warn("Unexpected response format, using fallback:", data);
         courseData = generateDefaultCourse(wizardData);
       }
 
