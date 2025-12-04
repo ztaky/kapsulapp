@@ -11,7 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ShoppingCart, Gift, Lock } from "lucide-react";
+import { ShoppingCart, Gift, Lock, Calendar, User } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface StudentCoursesDialogProps {
   open: boolean;
@@ -68,17 +70,41 @@ export function StudentCoursesDialog({
     enabled: open,
   });
 
-  // Fetch student's manual enrollments
+  // Fetch student's manual enrollments with coach info
   const { data: enrollments, refetch: refetchEnrollments } = useQuery({
     queryKey: ["student-enrollments", student.user_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("course_enrollments")
-        .select("course_id, is_active")
+        .select(`
+          course_id, 
+          is_active, 
+          granted_at,
+          granted_by
+        `)
         .eq("user_id", student.user_id);
 
       if (error) throw error;
-      return data;
+      
+      // Fetch coach profiles separately to avoid relationship ambiguity
+      const coachIds = [...new Set(data.filter(e => e.granted_by).map(e => e.granted_by!))];
+      let coachProfiles: Record<string, { full_name: string | null; email: string }> = {};
+      
+      if (coachIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", coachIds);
+        
+        if (profiles) {
+          coachProfiles = Object.fromEntries(profiles.map(p => [p.id, p]));
+        }
+      }
+      
+      return data.map(enrollment => ({
+        ...enrollment,
+        coach: enrollment.granted_by ? coachProfiles[enrollment.granted_by] || null : null
+      }));
     },
     enabled: open,
   });
@@ -203,6 +229,7 @@ export function StudentCoursesDialog({
                 const status = getAccessStatus(course.id);
                 const isPurchased = status === "purchased";
                 const isEnrolled = status === "enrolled";
+                const enrollment = enrollments?.find((e) => e.course_id === course.id);
 
                 return (
                   <div
@@ -211,7 +238,7 @@ export function StudentCoursesDialog({
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{course.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {isPurchased && (
                           <Badge variant="default" className="text-xs">
                             <ShoppingCart className="h-3 w-3 mr-1" />
@@ -231,8 +258,22 @@ export function StudentCoursesDialog({
                           </Badge>
                         )}
                       </div>
+                      {/* Historique d'inscription manuelle */}
+                      {enrollment && enrollment.is_active && (
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(enrollment.granted_at), "d MMM yyyy", { locale: fr })}
+                          </span>
+                          {enrollment.coach && (
+                            <span className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              par {enrollment.coach.full_name || enrollment.coach.email}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-
                     {!isPurchased && (
                       <Switch
                         checked={isEnrolled}
