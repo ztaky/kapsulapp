@@ -15,6 +15,7 @@ interface EnrollmentNotificationRequest {
   organizationName: string;
   organizationSlug: string;
   coachName: string | null;
+  frontendUrl?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -31,16 +32,22 @@ const handler = async (req: Request): Promise<Response> => {
       organizationName,
       organizationSlug,
       coachName,
+      frontendUrl,
     }: EnrollmentNotificationRequest = await req.json();
 
     console.log("Sending enrollment notification to:", studentEmail);
     console.log("Courses:", courseTitles);
+    console.log("Frontend URL:", frontendUrl);
 
     const coursesList = courseTitles
       .map((title) => `<li style="margin-bottom: 8px;">📚 ${title}</li>`)
       .join("");
 
-    const loginUrl = `${Deno.env.get("SUPABASE_URL")?.replace("supabase.co", "lovable.app")}/school/${organizationSlug}/student`;
+    // Use frontendUrl from request, fallback to a sensible default
+    const baseUrl = frontendUrl?.replace(/\/$/, "") || "https://kapsul.lovable.app";
+    const loginUrl = `${baseUrl}/school/${organizationSlug}/student`;
+
+    console.log("Generated login URL:", loginUrl);
 
     const emailResponse = await resend.emails.send({
       from: `${organizationName} <onboarding@resend.dev>`,

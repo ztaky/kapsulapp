@@ -7,15 +7,12 @@ import { BookOpen, PlayCircle, CheckCircle2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { DashboardHeader } from "@/components/shared/DashboardHeader";
 
-interface Course {
+interface CourseWithProgress {
   id: string;
   title: string;
   description: string;
   cover_image: string | null;
   organization_slug: string;
-}
-
-interface CourseWithProgress extends Course {
   progress: number;
   totalLessons: number;
   completedLessons: number;
@@ -25,12 +22,10 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        setUserId(session.user.id);
         fetchUserCourses(session.user.id);
       }
     });
@@ -39,118 +34,149 @@ const StudentDashboard = () => {
   const fetchUserCourses = async (userId: string) => {
     setLoading(true);
 
-    // 1. Récupérer les cours achetés
-    const { data: purchases, error: purchasesError } = await supabase
-      .from("purchases")
-      .select(`
-        course_id,
-        courses (
-          id,
-          title,
-          description,
-          cover_image,
-          organization_id,
-          organizations (
-            slug
+    try {
+      // 1. Récupérer les cours achetés
+      const { data: purchases } = await supabase
+        .from("purchases")
+        .select(`
+          course_id,
+          courses (
+            id,
+            title,
+            description,
+            cover_image,
+            organization_id,
+            organizations (slug)
           )
-        )
-      `)
-      .eq("user_id", userId)
-      .eq("status", "completed");
+        `)
+        .eq("user_id", userId)
+        .eq("status", "completed");
 
-    // 2. Récupérer les cours inscrits manuellement
-    const { data: enrollments, error: enrollmentsError } = await supabase
-      .from("course_enrollments")
-      .select(`
-        course_id,
-        courses (
-          id,
-          title,
-          description,
-          cover_image,
-          organization_id,
-          organizations (
-            slug
+      // 2. Récupérer les cours inscrits manuellement
+      const { data: enrollments } = await supabase
+        .from("course_enrollments")
+        .select(`
+          course_id,
+          courses (
+            id,
+            title,
+            description,
+            cover_image,
+            organization_id,
+            organizations (slug)
           )
-        )
-      `)
-      .eq("user_id", userId)
-      .eq("is_active", true);
+        `)
+        .eq("user_id", userId)
+        .eq("is_active", true);
 
-    if (purchasesError || enrollmentsError) {
-      console.error(purchasesError || enrollmentsError);
-      setLoading(false);
-      return;
-    }
+      // 3. Fusionner et dédupliquer les cours
+      const allCourses = new Map<string, any>();
+      purchases?.forEach((p: any) => {
+        if (p.courses) allCourses.set(p.courses.id, p.courses);
+      });
+      enrollments?.forEach((e: any) => {
+        if (e.courses) allCourses.set(e.courses.id, e.courses);
+      });
+      const uniqueCourses = Array.from(allCourses.values());
 
-    // 3. Fusionner et dédupliquer les cours
-    const allCourses = new Map<string, any>();
-    purchases?.forEach((p: any) => {
-      if (p.courses) allCourses.set(p.courses.id, p.courses);
-    });
-    enrollments?.forEach((e: any) => {
-      if (e.courses) allCourses.set(e.courses.id, e.courses);
-    });
-    const uniqueCourses = Array.from(allCourses.values());
+      if (uniqueCourses.length === 0) {
+        setCourses([]);
+        setLoading(false);
+        return;
+      }
 
-    const coursesWithProgress = await Promise.all(
-      uniqueCourses.map(async (course: any) => {
+      // 4. Récupérer tous les modules de tous les cours en une seule requête
+      const courseIds = uniqueCourses.map((c) => c.id);
+      const { data: allModules } = await supabase
+        .from("modules")
+        .select("id, course_id")
+        .in("course_id", courseIds);
 
-        const { count: totalLessons } = await supabase
-          .from("lessons")
-          .select("*", { count: "exact", head: true })
-          .in(
-            "module_id",
-            await supabase
-              .from("modules")
-              .select("id")
-              .eq("course_id", course.id)
-              .then((res) => res.data?.map((m) => m.id) || [])
-          );
+      if (!allModules || allModules.length === 0) {
+        setCourses(
+          uniqueCourses.map((course) => ({
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            cover_image: course.cover_image,
+            organization_slug: course.organizations?.slug || "",
+            progress: 0,
+            totalLessons: 0,
+            completedLessons: 0,
+          }))
+        );
+        setLoading(false);
+        return;
+      }
 
-        const { count: completedLessons } = await supabase
-          .from("user_progress")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("is_completed", true)
-          .in(
-            "lesson_id",
-            await supabase
-              .from("lessons")
-              .select("id")
-              .in(
-                "module_id",
-                await supabase
-                  .from("modules")
-                  .select("id")
-                  .eq("course_id", course.id)
-                  .then((res) => res.data?.map((m) => m.id) || [])
-              )
-              .then((res) => res.data?.map((l) => l.id) || [])
-          );
+      // 5. Récupérer toutes les leçons de tous les modules en une seule requête
+      const moduleIds = allModules.map((m) => m.id);
+      const { data: allLessons } = await supabase
+        .from("lessons")
+        .select("id, module_id")
+        .in("module_id", moduleIds);
 
-        const progress = totalLessons ? Math.round(((completedLessons || 0) / totalLessons) * 100) : 0;
+      // 6. Récupérer la progression de l'utilisateur pour toutes les leçons en une seule requête
+      const lessonIds = allLessons?.map((l) => l.id) || [];
+      const { data: userProgress } = await supabase
+        .from("user_progress")
+        .select("lesson_id, is_completed")
+        .eq("user_id", userId)
+        .eq("is_completed", true)
+        .in("lesson_id", lessonIds);
+
+      // 7. Créer des maps pour des lookups rapides
+      const modulesByCourse = new Map<string, string[]>();
+      allModules.forEach((m) => {
+        const modules = modulesByCourse.get(m.course_id) || [];
+        modules.push(m.id);
+        modulesByCourse.set(m.course_id, modules);
+      });
+
+      const lessonsByModule = new Map<string, string[]>();
+      allLessons?.forEach((l) => {
+        const lessons = lessonsByModule.get(l.module_id) || [];
+        lessons.push(l.id);
+        lessonsByModule.set(l.module_id, lessons);
+      });
+
+      const completedLessonIds = new Set(userProgress?.map((p) => p.lesson_id) || []);
+
+      // 8. Calculer la progression pour chaque cours
+      const coursesWithProgress: CourseWithProgress[] = uniqueCourses.map((course) => {
+        const courseModules = modulesByCourse.get(course.id) || [];
+        const courseLessonIds: string[] = [];
+        courseModules.forEach((moduleId) => {
+          const moduleLessons = lessonsByModule.get(moduleId) || [];
+          courseLessonIds.push(...moduleLessons);
+        });
+
+        const totalLessons = courseLessonIds.length;
+        const completedLessons = courseLessonIds.filter((id) => completedLessonIds.has(id)).length;
+        const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
         return {
           id: course.id,
           title: course.title,
           description: course.description,
           cover_image: course.cover_image,
-          organization_slug: course.organizations?.slug || '',
+          organization_slug: course.organizations?.slug || "",
           progress,
-          totalLessons: totalLessons || 0,
-          completedLessons: completedLessons || 0,
+          totalLessons,
+          completedLessons,
         };
-      })
-    );
+      });
 
-    setCourses(coursesWithProgress);
-    setLoading(false);
+      setCourses(coursesWithProgress);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Hero Header */}
       <DashboardHeader
         title="Mes Formations"
         subtitle="Continuez votre apprentissage où vous l'avez laissé"
@@ -178,7 +204,7 @@ const StudentDashboard = () => {
             <CardDescription className="text-muted-foreground leading-relaxed">
               Vous n'avez pas encore de formations. Explorez notre catalogue pour commencer !
             </CardDescription>
-            <Button 
+            <Button
               variant="gradient"
               className="mt-6 shadow-lg"
               onClick={() => navigate("/")}
@@ -190,9 +216,9 @@ const StudentDashboard = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <Card 
-              key={course.id} 
-              className="shadow-sm hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group" 
+            <Card
+              key={course.id}
+              className="shadow-sm hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer border-slate-100 group"
               onClick={() => navigate(`/school/${course.organization_slug}/learn/${course.id}`)}
             >
               <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-50 rounded-t-3xl overflow-hidden">

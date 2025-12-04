@@ -76,7 +76,6 @@ const Dashboard = () => {
 
           localStorage.removeItem("pending_academy_name");
           localStorage.removeItem("founder_payment_verified");
-          localStorage.removeItem("founder_payment_verified");
           toast.success("🎉 Votre académie a été créée avec succès !");
           navigate(`/school/${slug}/studio`);
         } catch (error: any) {

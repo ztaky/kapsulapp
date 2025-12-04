@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -27,7 +28,9 @@ import { ImportStudentsCSVDialog } from "@/components/studio/ImportStudentsCSVDi
 import { StudentActionsDropdown } from "@/components/studio/StudentActionsDropdown";
 import { StudentsBulkActionBar } from "@/components/studio/StudentsBulkActionBar";
 import { BulkAssignCoursesDialog } from "@/components/studio/BulkAssignCoursesDialog";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+
+const STUDENTS_PER_PAGE = 50;
 
 export default function StudioStudents() {
   const { slug } = useParams<{ slug: string }>();
@@ -40,6 +43,7 @@ export default function StudioStudents() {
   const [courseFilter, setCourseFilter] = useState<string>("all");
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch courses for filter dropdown
   const { data: courses } = useQuery({
@@ -57,13 +61,32 @@ export default function StudioStudents() {
     enabled: !!currentOrg?.id,
   });
 
-  // Fetch students with their course access counts
-  const { data: students } = useQuery({
-    queryKey: ["studio-students", currentOrg?.id],
+  // Fetch total students count
+  const { data: totalCount } = useQuery({
+    queryKey: ["studio-students-count", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg?.id) return 0;
+      const { count, error } = await supabase
+        .from("organization_members")
+        .select("*", { count: "exact", head: true })
+        .eq("organization_id", currentOrg.id)
+        .eq("role", "student");
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!currentOrg?.id,
+  });
+
+  // Fetch students with pagination
+  const { data: students, isLoading } = useQuery({
+    queryKey: ["studio-students", currentOrg?.id, currentPage],
     queryFn: async () => {
       if (!currentOrg?.id) return [];
 
-      // Get students
+      const from = (currentPage - 1) * STUDENTS_PER_PAGE;
+      const to = from + STUDENTS_PER_PAGE - 1;
+
+      // Get students with pagination
       const { data: members, error } = await supabase
         .from("organization_members")
         .select(`
@@ -71,9 +94,12 @@ export default function StudioStudents() {
           profiles(*)
         `)
         .eq("organization_id", currentOrg.id)
-        .eq("role", "student");
+        .eq("role", "student")
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
+      if (!members || members.length === 0) return [];
 
       // Get total courses count
       const { count: totalCourses } = await supabase
@@ -81,42 +107,56 @@ export default function StudioStudents() {
         .select("*", { count: "exact", head: true })
         .eq("organization_id", currentOrg.id);
 
-      // Get access counts for each student
-      const studentsWithAccess = await Promise.all(
-        (members || []).map(async (member) => {
-          // Get purchases
-          const { data: purchases } = await supabase
-            .from("purchases")
-            .select("course_id")
-            .eq("user_id", member.user_id)
-            .eq("status", "completed");
+      // Get user IDs for batch queries
+      const userIds = members.map((m) => m.user_id);
 
-          // Get enrollments
-          const { data: enrollments } = await supabase
-            .from("course_enrollments")
-            .select("course_id")
-            .eq("user_id", member.user_id)
-            .eq("is_active", true);
+      // Batch fetch purchases
+      const { data: allPurchases } = await supabase
+        .from("purchases")
+        .select("user_id, course_id")
+        .in("user_id", userIds)
+        .eq("status", "completed");
 
-          const purchasedCourseIds = purchases?.map((p) => p.course_id) || [];
-          const enrolledCourseIds = enrollments?.map((e) => e.course_id) || [];
-          const accessibleCourseIds = [...new Set([...purchasedCourseIds, ...enrolledCourseIds])];
+      // Batch fetch enrollments
+      const { data: allEnrollments } = await supabase
+        .from("course_enrollments")
+        .select("user_id, course_id")
+        .in("user_id", userIds)
+        .eq("is_active", true);
 
-          return {
-            ...member,
-            accessibleCoursesCount: accessibleCourseIds.length,
-            accessibleCourseIds,
-            totalCourses: totalCourses || 0,
-          };
-        })
-      );
+      // Create maps for quick lookup
+      const purchasesByUser = new Map<string, string[]>();
+      allPurchases?.forEach((p) => {
+        const courses = purchasesByUser.get(p.user_id) || [];
+        courses.push(p.course_id);
+        purchasesByUser.set(p.user_id, courses);
+      });
 
-      return studentsWithAccess;
+      const enrollmentsByUser = new Map<string, string[]>();
+      allEnrollments?.forEach((e) => {
+        const courses = enrollmentsByUser.get(e.user_id) || [];
+        courses.push(e.course_id);
+        enrollmentsByUser.set(e.user_id, courses);
+      });
+
+      // Map students with their access
+      return members.map((member) => {
+        const purchasedCourseIds = purchasesByUser.get(member.user_id) || [];
+        const enrolledCourseIds = enrollmentsByUser.get(member.user_id) || [];
+        const accessibleCourseIds = [...new Set([...purchasedCourseIds, ...enrolledCourseIds])];
+
+        return {
+          ...member,
+          accessibleCoursesCount: accessibleCourseIds.length,
+          accessibleCourseIds,
+          totalCourses: totalCourses || 0,
+        };
+      });
     },
     enabled: !!currentOrg?.id,
   });
 
-  // Filter students
+  // Filter students (client-side for the current page)
   const filteredStudents = useMemo(() => {
     if (!students) return [];
 
@@ -143,6 +183,22 @@ export default function StudioStudents() {
       return matchesSearch && matchesAccess && matchesCourse;
     });
   }, [students, searchQuery, accessFilter, courseFilter]);
+
+  // Reset page when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleAccessFilterChange = (value: "all" | "with-access" | "no-access") => {
+    setAccessFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleCourseFilterChange = (value: string) => {
+    setCourseFilter(value);
+    setCurrentPage(1);
+  };
 
   // Selection helpers
   const toggleStudentSelection = (studentId: string) => {
@@ -175,6 +231,11 @@ export default function StudioStudents() {
 
   const allSelected = filteredStudents.length > 0 && selectedStudentIds.size === filteredStudents.length;
   const someSelected = selectedStudentIds.size > 0 && selectedStudentIds.size < filteredStudents.length;
+
+  // Pagination
+  const totalPages = Math.ceil((totalCount || 0) / STUDENTS_PER_PAGE);
+  const canGoPrevious = currentPage > 1;
+  const canGoNext = currentPage < totalPages;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -211,12 +272,12 @@ export default function StudioStudents() {
           <Input
             placeholder="Rechercher par nom ou email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
           />
         </div>
         <div className="flex gap-2">
-          <Select value={accessFilter} onValueChange={(v: any) => setAccessFilter(v)}>
+          <Select value={accessFilter} onValueChange={handleAccessFilterChange}>
             <SelectTrigger className="w-[160px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Accès" />
@@ -227,7 +288,7 @@ export default function StudioStudents() {
               <SelectItem value="no-access">Sans accès</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={courseFilter} onValueChange={setCourseFilter}>
+          <Select value={courseFilter} onValueChange={handleCourseFilterChange}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filtrer par cours" />
             </SelectTrigger>
@@ -243,20 +304,25 @@ export default function StudioStudents() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{filteredStudents.length} étudiant{filteredStudents.length > 1 ? "s" : ""}</span>
-        {(searchQuery || accessFilter !== "all" || courseFilter !== "all") && (
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setAccessFilter("all");
-              setCourseFilter("all");
-            }}
-            className="text-primary hover:underline"
-          >
-            Réinitialiser les filtres
-          </button>
+      {/* Stats and Pagination Info */}
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center gap-4">
+          <span>{totalCount || 0} étudiant{(totalCount || 0) > 1 ? "s" : ""} au total</span>
+          {(searchQuery || accessFilter !== "all" || courseFilter !== "all") && (
+            <button
+              onClick={() => {
+                handleSearchChange("");
+                handleAccessFilterChange("all");
+                handleCourseFilterChange("all");
+              }}
+              className="text-primary hover:underline"
+            >
+              Réinitialiser les filtres
+            </button>
+          )}
+        </div>
+        {totalPages > 1 && (
+          <span>Page {currentPage} sur {totalPages}</span>
         )}
       </div>
 
@@ -330,7 +396,7 @@ export default function StudioStudents() {
         </Table>
       </div>
 
-      {filteredStudents.length === 0 && (
+      {filteredStudents.length === 0 && !isLoading && (
         <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 border-dashed bg-white/50">
           <div className="text-center">
             <p className="text-lg font-medium text-slate-900">
@@ -342,6 +408,56 @@ export default function StudioStudents() {
                 : "Modifiez vos filtres pour voir plus de résultats"}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={!canGoPrevious || isLoading}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Précédent
+          </Button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  disabled={isLoading}
+                  className="w-9"
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={!canGoNext || isLoading}
+          >
+            Suivant
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
       )}
 
