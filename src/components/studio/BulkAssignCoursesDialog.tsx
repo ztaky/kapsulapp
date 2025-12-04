@@ -124,6 +124,7 @@ export function BulkAssignCoursesDialog({
             organizationName: organization.name,
             organizationSlug: organization.slug,
             coachName,
+            frontendUrl: window.location.origin,
           }),
         }
       );

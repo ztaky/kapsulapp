@@ -140,6 +140,7 @@ export function StudentCoursesDialog({
             organizationName: organization.name,
             organizationSlug: organization.slug,
             coachName,
+            frontendUrl: window.location.origin,
           }),
         }
       );
@@ -253,6 +254,7 @@ export function StudentCoursesDialog({
                 organizationName: organization.name,
                 organizationSlug: organization.slug,
                 coachName,
+                frontendUrl: window.location.origin,
               }),
             }
           );
