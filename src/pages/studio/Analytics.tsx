@@ -5,11 +5,14 @@ import { DashboardHeader } from "@/components/shared/DashboardHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import { Users, GraduationCap, Euro, TrendingUp, BookOpen, CheckCircle } from "lucide-react";
+import { Users, GraduationCap, Euro, TrendingUp, BookOpen, CheckCircle, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
+import { exportToCSV, formatDateForCSV, formatCurrencyForCSV } from "@/lib/csv-export";
+import { toast } from "sonner";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
 
@@ -199,21 +202,97 @@ export default function Analytics() {
     );
   }
 
+  const handleExportCSV = () => {
+    if (!analytics) {
+      toast.error("Aucune donnée à exporter");
+      return;
+    }
+
+    // Export KPIs
+    const kpisData = [{
+      "Métrique": "Étudiants totaux",
+      "Valeur": analytics.totalStudents,
+    }, {
+      "Métrique": "Nouveaux étudiants (période)",
+      "Valeur": analytics.newStudents,
+    }, {
+      "Métrique": "Étudiants actifs",
+      "Valeur": analytics.activeStudents,
+    }, {
+      "Métrique": "Taux de complétion",
+      "Valeur": `${analytics.completionRate}%`,
+    }, {
+      "Métrique": "Revenus totaux",
+      "Valeur": formatCurrencyForCSV(analytics.totalRevenue),
+    }, {
+      "Métrique": "Revenus période",
+      "Valeur": formatCurrencyForCSV(analytics.periodRevenue),
+    }, {
+      "Métrique": "Cours publiés",
+      "Valeur": `${analytics.publishedCourses}/${analytics.totalCourses}`,
+    }];
+
+    // Export revenue by day
+    const revenueData = analytics.revenueByDay.map(d => ({
+      "Date": d.date,
+      "Revenus (€)": d.revenue,
+    }));
+
+    // Export students by day
+    const studentsData = analytics.studentsByDay.map(d => ({
+      "Date": d.date,
+      "Nouveaux étudiants": d.students,
+    }));
+
+    // Export completion by course
+    const completionData = analytics.completionByCourse.map(c => ({
+      "Cours": c.name,
+      "Taux de complétion (%)": c.completion,
+    }));
+
+    // Export sales by course
+    const salesData = analytics.salesByCourse.map(s => ({
+      "Cours": s.name,
+      "Ventes": s.value,
+      "Revenus (€)": s.revenue,
+    }));
+
+    // Create a combined export
+    const periodLabel = period === "7" ? "7j" : period === "30" ? "30j" : period === "90" ? "90j" : "annee";
+    const dateStr = format(new Date(), "yyyy-MM-dd");
+    
+    exportToCSV(kpisData, `analytics_kpis_${periodLabel}_${dateStr}`);
+    exportToCSV(revenueData, `analytics_revenus_${periodLabel}_${dateStr}`);
+    exportToCSV(studentsData, `analytics_etudiants_${periodLabel}_${dateStr}`);
+    exportToCSV(completionData, `analytics_completion_${periodLabel}_${dateStr}`);
+    if (salesData.length > 0) {
+      exportToCSV(salesData, `analytics_ventes_${periodLabel}_${dateStr}`);
+    }
+
+    toast.success("Export CSV téléchargé (5 fichiers)");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <DashboardHeader title="Analytics" subtitle="Tableau de bord de performance" />
-        <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Période" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">7 derniers jours</SelectItem>
-            <SelectItem value="30">30 derniers jours</SelectItem>
-            <SelectItem value="90">90 derniers jours</SelectItem>
-            <SelectItem value="365">Cette année</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!analytics}>
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Période" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">7 derniers jours</SelectItem>
+              <SelectItem value="30">30 derniers jours</SelectItem>
+              <SelectItem value="90">90 derniers jours</SelectItem>
+              <SelectItem value="365">Cette année</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* KPI Cards */}
