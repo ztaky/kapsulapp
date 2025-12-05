@@ -56,6 +56,8 @@ import AdminLeads from "./pages/admin/AdminLeads";
 import FAQ from "./pages/FAQ";
 import Roadmap from "./pages/Roadmap";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import SchoolPublicPage from "./pages/SchoolPublicPage";
+import SchoolLegalPage from "./pages/SchoolLegalPage";
 
 // Legal pages for Kapsul SaaS
 import MentionsLegales from "./pages/legal/MentionsLegales";
@@ -159,6 +161,12 @@ const App = () => (
           {/* Public Landing Pages */}
           <Route path="/lp/:slug" element={<LandingPageView />} />
           <Route path="/lp/:landingSlug/legal/:type" element={<LegalPageView />} />
+          
+          {/* Public Academy Page */}
+          <Route path="/school/:slug" element={<SchoolPublicPage />} />
+          
+          {/* Public School Legal Pages */}
+          <Route path="/school/:slug/legal/:type" element={<SchoolLegalPage />} />
           
           {/* Public Course Sales Page */}
           <Route path="/school/:slug/course/:courseId" element={<CourseSalesPage />} />
