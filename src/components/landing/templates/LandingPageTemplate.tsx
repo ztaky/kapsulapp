@@ -12,12 +12,17 @@ import { Guarantee } from './sections/Guarantee';
 import { Instructor } from './sections/Instructor';
 import { Pricing } from './sections/Pricing';
 import { Footer } from './sections/Footer';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface LandingPageTemplateProps {
   config: LandingPageConfig;
-  trainerPhoto?: string; // Photo from trainerInfo for backward compatibility
-  enabledSections?: string[]; // Sections to display
-  landingSlug?: string; // Slug for legal page links
+  trainerPhoto?: string;
+  enabledSections?: string[];
+  landingSlug?: string;
+  installmentsEnabled?: boolean;
+  installmentsCount?: number;
+  courseId?: string;
 }
 
 // Map editor section IDs to template section IDs
@@ -43,8 +48,45 @@ const ALL_TEMPLATE_SECTIONS = [
   'upsell', 'pricing', 'faq', 'footer'
 ];
 
-export function LandingPageTemplate({ config, trainerPhoto, enabledSections, landingSlug }: LandingPageTemplateProps) {
+export function LandingPageTemplate({ 
+  config, 
+  trainerPhoto, 
+  enabledSections, 
+  landingSlug,
+  installmentsEnabled,
+  installmentsCount = 3,
+  courseId
+}: LandingPageTemplateProps) {
   const { theme, content } = config;
+
+  const handleCheckout = async (paymentType: 'full' | 'installments') => {
+    if (!courseId) {
+      toast.error("Erreur: cours non trouvé");
+      return;
+    }
+
+    try {
+      toast.loading("Redirection vers le paiement...");
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          courseId,
+          paymentType,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error("URL de paiement non reçue");
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      toast.dismiss();
+      toast.error(error.message || "Erreur lors de la création du paiement");
+    }
+  };
   
   // Convert editor section IDs to template section IDs
   const getEnabledTemplateSections = () => {
@@ -136,7 +178,13 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections, lan
 
         {/* Section 11 - Pricing */}
         {isEnabled('pricing') && content.pricing && (
-          <Pricing content={content.pricing} landingSlug={landingSlug} />
+          <Pricing 
+            content={content.pricing} 
+            landingSlug={landingSlug}
+            installmentsEnabled={installmentsEnabled}
+            installmentsCount={installmentsCount}
+            onCheckout={handleCheckout}
+          />
         )}
 
         {/* Section 12 - FAQ */}

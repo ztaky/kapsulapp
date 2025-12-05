@@ -67,7 +67,9 @@ export default function LandingPageView() {
             title,
             description,
             cover_image,
-            price
+            price,
+            installments_enabled,
+            installments_count
           )
         `)
         .eq("slug", slug);
@@ -182,6 +184,10 @@ export default function LandingPageView() {
     // Get enabled sections from design_config
     const enabledSections = (landingPage.design_config as any)?.enabledSections;
     
+    // Get installment settings from course
+    const installmentsEnabled = landingPage.courses?.installments_enabled || false;
+    const installmentsCount = landingPage.courses?.installments_count || 3;
+    
     return (
       <>
         <TrackingScripts 
@@ -189,7 +195,15 @@ export default function LandingPageView() {
           facebookPixelId={organization?.facebook_pixel_id} 
         />
         <CookieConsentBanner />
-        <LandingPageTemplate config={config} trainerPhoto={trainerPhoto} enabledSections={enabledSections} landingSlug={slug} />
+        <LandingPageTemplate 
+          config={config} 
+          trainerPhoto={trainerPhoto} 
+          enabledSections={enabledSections} 
+          landingSlug={slug}
+          installmentsEnabled={installmentsEnabled}
+          installmentsCount={installmentsCount}
+          courseId={landingPage.course_id}
+        />
       </>
     );
   }
