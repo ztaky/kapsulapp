@@ -5,7 +5,8 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { GraduationCap, BookOpen, Users, Mail, ArrowRight } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, Mail, ArrowRight, MessageSquare } from 'lucide-react';
+import { ContactForm } from '@/components/school/ContactForm';
 
 interface Organization {
   id: string;
@@ -324,6 +325,21 @@ const SchoolPublicPage = () => {
           </div>
         </section>
       )}
+
+      {/* Contact Form Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-3 mb-8 justify-center">
+            <MessageSquare className="h-6 w-6" style={{ color: brandColor }} />
+            <h2 className="text-2xl font-bold text-foreground">Une question ?</h2>
+          </div>
+          <ContactForm
+            organizationName={organization.name}
+            organizationEmail={organization.contact_email}
+            brandColor={brandColor}
+          />
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="border-t bg-card py-8">
