@@ -37,7 +37,7 @@ function CustomCodeTool({ config }: { config: { htmlCode?: string; title?: strin
       <CardContent className="p-0">
         <iframe
           srcDoc={config.htmlCode}
-          className="w-full min-h-[500px] border-0"
+          className="w-full min-h-[700px] border-0"
           sandbox="allow-scripts allow-forms allow-popups"
           title={config.title || "Outil interactif"}
         />
