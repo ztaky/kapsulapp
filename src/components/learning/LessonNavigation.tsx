@@ -35,8 +35,20 @@ export function LessonNavigation({
   const queryClient = useQueryClient();
 
   const allLessons = modules
-    .flatMap((m) => m.lessons)
-    .sort((a, b) => a.position - b.position);
+    .flatMap((module, moduleIndex) =>
+      module.lessons.map(lesson => ({
+        ...lesson,
+        moduleIndex
+      }))
+    )
+    .sort((a, b) => {
+      // D'abord trier par module
+      if (a.moduleIndex !== b.moduleIndex) {
+        return a.moduleIndex - b.moduleIndex;
+      }
+      // Puis par position dans le module
+      return a.position - b.position;
+    });
 
   const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
   const previousLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
