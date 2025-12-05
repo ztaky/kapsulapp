@@ -296,7 +296,17 @@ export function AIAssistantChat({
                     : "bg-white border border-slate-200 text-slate-900 shadow-sm"
                 }`}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                <div 
+                  className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5"
+                  dangerouslySetInnerHTML={{ 
+                    __html: message.content
+                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                      .replace(/^(\d+)\.\s+(.*)$/gm, '<li>$2</li>')
+                      .replace(/^-\s+(.*)$/gm, '<li>$1</li>')
+                      .replace(/\n/g, '<br/>')
+                  }} 
+                />
               </div>
               {message.role === "user" && (
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shrink-0">

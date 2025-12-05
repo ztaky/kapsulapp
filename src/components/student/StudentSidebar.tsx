@@ -65,7 +65,7 @@ export function StudentSidebar() {
 
   return (
     <Sidebar 
-      className={`${open ? "w-64" : "w-14"} bg-white border-r border-slate-100`} 
+      className={`${open ? "w-64" : "w-16"} bg-white border-r border-slate-100`} 
       collapsible="icon"
     >
       <SidebarHeader className="flex flex-row items-center justify-between p-3 border-b border-slate-100">
@@ -86,7 +86,7 @@ export function StudentSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/student"}
-                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-all"
+                      className={`flex items-center gap-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-all ${open ? 'px-3' : 'px-2 justify-center'}`}
                       activeClassName="bg-orange-50 text-orange-700 font-bold"
                     >
                       <div className="w-8 h-8 rounded-lg bg-amber-50/80 flex items-center justify-center flex-shrink-0">

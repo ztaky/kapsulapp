@@ -2,15 +2,18 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Receipt, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Receipt, FileText, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import jsPDF from "jspdf";
 
 interface Purchase {
   id: string;
   purchased_at: string;
   amount: number;
   status: string;
+  stripe_session_id: string | null;
   courses: {
     title: string;
     cover_image: string | null;
@@ -36,6 +39,7 @@ const StudentInvoices = () => {
           purchased_at,
           amount,
           status,
+          stripe_session_id,
           courses (
             title,
             cover_image
@@ -52,6 +56,28 @@ const StudentInvoices = () => {
     }
     
     setLoading(false);
+  };
+
+  const generatePDF = (purchase: Purchase) => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.text("Facture", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`N° ${purchase.id.slice(0, 8).toUpperCase()}`, 20, 40);
+    doc.text(`Date: ${format(new Date(purchase.purchased_at), "d MMMM yyyy", { locale: fr })}`, 20, 50);
+    
+    doc.setFontSize(14);
+    doc.text("Formation:", 20, 70);
+    doc.setFontSize(12);
+    doc.text(purchase.courses.title, 20, 80);
+    
+    doc.setFontSize(14);
+    doc.text(`Montant: ${purchase.amount} €`, 20, 100);
+    doc.text(`Statut: ${purchase.status === "completed" ? "Payé" : purchase.status}`, 20, 110);
+    
+    doc.save(`facture-${purchase.id.slice(0, 8)}.pdf`);
   };
 
   if (loading) {
@@ -114,8 +140,8 @@ const StudentInvoices = () => {
                         </p>
                       </div>
                       
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-lg font-bold text-slate-900 mb-1">
+                      <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+                        <p className="text-lg font-bold text-slate-900">
                           {purchase.amount} €
                         </p>
                         <Badge 
@@ -124,6 +150,15 @@ const StudentInvoices = () => {
                         >
                           {purchase.status === "completed" ? "Payé" : purchase.status}
                         </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-1"
+                          onClick={() => generatePDF(purchase)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Télécharger PDF
+                        </Button>
                       </div>
                     </div>
                   </div>
