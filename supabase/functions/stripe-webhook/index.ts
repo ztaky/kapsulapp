@@ -168,6 +168,106 @@ serve(async (req) => {
 
     console.log(`Received event: ${event.type}`);
 
+    // Handle invoice.paid for installment subscriptions
+    if (event.type === "invoice.paid") {
+      const invoice = event.data.object as Stripe.Invoice;
+      
+      // Only process subscription invoices
+      if (invoice.subscription && invoice.metadata?.payment_type === "installments") {
+        console.log("Processing installment payment:", invoice.id);
+        
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+        
+        const courseId = invoice.subscription_details?.metadata?.course_id || invoice.metadata?.course_id;
+        const userId = invoice.subscription_details?.metadata?.user_id || invoice.metadata?.user_id;
+        const totalInstallments = parseInt(invoice.subscription_details?.metadata?.total_installments || invoice.metadata?.total_installments || "3", 10);
+        const paymentsMade = parseInt(invoice.subscription_details?.metadata?.payments_made || "0", 10) + 1;
+        
+        console.log(`Installment ${paymentsMade}/${totalInstallments} for course ${courseId}`);
+        
+        // If this is the first payment, grant access to the course
+        if (paymentsMade === 1 && userId && courseId) {
+          // Check if purchase already exists
+          const { data: existingPurchase } = await supabaseAdmin
+            .from("purchases")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("course_id", courseId)
+            .maybeSingle();
+
+          if (!existingPurchase) {
+            // Get course details
+            const { data: course } = await supabaseAdmin
+              .from("courses")
+              .select("title, price, organization_id")
+              .eq("id", courseId)
+              .single();
+
+            if (course) {
+              // Insert purchase
+              await supabaseAdmin
+                .from("purchases")
+                .insert({
+                  user_id: userId,
+                  course_id: courseId,
+                  amount: course.price,
+                  status: "installments",
+                  stripe_session_id: invoice.subscription as string,
+                  stripe_payment_id: invoice.payment_intent as string,
+                });
+
+              // Add student to organization
+              if (course.organization_id) {
+                await supabaseAdmin
+                  .from("organization_members")
+                  .upsert(
+                    {
+                      organization_id: course.organization_id,
+                      user_id: userId,
+                      role: "student",
+                    },
+                    { onConflict: "organization_id,user_id" }
+                  );
+              }
+
+              console.log("First installment processed - access granted");
+            }
+          }
+        }
+        
+        // Update subscription metadata with payments count
+        if (invoice.subscription) {
+          try {
+            const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+              apiVersion: "2023-10-16",
+            });
+            
+            await stripe.subscriptions.update(invoice.subscription as string, {
+              metadata: {
+                payments_made: paymentsMade.toString(),
+              },
+            });
+            
+            // Cancel subscription after all payments are made
+            if (paymentsMade >= totalInstallments) {
+              console.log("All installments paid - canceling subscription");
+              await stripe.subscriptions.cancel(invoice.subscription as string);
+            }
+          } catch (stripeError) {
+            console.error("Error updating subscription:", stripeError);
+          }
+        }
+        
+        return new Response(
+          JSON.stringify({ received: true, type: "installment_payment", payment: paymentsMade }),
+          { status: 200, headers: corsHeaders }
+        );
+      }
+    }
+
     // Handle checkout.session.completed
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;

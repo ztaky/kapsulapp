@@ -40,7 +40,7 @@ serve(async (req) => {
       );
     }
 
-    const { courseId, successUrl, cancelUrl } = await req.json();
+    const { courseId, successUrl, cancelUrl, paymentType = "full" } = await req.json();
 
     if (!courseId) {
       return new Response(
@@ -54,7 +54,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get course details
+    // Get course details with installment fields
     const { data: course, error: courseError } = await supabaseAdmin
       .from("courses")
       .select("*, organizations:organization_id(*)")
@@ -87,11 +87,63 @@ serve(async (req) => {
         );
       }
 
-      // Calculate platform fee (10%)
-      const amount = Math.round(course.price * 100); // Convert to cents
-      const applicationFeeAmount = Math.round(amount * 0.10); // 10% platform fee
+      // Handle installment payment
+      if (paymentType === "installments" && course.installments_enabled && course.installment_price_id) {
+        console.log(`Creating installment checkout: ${course.installments_count}x payments`);
+        
+        const installmentsCount = course.installments_count || 3;
+        const monthlyAmount = Math.ceil((course.price * 100) / installmentsCount);
+        const applicationFeeAmount = Math.round(monthlyAmount * 0.10);
 
-      // Create checkout session with connected account
+        // Create subscription checkout session with cancellation after N payments
+        const session = await stripe.checkout.sessions.create({
+          mode: "subscription",
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price: course.installment_price_id,
+              quantity: 1,
+            },
+          ],
+          client_reference_id: user.id,
+          customer_email: user.email,
+          metadata: {
+            course_id: courseId,
+            organization_id: organization.id,
+            user_id: user.id,
+            payment_type: "installments",
+            total_installments: installmentsCount.toString(),
+          },
+          subscription_data: {
+            metadata: {
+              course_id: courseId,
+              organization_id: organization.id,
+              user_id: user.id,
+              payment_type: "installments",
+              total_installments: installmentsCount.toString(),
+              payments_made: "0",
+            },
+            application_fee_percent: 10,
+            transfer_data: {
+              destination: organization.stripe_account_id,
+            },
+          },
+          success_url: successUrl || `${origin}/school/${organization.slug}/learning/${courseId}?success=true&type=installments`,
+          cancel_url: cancelUrl || `${origin}/school/${organization.slug}/course/${courseId}?canceled=true`,
+        });
+
+        console.log(`Created installment checkout session: ${session.id}`);
+
+        return new Response(
+          JSON.stringify({ url: session.url, sessionId: session.id, type: "installments" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Handle full payment (existing logic)
+      const amount = Math.round(course.price * 100);
+      const applicationFeeAmount = Math.round(amount * 0.10);
+
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
@@ -115,6 +167,7 @@ serve(async (req) => {
           course_id: courseId,
           organization_id: organization.id,
           user_id: user.id,
+          payment_type: "full",
         },
         success_url: successUrl || `${origin}/school/${organization.slug}/learning/${courseId}?success=true`,
         cancel_url: cancelUrl || `${origin}/school/${organization.slug}/course/${courseId}?canceled=true`,
@@ -124,14 +177,12 @@ serve(async (req) => {
             destination: organization.stripe_account_id,
           },
         },
-      }, {
-        stripeAccount: undefined, // Use platform account for the session
       });
 
       console.log(`Created checkout session: ${session.id} with connected account`);
 
       return new Response(
-        JSON.stringify({ url: session.url, sessionId: session.id }),
+        JSON.stringify({ url: session.url, sessionId: session.id, type: "full" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {

@@ -284,6 +284,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          installment_price_id: string | null
+          installments_count: number | null
+          installments_enabled: boolean | null
           is_published: boolean
           marketing_content: Json | null
           organization_id: string | null
@@ -297,6 +300,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          installment_price_id?: string | null
+          installments_count?: number | null
+          installments_enabled?: boolean | null
           is_published?: boolean
           marketing_content?: Json | null
           organization_id?: string | null
@@ -310,6 +316,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          installment_price_id?: string | null
+          installments_count?: number | null
+          installments_enabled?: boolean | null
           is_published?: boolean
           marketing_content?: Json | null
           organization_id?: string | null
