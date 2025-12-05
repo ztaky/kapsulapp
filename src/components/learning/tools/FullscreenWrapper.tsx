@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, ReactNode } from 'react';
+import { useState, useRef, useCallback, useEffect, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Maximize2, Minimize2, X } from 'lucide-react';
 
@@ -42,16 +42,25 @@ export function FullscreenWrapper({ children, title }: FullscreenWrapperProps) {
   }, []);
 
   // Listen for escape key and fullscreen change events
-  useState(() => {
+  useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        exitFullscreen();
+      }
+    };
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('keydown', handleKeyDown);
+    
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  });
+  }, [isFullscreen, exitFullscreen]);
 
   return (
     <div 
