@@ -280,7 +280,17 @@ export function TutorChatWidget({ courseId, currentLessonTitle, organizationId }
                         : "bg-slate-100 dark:bg-slate-800 text-foreground"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <div 
+                      className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5"
+                      dangerouslySetInnerHTML={{ 
+                        __html: message.content
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                          .replace(/^(\d+)\.\s+(.*)$/gm, '<li>$2</li>')
+                          .replace(/^-\s+(.*)$/gm, '<li>$1</li>')
+                          .replace(/\n/g, '<br/>')
+                      }} 
+                    />
                   </div>
                 </div>
               ))}
