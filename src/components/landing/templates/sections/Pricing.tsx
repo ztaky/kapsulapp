@@ -126,7 +126,25 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
 
         {/* Payment Options */}
         {installmentsEnabled ? (
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <>
+            {/* Liste des inclusions */}
+            {content.offers[0]?.features && content.offers[0].features.length > 0 && (
+              <div className="max-w-2xl mx-auto mb-10">
+                <h3 className="text-xl font-bold text-center mb-6" style={{ color: '#1e1b4b' }}>
+                  Ce qui est inclus
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {content.offers[0].features.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
+                      <ArrowRightCircle className="w-5 h-5 flex-shrink-0" style={{ color: '#f97316' }} fill="#f97316" stroke="white" />
+                      <span className="text-sm" style={{ color: '#1e1b4b' }}>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {/* Full Payment Option */}
             <div 
               className={`relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all ${selectedPayment === 'full' ? 'ring-2 ring-orange-500 shadow-lg' : 'border-2 border-gray-200 hover:border-gray-300'}`}
@@ -182,6 +200,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
               </div>
             </div>
           </div>
+          </>
         ) : (
           /* Single Payment Option (existing layout) */
           <div className="max-w-md mx-auto">
