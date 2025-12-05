@@ -64,7 +64,7 @@ export function NotificationBell({ variant = "light" }: NotificationBellProps) {
       </PopoverTrigger>
       <PopoverContent 
         className={cn(
-          "w-80 p-0",
+          "w-96 p-0",
           isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
         )}
         align="end"
@@ -134,7 +134,7 @@ export function NotificationBell({ variant = "light" }: NotificationBellProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className={cn(
-                            "font-medium text-sm truncate",
+                            "font-medium text-sm",
                             isDark ? "text-white" : "text-slate-900"
                           )}>
                             {notification.title}
@@ -144,7 +144,7 @@ export function NotificationBell({ variant = "light" }: NotificationBellProps) {
                           )}
                         </div>
                         <p className={cn(
-                          "text-sm truncate",
+                          "text-sm",
                           isDark ? "text-slate-400" : "text-slate-600"
                         )}>
                           {notification.message}
