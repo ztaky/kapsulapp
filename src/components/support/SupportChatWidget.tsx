@@ -3,6 +3,7 @@ import { MessageCircleQuestion, X, Send, Loader2, TicketPlus } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateTicketForm } from "./CreateTicketForm";
+import { MarkdownRenderer } from "@/components/shared/MarkdownRenderer";
 
 interface Message {
   role: "user" | "assistant";
@@ -193,17 +194,7 @@ export function SupportChatWidget({ organizationId }: SupportChatWidgetProps) {
                               : "bg-muted"
                           }`}
                         >
-                          <div 
-                            className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5"
-                            dangerouslySetInnerHTML={{ 
-                              __html: message.content
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                .replace(/^(\d+)\.\s+(.*)$/gm, '<li>$2</li>')
-                                .replace(/^-\s+(.*)$/gm, '<li>$1</li>')
-                                .replace(/\n/g, '<br/>')
-                            }} 
-                          />
+                          <MarkdownRenderer content={message.content} />
                         </div>
                       </div>
                     ))}
