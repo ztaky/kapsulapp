@@ -36,7 +36,6 @@ export default function CourseBuilder() {
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [newModuleObjective, setNewModuleObjective] = useState("");
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
-  const [paymentLinkUrl, setPaymentLinkUrl] = useState("");
   const [lastOpenedModuleId, setLastOpenedModuleId] = useState<string | null>(null);
 
   // Load last opened module from localStorage
@@ -81,10 +80,7 @@ export default function CourseBuilder() {
 
       if (error) throw error;
       
-      // Initialize states from DB
-      if (data.payment_link_url) {
-        setPaymentLinkUrl(data.payment_link_url);
-      }
+      // Initialize marketing content from DB
       if (data.marketing_content) {
         const mc = data.marketing_content as any;
         setMarketingContent({
@@ -178,22 +174,6 @@ export default function CourseBuilder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       toast.success(course?.is_published ? "Cours dépublié" : "Cours publié");
-    },
-  });
-
-  // Update payment link mutation
-  const updatePaymentLinkMutation = useMutation({
-    mutationFn: async (url: string) => {
-      const { error } = await supabase
-        .from("courses")
-        .update({ payment_link_url: url })
-        .eq("id", courseId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
-      toast.success("Lien de paiement enregistré");
     },
   });
 
@@ -621,9 +601,6 @@ export default function CourseBuilder() {
             <CourseInfoCard 
               course={course} 
               courseId={courseId!} 
-              paymentLinkUrl={paymentLinkUrl}
-              setPaymentLinkUrl={setPaymentLinkUrl}
-              updatePaymentLinkMutation={updatePaymentLinkMutation}
             />
           </TabsContent>
         </Tabs>

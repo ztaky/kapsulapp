@@ -9,24 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Save, Loader2, CreditCard } from "lucide-react";
+import { Save, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import { CourseCoverUploader } from "./CourseCoverUploader";
 
 interface CourseInfoCardProps {
   course: any;
   courseId: string;
-  paymentLinkUrl: string;
-  setPaymentLinkUrl: (url: string) => void;
-  updatePaymentLinkMutation: any;
 }
 
-export function CourseInfoCard({ 
-  course, 
-  courseId, 
-  paymentLinkUrl, 
-  setPaymentLinkUrl, 
-  updatePaymentLinkMutation 
-}: CourseInfoCardProps) {
+export function CourseInfoCard({ course, courseId }: CourseInfoCardProps) {
   const queryClient = useQueryClient();
   const [courseInfo, setCourseInfo] = useState({
     title: "",
@@ -280,32 +271,21 @@ export function CourseInfoCard({
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Stripe Connect Info Card */}
+      <Card className="border-emerald-200 bg-emerald-50/50">
         <CardHeader>
-          <CardTitle>Lien de paiement externe</CardTitle>
-          <CardDescription>Lien de paiement externe (optionnel)</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-emerald-800">
+            <CheckCircle2 className="h-5 w-5" />
+            Paiements via Stripe Connect
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="payment-link">Lien de paiement Stripe/PayPal</Label>
-            <Input
-              id="payment-link"
-              type="url"
-              value={paymentLinkUrl}
-              onChange={(e) => setPaymentLinkUrl(e.target.value)}
-              placeholder="https://buy.stripe.com/..."
-            />
-            <p className="text-xs text-muted-foreground">
-              Si vous avez connecté Stripe dans les paramètres, ce lien sera automatiquement généré.
-            </p>
-          </div>
-          <Button
-            onClick={() => updatePaymentLinkMutation.mutate(paymentLinkUrl)}
-            disabled={updatePaymentLinkMutation.isPending}
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Enregistrer le lien
-          </Button>
+        <CardContent>
+          <p className="text-sm text-emerald-700">
+            Les paiements de vos élèves sont traités via Stripe Connect et versés directement sur votre compte bancaire (commission de 10% prélevée par Kapsul).
+          </p>
+          <p className="text-xs text-emerald-600 mt-2">
+            Configurez votre compte Stripe dans les paramètres de votre académie (Personnalisation).
+          </p>
         </CardContent>
       </Card>
     </div>
