@@ -11,7 +11,6 @@ import { Bonus } from './sections/Bonus';
 import { Guarantee } from './sections/Guarantee';
 import { Instructor } from './sections/Instructor';
 import { Pricing } from './sections/Pricing';
-import { FAQFinal } from './sections/FAQFinal';
 import { Footer } from './sections/Footer';
 
 interface LandingPageTemplateProps {
@@ -31,7 +30,7 @@ const SECTION_ID_MAP: Record<string, string[]> = {
   'bonus': ['bonus'],
   'trainer': ['instructor'],
   'testimonials': ['testimonials'],
-  'faq': ['faq', 'faqFinal'],
+  'faq': ['faq'],
   'pricing': ['pricing'],
   'final_cta': [],
   'footer': ['footer'],
@@ -40,8 +39,8 @@ const SECTION_ID_MAP: Record<string, string[]> = {
 // Default all sections enabled
 const ALL_TEMPLATE_SECTIONS = [
   'hero', 'agitation', 'solutionTimeframe', 'pedagogy', 'program',
-  'testimonials', 'faq', 'bonus', 'guarantee', 'instructor',
-  'upsell', 'pricing', 'faqFinal', 'footer'
+  'testimonials', 'bonus', 'guarantee', 'instructor',
+  'upsell', 'pricing', 'faq', 'footer'
 ];
 
 export function LandingPageTemplate({ config, trainerPhoto, enabledSections, landingSlug }: LandingPageTemplateProps) {
@@ -104,12 +103,7 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections, lan
           <Testimonials content={content.testimonials} />
         )}
 
-        {/* Section 7 - FAQ */}
-        {isEnabled('faq') && content.faq && (
-          <FAQ content={content.faq} />
-        )}
-
-        {/* Section 8 - Bonus */}
+        {/* Section 7 - Bonus */}
         {isEnabled('bonus') && content.bonus && (
           <Bonus content={content.bonus} />
         )}
@@ -140,17 +134,17 @@ export function LandingPageTemplate({ config, trainerPhoto, enabledSections, lan
           </section>
         )}
 
-        {/* Section 12 - Pricing */}
+        {/* Section 11 - Pricing */}
         {isEnabled('pricing') && content.pricing && (
           <Pricing content={content.pricing} landingSlug={landingSlug} />
         )}
 
-        {/* Section 13 - FAQ Final */}
-        {isEnabled('faqFinal') && content.faqFinal && (
-          <FAQFinal content={content.faqFinal} />
+        {/* Section 12 - FAQ */}
+        {isEnabled('faq') && content.faq && (
+          <FAQ content={content.faq} />
         )}
 
-        {/* Section 14 - Footer */}
+        {/* Section 13 - Footer */}
         {isEnabled('footer') && content.footer && (
           <Footer content={content.footer} landingSlug={landingSlug} />
         )}
