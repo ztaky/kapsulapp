@@ -12,14 +12,14 @@ interface AIGeneratedToolProps {
 
 export function AIGeneratedTool({ config }: AIGeneratedToolProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [iframeHeight, setIframeHeight] = useState(300);
+  const [iframeHeight, setIframeHeight] = useState(600);
 
   useEffect(() => {
     if (!config.generatedCode || !iframeRef.current) return;
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'resize' && typeof event.data.height === 'number') {
-        setIframeHeight(Math.max(200, event.data.height + 20));
+        setIframeHeight(Math.max(500, event.data.height + 20));
       }
     };
 
