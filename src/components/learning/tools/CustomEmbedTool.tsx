@@ -28,10 +28,10 @@ export function CustomEmbedTool({ config }: CustomEmbedToolProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-purple-200 bg-background shadow-lg">
+        <div className="w-full min-h-[600px] rounded-2xl overflow-hidden border-2 border-purple-200 bg-background shadow-lg">
           <iframe
             src={config.embed_url}
-            className="w-full h-full"
+            className="w-full h-full min-h-[600px]"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title="Embedded content"
