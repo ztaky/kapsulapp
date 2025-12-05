@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle2, Circle, Lock, Play } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Circle, Lock, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Lesson {
@@ -70,6 +70,17 @@ export function CourseSidebar({ course, modules, progress, currentLessonId }: Co
 
   return (
     <div className="h-full flex flex-col">
+      {/* Bouton retour */}
+      <div className="p-4 border-b border-slate-100">
+        <Link 
+          to="/student" 
+          className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour aux formations
+        </Link>
+      </div>
+
       <div className="p-6 border-b border-slate-100">
         <h2 className="font-semibold text-xl mb-1 text-slate-900 tracking-tight">{course.title}</h2>
         {course.organizations && (

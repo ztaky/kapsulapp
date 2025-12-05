@@ -6,7 +6,7 @@ import { CourseSidebar } from "@/components/learning/CourseSidebar";
 import { ContentRenderer } from "@/components/learning/ContentRenderer";
 import { LessonNavigation } from "@/components/learning/LessonNavigation";
 import { TutorChatWidget } from "@/components/learning/TutorChatWidget";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -179,7 +179,15 @@ export default function LearningSpace() {
       </aside>
 
       {/* Mobile Menu */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-4 left-4 z-50 flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="rounded-2xl shadow-lg bg-white/90 backdrop-blur-sm border-slate-200"
+          onClick={() => navigate("/student")}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-2xl shadow-lg bg-white/90 backdrop-blur-sm border-slate-200">
