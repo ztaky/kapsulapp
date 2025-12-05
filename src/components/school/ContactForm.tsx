@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ const contactSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100),
   email: z.string().trim().email("Email invalide").max(255),
   message: z.string().trim().min(10, "Le message doit contenir au moins 10 caractères").max(2000),
+  website: z.string().optional(), // Honeypot field
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -28,6 +29,7 @@ interface ContactFormProps {
 export const ContactForm = ({ organizationName, organizationEmail, brandColor }: ContactFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const formLoadTime = useRef<number>(Date.now());
 
   const {
     register,
@@ -38,7 +40,26 @@ export const ContactForm = ({ organizationName, organizationEmail, brandColor }:
     resolver: zodResolver(contactSchema),
   });
 
+  // Reset form load time on mount
+  useEffect(() => {
+    formLoadTime.current = Date.now();
+  }, []);
+
   const onSubmit = async (data: ContactFormData) => {
+    // Honeypot check - if website field is filled, it's a bot
+    if (data.website) {
+      // Silently fail for bots
+      setSubmitted(true);
+      return;
+    }
+
+    // Time check - if form submitted too fast (< 3 seconds), likely a bot
+    const timeSinceLoad = Date.now() - formLoadTime.current;
+    if (timeSinceLoad < 3000) {
+      toast.error("Veuillez patienter quelques secondes avant d'envoyer");
+      return;
+    }
+
     if (!organizationEmail) {
       toast.error("Cette académie n'a pas configuré d'email de contact");
       return;
@@ -46,17 +67,23 @@ export const ContactForm = ({ organizationName, organizationEmail, brandColor }:
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke('send-school-contact', {
+      const { data: responseData, error } = await supabase.functions.invoke('send-school-contact', {
         body: {
           senderName: data.name,
           senderEmail: data.email,
           message: data.message,
           organizationName,
           organizationEmail,
+          timestamp: formLoadTime.current,
         },
       });
 
       if (error) throw error;
+      
+      if (responseData?.rateLimited) {
+        toast.error("Trop de messages envoyés. Veuillez réessayer plus tard.");
+        return;
+      }
 
       setSubmitted(true);
       reset();
@@ -107,6 +134,18 @@ export const ContactForm = ({ organizationName, organizationEmail, brandColor }:
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Honeypot field - hidden from users, bots will fill it */}
+          <div className="absolute -left-[9999px] opacity-0 pointer-events-none" aria-hidden="true">
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              {...register('website')}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Nom complet</Label>
             <Input
