@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, Lock, XCircle, Play, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle, Lock, XCircle, Play, ArrowRight, CreditCard, Banknote } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import {
@@ -12,12 +12,16 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 export default function CourseSalesPage() {
   const { slug, courseId } = useParams();
   const navigate = useNavigate();
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [cgvAccepted, setCgvAccepted] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<'full' | 'installments'>('full');
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
   // Handle sticky bar on scroll
   useEffect(() => {
@@ -100,14 +104,9 @@ export default function CourseSalesPage() {
     enabled: !!session?.user?.id && !!courseId,
   });
 
-  const handleBuyClick = () => {
+  const handleBuyClick = async (paymentType: 'full' | 'installments' = selectedPayment) => {
     if (!cgvAccepted) {
       toast.error("Veuillez accepter les CGV pour continuer");
-      return;
-    }
-
-    if (!course?.payment_link_url) {
-      toast.error("Lien de paiement non configuré");
       return;
     }
 
@@ -117,11 +116,37 @@ export default function CourseSalesPage() {
       return;
     }
 
-    const paymentUrl = new URL(course.payment_link_url);
-    paymentUrl.searchParams.set("client_reference_id", session.user.id);
-    paymentUrl.searchParams.set("prefilled_email", session.user.email || "");
+    // Use Stripe checkout session for connected accounts
+    setIsCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+        body: {
+          courseId,
+          paymentType,
+        },
+      });
 
-    window.location.href = paymentUrl.toString();
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error("Erreur lors de la création du paiement");
+      }
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      // Fallback to payment link if available
+      if (course?.payment_link_url) {
+        const paymentUrl = new URL(course.payment_link_url);
+        paymentUrl.searchParams.set("client_reference_id", session.user.id);
+        paymentUrl.searchParams.set("prefilled_email", session.user.email || "");
+        window.location.href = paymentUrl.toString();
+      } else {
+        toast.error(err.message || "Erreur lors du paiement");
+      }
+    } finally {
+      setIsCheckoutLoading(false);
+    }
   };
 
   const handleAccessCourse = () => {
@@ -168,7 +193,7 @@ export default function CourseSalesPage() {
                 Accéder au cours
               </Button>
             ) : (
-              <Button onClick={handleBuyClick} className="bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90">
+              <Button onClick={() => handleBuyClick()} className="bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90">
                 Acheter - {course.price}€
               </Button>
             )}
@@ -191,7 +216,7 @@ export default function CourseSalesPage() {
                 {!hasPurchased ? (
                   <Button
                     size="lg"
-                    onClick={handleBuyClick}
+                    onClick={() => handleBuyClick()}
                     className="text-lg px-8 py-6 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-lg hover:shadow-xl transition-all"
                   >
                     Commencer maintenant
@@ -388,7 +413,7 @@ export default function CourseSalesPage() {
 
             <Button
               size="lg"
-              onClick={handleBuyClick}
+              onClick={() => handleBuyClick()}
               disabled={!cgvAccepted}
               className="text-xl px-12 py-8 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -416,7 +441,7 @@ export default function CourseSalesPage() {
             </div>
           )}
           <Button
-            onClick={handleBuyClick}
+            onClick={() => handleBuyClick()}
             disabled={!cgvAccepted}
             className="w-full text-lg py-6 rounded-full bg-gradient-to-r from-orange-600 to-pink-600 hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >

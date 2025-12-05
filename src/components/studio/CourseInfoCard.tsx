@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, CreditCard } from "lucide-react";
 import { CourseCoverUploader } from "./CourseCoverUploader";
 
 interface CourseInfoCardProps {
@@ -32,6 +34,8 @@ export function CourseInfoCard({
     price: 0,
     cover_image: "",
   });
+  const [installmentsEnabled, setInstallmentsEnabled] = useState(false);
+  const [installmentsCount, setInstallmentsCount] = useState(3);
 
   useEffect(() => {
     if (course) {
@@ -41,6 +45,8 @@ export function CourseInfoCard({
         price: course.price || 0,
         cover_image: course.cover_image || "",
       });
+      setInstallmentsEnabled(course.installments_enabled || false);
+      setInstallmentsCount(course.installments_count || 3);
     }
   }, [course]);
 
@@ -66,6 +72,58 @@ export function CourseInfoCard({
       toast.error("Erreur: " + error.message);
     },
   });
+
+  const createInstallmentPriceMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("create-installment-price", {
+        body: {
+          courseId,
+          totalPrice: courseInfo.price,
+          installmentsCount,
+        },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
+      toast.success(`Paiement en ${data.installmentsCount}x configuré (${data.monthlyAmount}€/mois)`);
+    },
+    onError: (error: any) => {
+      toast.error("Erreur: " + error.message);
+    },
+  });
+
+  const disableInstallmentsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("courses")
+        .update({
+          installments_enabled: false,
+          installment_price_id: null,
+        })
+        .eq("id", courseId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
+      toast.success("Paiement en plusieurs fois désactivé");
+    },
+    onError: (error: any) => {
+      toast.error("Erreur: " + error.message);
+    },
+  });
+
+  const handleInstallmentsToggle = async (enabled: boolean) => {
+    setInstallmentsEnabled(enabled);
+    if (!enabled) {
+      disableInstallmentsMutation.mutate();
+    }
+  };
+
+  const monthlyPrice = courseInfo.price > 0 ? Math.ceil(courseInfo.price / installmentsCount) : 0;
 
   const hasChanges = course && (
     courseInfo.title !== course.title ||
@@ -137,9 +195,94 @@ export function CourseInfoCard({
         </CardContent>
       </Card>
 
+      {/* Installment Payment Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuration du paiement</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Paiement en plusieurs fois
+          </CardTitle>
+          <CardDescription>
+            Proposez à vos élèves de payer en plusieurs mensualités sans frais
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Activer le paiement en plusieurs fois</Label>
+              <p className="text-sm text-muted-foreground">
+                Les élèves pourront choisir entre paiement comptant ou en plusieurs fois
+              </p>
+            </div>
+            <Switch
+              checked={installmentsEnabled}
+              onCheckedChange={handleInstallmentsToggle}
+              disabled={disableInstallmentsMutation.isPending}
+            />
+          </div>
+
+          {installmentsEnabled && (
+            <>
+              <div className="space-y-2">
+                <Label>Nombre de mensualités</Label>
+                <Select
+                  value={installmentsCount.toString()}
+                  onValueChange={(value) => setInstallmentsCount(parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 fois</SelectItem>
+                    <SelectItem value="3">3 fois</SelectItem>
+                    <SelectItem value="4">4 fois</SelectItem>
+                    <SelectItem value="6">6 fois</SelectItem>
+                    <SelectItem value="10">10 fois</SelectItem>
+                    <SelectItem value="12">12 fois</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="bg-muted rounded-lg p-4">
+                <p className="text-sm font-medium">Aperçu pour l'élève</p>
+                <p className="text-2xl font-bold mt-1">
+                  {installmentsCount}x {monthlyPrice}€ <span className="text-sm font-normal text-muted-foreground">sans frais</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Prix total : {courseInfo.price}€
+                </p>
+              </div>
+
+              <Button
+                onClick={() => createInstallmentPriceMutation.mutate()}
+                disabled={createInstallmentPriceMutation.isPending || courseInfo.price <= 0}
+                className="w-full"
+              >
+                {createInstallmentPriceMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Configuration...
+                  </>
+                ) : course?.installment_price_id ? (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Mettre à jour le paiement en {installmentsCount}x
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Configurer le paiement en {installmentsCount}x
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Lien de paiement externe</CardTitle>
           <CardDescription>Lien de paiement externe (optionnel)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

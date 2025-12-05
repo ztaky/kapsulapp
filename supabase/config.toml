@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.send-enrollment-notification]
 verify_jwt = false
+
+[functions.create-installment-price]
+verify_jwt = false
