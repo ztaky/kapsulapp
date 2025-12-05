@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCourseContext, formatCourseContextForAI } from "@/hooks/useCourseContext";
 import { useTutorQuota } from "@/hooks/useTutorQuota";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MarkdownRenderer } from "@/components/shared/MarkdownRenderer";
 
 interface Message {
   role: "user" | "assistant";
@@ -280,17 +281,7 @@ export function TutorChatWidget({ courseId, currentLessonTitle, organizationId }
                         : "bg-slate-100 dark:bg-slate-800 text-foreground"
                     }`}
                   >
-                    <div 
-                      className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5"
-                      dangerouslySetInnerHTML={{ 
-                        __html: message.content
-                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                          .replace(/^(\d+)\.\s+(.*)$/gm, '<li>$2</li>')
-                          .replace(/^-\s+(.*)$/gm, '<li>$1</li>')
-                          .replace(/\n/g, '<br/>')
-                      }} 
-                    />
+                    <MarkdownRenderer content={message.content} />
                   </div>
                 </div>
               ))}
