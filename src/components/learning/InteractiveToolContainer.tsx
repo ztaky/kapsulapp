@@ -3,6 +3,7 @@ import { CustomEmbedTool } from "./tools/CustomEmbedTool";
 import { RichContentTool } from "./tools/RichContentTool";
 import { QuizTool } from "./tools/QuizTool";
 import { AIGeneratedTool } from "./tools/AIGeneratedTool";
+import { FullscreenWrapper } from "./tools/FullscreenWrapper";
 import { Code } from "lucide-react";
 
 interface InteractiveToolContainerProps {
@@ -25,24 +26,26 @@ function CustomCodeTool({ config }: { config: { htmlCode?: string; title?: strin
   }
 
   return (
-    <Card className="overflow-hidden">
-      {config.title && (
-        <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Code className="h-4 w-4" />
-            {config.title}
-          </CardTitle>
-        </CardHeader>
-      )}
-      <CardContent className="p-0">
-        <iframe
-          srcDoc={config.htmlCode}
-          className="w-full min-h-[700px] border-0"
-          sandbox="allow-scripts allow-forms allow-popups"
-          title={config.title || "Outil interactif"}
-        />
-      </CardContent>
-    </Card>
+    <FullscreenWrapper title={config.title || "Code personnalisé"}>
+      <Card className="overflow-hidden">
+        {config.title && (
+          <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              {config.title}
+            </CardTitle>
+          </CardHeader>
+        )}
+        <CardContent className="p-0">
+          <iframe
+            srcDoc={config.htmlCode}
+            className="w-full min-h-[700px] border-0"
+            sandbox="allow-scripts allow-forms allow-popups"
+            title={config.title || "Outil interactif"}
+          />
+        </CardContent>
+      </Card>
+    </FullscreenWrapper>
   );
 }
 

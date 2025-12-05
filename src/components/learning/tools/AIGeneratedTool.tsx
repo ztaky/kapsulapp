@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles } from 'lucide-react';
+import { FullscreenWrapper } from './FullscreenWrapper';
 
 interface AIGeneratedToolProps {
   config: {
@@ -84,23 +85,25 @@ export function AIGeneratedTool({ config }: AIGeneratedToolProps) {
   `;
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Sparkles className="h-4 w-4" />
-          Outil Interactif
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <iframe
-          ref={iframeRef}
-          srcDoc={wrappedCode}
-          sandbox="allow-scripts allow-forms"
-          className="w-full border-0"
-          style={{ height: `${iframeHeight}px` }}
-          title="Outil interactif IA"
-        />
-      </CardContent>
-    </Card>
+    <FullscreenWrapper title="Outil Interactif IA">
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Outil Interactif
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <iframe
+            ref={iframeRef}
+            srcDoc={wrappedCode}
+            sandbox="allow-scripts allow-forms"
+            className="w-full border-0"
+            style={{ height: `${iframeHeight}px` }}
+            title="Outil interactif IA"
+          />
+        </CardContent>
+      </Card>
+    </FullscreenWrapper>
   );
 }
