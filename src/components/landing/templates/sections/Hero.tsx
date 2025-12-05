@@ -1,7 +1,7 @@
 import { HeroContent } from '@/config/landingPageSchema';
 import { useTheme, getGradientStyle } from '@/theme/ThemeProvider';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Star } from 'lucide-react';
+import { CheckCircle2, Star, CreditCard } from 'lucide-react';
 
 interface HeroProps {
   content: HeroContent & { hero_image?: string };
@@ -97,6 +97,14 @@ export function Hero({ content }: HeroProps) {
           <p className="text-sm text-gray-500">
             Accès immédiat · Paiement sécurisé
           </p>
+          
+          {/* Badge Paiement 3x */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+            <CreditCard className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700">
+              Paiement en 3x sans frais disponible
+            </span>
+          </div>
         </div>
 
         {/* Testimonial Snippet - Simplified */}
