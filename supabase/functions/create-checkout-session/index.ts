@@ -186,17 +186,13 @@ serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
-      // Fallback: Use existing payment link if no connected account
-      if (course.payment_link_url) {
-        console.log("Using existing payment link");
-        return new Response(
-          JSON.stringify({ url: course.payment_link_url }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
+      // No Stripe Connect - return clear error
+      console.error("Organization has no Stripe Connect account configured");
       return new Response(
-        JSON.stringify({ error: "No payment method configured for this course" }),
+        JSON.stringify({ 
+          error: "Stripe Connect non configuré. Le formateur doit connecter son compte Stripe pour recevoir les paiements.",
+          code: "STRIPE_NOT_CONNECTED"
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

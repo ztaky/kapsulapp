@@ -60,13 +60,20 @@ const WIZARD_STEPS = [
   {
     key: "stripe_connect",
     title: "Connectez vos paiements",
-    subtitle: "Stripe Connect",
-    description: "Recevez vos paiements directement sur votre compte bancaire grâce à Stripe.",
+    subtitle: "Stripe Connect — Obligatoire pour vendre",
+    description: "Recevez vos paiements directement sur votre compte bancaire. Sans cette étape, vous ne pourrez pas vendre vos formations.",
     icon: CreditCard,
     color: "from-purple-500 to-violet-500",
     bgColor: "bg-gradient-to-br from-purple-50 to-violet-50",
-    actionLabel: "Connecter Stripe",
+    actionLabel: "Connecter Stripe (2 min)",
     actionPath: "/branding",
+    benefits: [
+      "Paiements sécurisés par carte bancaire",
+      "Virements automatiques sur votre compte",
+      "Paiement en plusieurs fois pour vos élèves",
+      "Tableau de bord Stripe pour suivre vos revenus",
+    ],
+    isRequired: true,
   },
   {
     key: "landing_page",
@@ -178,6 +185,28 @@ export function OnboardingWizard({
           <p className="text-center text-muted-foreground mt-4 leading-relaxed">
             {step.description}
           </p>
+
+          {/* Show benefits for Stripe Connect step */}
+          {(step as any).benefits && (
+            <div className="mt-6 p-4 rounded-2xl bg-secondary/50 border border-border space-y-2">
+              {(step as any).benefits.map((benefit: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 text-sm">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                  <span>{benefit}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Show required badge for Stripe */}
+          {(step as any).isRequired && (
+            <div className="mt-4 flex justify-center">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                <CreditCard className="h-3 w-3" />
+                Requis pour vendre
+              </span>
+            </div>
+          )}
 
           {currentStep === 0 && (
             <div className="mt-6 p-4 rounded-2xl bg-secondary/50 border border-border">

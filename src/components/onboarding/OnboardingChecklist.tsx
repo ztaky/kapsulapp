@@ -105,6 +105,7 @@ export function OnboardingChecklist({
         {steps.map((step) => {
           const Icon = STEP_ICONS[step.key];
           const isCompleted = step.completed || step.skipped;
+          const isStripeStep = step.key === "stripe_connect";
 
           return (
             <button
@@ -115,27 +116,43 @@ export function OnboardingChecklist({
                 "w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left",
                 isCompleted 
                   ? "bg-slate-50/50 border-slate-100 opacity-60 cursor-default" 
-                  : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm cursor-pointer"
+                  : isStripeStep
+                    ? "bg-amber-50/50 border-amber-200 hover:border-amber-300 hover:shadow-sm cursor-pointer"
+                    : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm cursor-pointer"
               )}
             >
               <div className={cn(
                 "rounded-lg p-2.5 shrink-0",
-                isCompleted ? "bg-emerald-50" : "bg-amber-50"
+                isCompleted 
+                  ? "bg-emerald-50" 
+                  : isStripeStep 
+                    ? "bg-amber-100" 
+                    : "bg-amber-50"
               )}>
                 {isCompleted ? (
                   <Check className="h-4 w-4 text-emerald-600" />
                 ) : (
-                  <Icon className="h-4 w-4 text-slate-600" />
+                  <Icon className={cn(
+                    "h-4 w-4",
+                    isStripeStep ? "text-amber-700" : "text-slate-600"
+                  )} />
                 )}
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className={cn(
-                  "font-medium text-sm",
-                  isCompleted ? "text-muted-foreground line-through" : "text-foreground"
-                )}>
-                  {step.title}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className={cn(
+                    "font-medium text-sm",
+                    isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                  )}>
+                    {step.title}
+                  </p>
+                  {isStripeStep && !isCompleted && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-200 text-amber-800">
+                      Requis
+                    </span>
+                  )}
+                </div>
                 <p className={cn(
                   "text-xs truncate mt-0.5",
                   isCompleted ? "text-muted-foreground" : "text-muted-foreground"
@@ -145,7 +162,10 @@ export function OnboardingChecklist({
               </div>
 
               {!isCompleted && (
-                <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
+                <ChevronRight className={cn(
+                  "h-4 w-4 shrink-0",
+                  isStripeStep ? "text-amber-600" : "text-primary"
+                )} />
               )}
             </button>
           );

@@ -135,12 +135,8 @@ export default function CourseSalesPage() {
       }
     } catch (err: any) {
       console.error("Checkout error:", err);
-      // Fallback to payment link if available
-      if (course?.payment_link_url) {
-        const paymentUrl = new URL(course.payment_link_url);
-        paymentUrl.searchParams.set("client_reference_id", session.user.id);
-        paymentUrl.searchParams.set("prefilled_email", session.user.email || "");
-        window.location.href = paymentUrl.toString();
+      if (err.message?.includes("STRIPE_NOT_CONNECTED") || err.message?.includes("Stripe Connect")) {
+        toast.error("Le paiement n'est pas encore configuré pour cette formation. Veuillez contacter le formateur.");
       } else {
         toast.error(err.message || "Erreur lors du paiement");
       }
