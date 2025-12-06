@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, ArrowRight, ArrowLeft, Loader2, BookOpen, Users, Target, Layers } from "lucide-react";
+import { Sparkles, ArrowRight, ArrowLeft, Loader2, BookOpen, Users, Target, Layers, FolderOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CourseResourcesUpload, AttachedFile } from "./CourseResourcesUpload";
 
 interface CourseAIWizardDialogProps {
   open: boolean;
@@ -51,13 +52,16 @@ interface WizardData {
   targetAudience: string;
   objectives: string;
   moduleCount: string;
+  uploadedFiles: AttachedFile[];
+  referenceLinks: string[];
 }
 
 const STEPS = [
   { id: 1, title: "Sujet", icon: BookOpen },
   { id: 2, title: "Public", icon: Users },
   { id: 3, title: "Objectifs", icon: Target },
-  { id: 4, title: "Structure", icon: Layers },
+  { id: 4, title: "Ressources", icon: FolderOpen },
+  { id: 5, title: "Structure", icon: Layers },
 ];
 
 export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: CourseAIWizardDialogProps) {
@@ -68,10 +72,12 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
     targetAudience: "debutant",
     objectives: "",
     moduleCount: "4",
+    uploadedFiles: [],
+    referenceLinks: [],
   });
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -91,6 +97,8 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
       case 3:
         return wizardData.objectives.trim().length >= 10;
       case 4:
+        return true; // Resources are optional
+      case 5:
         return !!wizardData.moduleCount;
       default:
         return false;
@@ -108,12 +116,25 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
         professionnel: "Professionnels - experts du domaine"
       }[wizardData.targetAudience] || wizardData.targetAudience;
 
+      // Build resources section for prompt
+      let resourcesSection = "";
+      if (wizardData.uploadedFiles.length > 0 || wizardData.referenceLinks.length > 0) {
+        resourcesSection = "\n\nRESSOURCES FOURNIES PAR LE FORMATEUR:";
+        if (wizardData.uploadedFiles.length > 0) {
+          resourcesSection += `\nFichiers uploadés: ${wizardData.uploadedFiles.map(f => f.name).join(", ")}`;
+        }
+        if (wizardData.referenceLinks.length > 0) {
+          resourcesSection += `\nLiens de référence: ${wizardData.referenceLinks.join(", ")}`;
+        }
+        resourcesSection += "\n\nUtilise ces ressources comme base pour structurer et enrichir le contenu du cours. Intègre les concepts et informations de ces documents dans les leçons.";
+      }
+
       const prompt = `Génère un cours complet avec l'outil create_complete_course.
 
 SUJET DU COURS: ${wizardData.subject}
 PUBLIC CIBLE: ${audienceLabel}
 OBJECTIFS D'APPRENTISSAGE: ${wizardData.objectives}
-NOMBRE DE MODULES SOUHAITÉS: ${wizardData.moduleCount}
+NOMBRE DE MODULES SOUHAITÉS: ${wizardData.moduleCount}${resourcesSection}
 
 INSTRUCTIONS:
 - Crée exactement ${wizardData.moduleCount} modules progressifs
@@ -160,6 +181,8 @@ INSTRUCTIONS:
         targetAudience: "debutant",
         objectives: "",
         moduleCount: "4",
+        uploadedFiles: [],
+        referenceLinks: [],
       });
       
     } catch (error) {
@@ -334,8 +357,28 @@ INSTRUCTIONS:
                 </div>
               )}
 
-              {/* Step 4: Module Count */}
+              {/* Step 4: Resources (optional) */}
               {currentStep === 4 && (
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-lg font-semibold text-slate-900">
+                      Avez-vous des ressources à partager ?
+                    </Label>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Uploadez des documents ou ajoutez des liens pour enrichir la génération (facultatif)
+                    </p>
+                  </div>
+                  <CourseResourcesUpload
+                    files={wizardData.uploadedFiles}
+                    links={wizardData.referenceLinks}
+                    onFilesChange={(files) => setWizardData({ ...wizardData, uploadedFiles: files })}
+                    onLinksChange={(links) => setWizardData({ ...wizardData, referenceLinks: links })}
+                  />
+                </div>
+              )}
+
+              {/* Step 5: Module Count */}
+              {currentStep === 5 && (
                 <div className="space-y-4">
                   <div>
                     <Label className="text-lg font-semibold text-slate-900">
@@ -368,6 +411,11 @@ INSTRUCTIONS:
                       <li>👥 Public: <span className="font-medium text-slate-900">{wizardData.targetAudience}</span></li>
                       <li>🎯 Objectifs: <span className="font-medium text-slate-900">{wizardData.objectives.slice(0, 50)}...</span></li>
                       <li>📦 Modules: <span className="font-medium text-slate-900">{wizardData.moduleCount}</span></li>
+                      {(wizardData.uploadedFiles.length > 0 || wizardData.referenceLinks.length > 0) && (
+                        <li>📎 Ressources: <span className="font-medium text-slate-900">
+                          {wizardData.uploadedFiles.length} fichier(s), {wizardData.referenceLinks.length} lien(s)
+                        </span></li>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -385,7 +433,7 @@ INSTRUCTIONS:
                   Retour
                 </Button>
                 
-                {currentStep < 4 ? (
+                {currentStep < 5 ? (
                   <Button
                     variant="gradient"
                     onClick={handleNext}
