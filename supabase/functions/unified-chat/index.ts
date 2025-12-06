@@ -432,11 +432,16 @@ serve(async (req) => {
     const forceTool = context.forceTool as string | undefined;
     const useStreaming = !forceTool;
 
-    // Build request body
+    // Build request body - enhance system prompt if tool is forced
+    let enhancedSystemPrompt = systemPrompt;
+    if (forceTool) {
+      enhancedSystemPrompt += `\n\nINSTRUCTION CRITIQUE: Tu DOIS obligatoirement utiliser l'outil "${forceTool}" pour répondre. NE RÉPONDS JAMAIS avec du texte simple. UTILISE UNIQUEMENT l'outil demandé.`;
+    }
+
     const requestBody: any = {
       model: 'google/gemini-2.5-flash',
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: enhancedSystemPrompt },
         ...messages,
       ],
       stream: useStreaming,
@@ -490,12 +495,13 @@ serve(async (req) => {
     // Non-streaming: extract tool call result
     if (!useStreaming) {
       const data = await response.json();
-      console.log('[unified-chat] Non-streaming response received');
+      console.log('[unified-chat] Non-streaming raw response:', JSON.stringify(data, null, 2).substring(0, 2000));
       
       const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
       if (toolCall && toolCall.function?.arguments) {
         try {
           const args = JSON.parse(toolCall.function.arguments);
+          console.log(`[unified-chat] Tool call parsed successfully: ${toolCall.function.name}`);
           return new Response(JSON.stringify({ 
             toolName: toolCall.function.name,
             data: args,
@@ -505,11 +511,33 @@ serve(async (req) => {
           });
         } catch (parseError) {
           console.error('[unified-chat] Failed to parse tool arguments:', parseError);
-          throw new Error('Failed to parse AI response');
+          console.error('[unified-chat] Raw arguments:', toolCall.function.arguments?.substring(0, 500));
+          return new Response(JSON.stringify({ 
+            error: 'Échec du parsing de la réponse IA',
+            code: 'TOOL_PARSE_ERROR',
+            details: String(parseError)
+          }), {
+            status: 422,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
         }
       }
       
-      // Fallback to content if no tool call
+      // If forceTool was requested but no tool_call → explicit error
+      if (forceTool) {
+        const content = data.choices?.[0]?.message?.content || '';
+        console.error(`[unified-chat] Expected tool call '${forceTool}' but got text response:`, content.substring(0, 500));
+        return new Response(JSON.stringify({ 
+          error: `L'IA n'a pas utilisé l'outil demandé (${forceTool}). Réessayez.`,
+          content: content.substring(0, 300),
+          code: 'TOOL_CALL_MISSING'
+        }), {
+          status: 422,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Fallback to content if no tool call (for modes without forceTool)
       return new Response(JSON.stringify({ 
         content: data.choices?.[0]?.message?.content,
         nearLimit 
