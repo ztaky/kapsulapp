@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, ArrowRight, ArrowLeft, Loader2, BookOpen, Users, Target, Layers, FolderOpen } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Sparkles, ArrowRight, ArrowLeft, Loader2, BookOpen, Users, Target, Layers, FolderOpen, FileText, Link, Check, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CourseResourcesUpload, AttachedFile } from "./CourseResourcesUpload";
@@ -64,9 +65,26 @@ const STEPS = [
   { id: 5, title: "Structure", icon: Layers },
 ];
 
+interface ExtractionProgress {
+  phase: 'idle' | 'files' | 'urls' | 'generating';
+  currentItem: string;
+  currentIndex: number;
+  totalItems: number;
+  completedFiles: { name: string; success: boolean }[];
+  completedUrls: { url: string; success: boolean }[];
+}
+
 export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: CourseAIWizardDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [extractionProgress, setExtractionProgress] = useState<ExtractionProgress>({
+    phase: 'idle',
+    currentItem: '',
+    currentIndex: 0,
+    totalItems: 0,
+    completedFiles: [],
+    completedUrls: [],
+  });
   const [wizardData, setWizardData] = useState<WizardData>({
     subject: "",
     targetAudience: "debutant",
@@ -149,6 +167,14 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
 
   const handleGenerate = async () => {
     setIsGenerating(true);
+    setExtractionProgress({
+      phase: 'idle',
+      currentItem: '',
+      currentIndex: 0,
+      totalItems: 0,
+      completedFiles: [],
+      completedUrls: [],
+    });
     
     try {
       const audienceLabel = {
@@ -158,42 +184,79 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
         professionnel: "Professionnels - experts du domaine"
       }[wizardData.targetAudience] || wizardData.targetAudience;
 
-      // Extract content from uploaded files
+      // Extract content from uploaded files with progress tracking
       let extractedFileContents: { fileName: string; content: string }[] = [];
       let extractedUrlContents: { url: string; content: string }[] = [];
       
       if (wizardData.uploadedFiles.length > 0) {
-        toast.info("Extraction du contenu des documents (OCR inclus)...");
+        setExtractionProgress(prev => ({
+          ...prev,
+          phase: 'files',
+          totalItems: wizardData.uploadedFiles.length,
+          currentIndex: 0,
+        }));
         
-        const extractionPromises = wizardData.uploadedFiles.map(async (file) => {
+        for (let i = 0; i < wizardData.uploadedFiles.length; i++) {
+          const file = wizardData.uploadedFiles[i];
+          setExtractionProgress(prev => ({
+            ...prev,
+            currentItem: file.name,
+            currentIndex: i,
+          }));
+          
           const content = await extractDocumentContent(file);
-          return { fileName: file.name, content };
-        });
-        
-        extractedFileContents = await Promise.all(extractionPromises);
-        extractedFileContents = extractedFileContents.filter(ec => ec.content.length > 0);
-        
-        if (extractedFileContents.length > 0) {
-          toast.success(`Contenu extrait de ${extractedFileContents.length} fichier(s)`);
+          const success = content.length > 0;
+          
+          if (success) {
+            extractedFileContents.push({ fileName: file.name, content });
+          }
+          
+          setExtractionProgress(prev => ({
+            ...prev,
+            completedFiles: [...prev.completedFiles, { name: file.name, success }],
+          }));
         }
       }
 
-      // Extract content from URLs
+      // Extract content from URLs with progress tracking
       if (wizardData.referenceLinks.length > 0) {
-        toast.info("Extraction du contenu des liens web...");
+        setExtractionProgress(prev => ({
+          ...prev,
+          phase: 'urls',
+          totalItems: wizardData.referenceLinks.length,
+          currentIndex: 0,
+          currentItem: '',
+        }));
         
-        const urlExtractionPromises = wizardData.referenceLinks.map(async (url) => {
+        for (let i = 0; i < wizardData.referenceLinks.length; i++) {
+          const url = wizardData.referenceLinks[i];
+          setExtractionProgress(prev => ({
+            ...prev,
+            currentItem: url,
+            currentIndex: i,
+          }));
+          
           const content = await extractUrlContent(url);
-          return { url, content };
-        });
-        
-        extractedUrlContents = await Promise.all(urlExtractionPromises);
-        extractedUrlContents = extractedUrlContents.filter(ec => ec.content.length > 0);
-        
-        if (extractedUrlContents.length > 0) {
-          toast.success(`Contenu extrait de ${extractedUrlContents.length} lien(s)`);
+          const success = content.length > 0;
+          
+          if (success) {
+            extractedUrlContents.push({ url, content });
+          }
+          
+          setExtractionProgress(prev => ({
+            ...prev,
+            completedUrls: [...prev.completedUrls, { url, success }],
+          }));
         }
       }
+
+      // Update phase to generating
+      setExtractionProgress(prev => ({
+        ...prev,
+        phase: 'generating',
+        currentItem: '',
+      }));
+
 
       // Build resources section for prompt with extracted content
       let resourcesSection = "";
@@ -370,13 +433,119 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
         {/* Content */}
         <div className="p-6">
           {isGenerating ? (
-            <div className="flex flex-col items-center justify-center py-16">
+            <div className="flex flex-col items-center justify-center py-8">
+              {/* Extraction Progress UI */}
+              {(extractionProgress.phase === 'files' || extractionProgress.phase === 'urls') && (
+                <div className="w-full max-w-md space-y-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    {extractionProgress.phase === 'files' ? (
+                      <FileText className="h-5 w-5 text-orange-500" />
+                    ) : (
+                      <Link className="h-5 w-5 text-blue-500" />
+                    )}
+                    <span className="font-medium text-slate-700">
+                      {extractionProgress.phase === 'files' 
+                        ? 'Extraction des documents' 
+                        : 'Extraction des pages web'}
+                    </span>
+                    <span className="ml-auto text-sm text-slate-500">
+                      {extractionProgress.currentIndex + 1} / {extractionProgress.totalItems}
+                    </span>
+                  </div>
+                  
+                  <Progress 
+                    value={((extractionProgress.currentIndex + 1) / extractionProgress.totalItems) * 100} 
+                    className="h-2"
+                  />
+                  
+                  <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 rounded-lg p-3">
+                    <Loader2 className="h-4 w-4 animate-spin text-orange-500 flex-shrink-0" />
+                    <span className="truncate">
+                      {extractionProgress.currentItem.length > 40 
+                        ? `...${extractionProgress.currentItem.slice(-40)}` 
+                        : extractionProgress.currentItem}
+                    </span>
+                  </div>
+
+                  {/* Completed items list */}
+                  {(extractionProgress.completedFiles.length > 0 || extractionProgress.completedUrls.length > 0) && (
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {extractionProgress.completedFiles.map((file, idx) => (
+                        <div key={`file-${idx}`} className="flex items-center gap-2 text-sm">
+                          {file.success ? (
+                            <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                          )}
+                          <FileText className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                          <span className={`truncate ${file.success ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {file.name}
+                          </span>
+                          <span className="ml-auto text-xs text-slate-400">
+                            {file.success ? 'Extrait' : 'Échec'}
+                          </span>
+                        </div>
+                      ))}
+                      {extractionProgress.completedUrls.map((urlItem, idx) => (
+                        <div key={`url-${idx}`} className="flex items-center gap-2 text-sm">
+                          {urlItem.success ? (
+                            <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                          )}
+                          <Link className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                          <span className={`truncate ${urlItem.success ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {urlItem.url.length > 35 ? `${urlItem.url.slice(0, 35)}...` : urlItem.url}
+                          </span>
+                          <span className="ml-auto text-xs text-slate-400">
+                            {urlItem.success ? 'Extrait' : 'Échec'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Generation phase */}
+              {extractionProgress.phase === 'generating' && (
+                <>
+                  {/* Show extraction summary if there were files/urls */}
+                  {(extractionProgress.completedFiles.length > 0 || extractionProgress.completedUrls.length > 0) && (
+                    <div className="w-full max-w-md mb-6 p-3 bg-green-50 border border-green-100 rounded-xl">
+                      <div className="flex items-center gap-2 text-green-700 text-sm font-medium mb-2">
+                        <Check className="h-4 w-4" />
+                        Extraction terminée
+                      </div>
+                      <div className="text-xs text-green-600 space-y-1">
+                        {extractionProgress.completedFiles.filter(f => f.success).length > 0 && (
+                          <p>✓ {extractionProgress.completedFiles.filter(f => f.success).length} document(s) extrait(s)</p>
+                        )}
+                        {extractionProgress.completedUrls.filter(u => u.success).length > 0 && (
+                          <p>✓ {extractionProgress.completedUrls.filter(u => u.success).length} page(s) web extraite(s)</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Main loading animation */}
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 animate-pulse" />
                 <Loader2 className="absolute inset-0 m-auto h-10 w-10 text-white animate-spin" />
               </div>
-              <p className="mt-6 text-lg font-medium text-slate-700">Génération du cours en cours...</p>
-              <p className="mt-2 text-sm text-slate-500">Cela peut prendre quelques secondes</p>
+              <p className="mt-6 text-lg font-medium text-slate-700">
+                {extractionProgress.phase === 'files' && 'Extraction des documents en cours...'}
+                {extractionProgress.phase === 'urls' && 'Extraction des pages web en cours...'}
+                {extractionProgress.phase === 'generating' && 'Génération du cours en cours...'}
+                {extractionProgress.phase === 'idle' && 'Préparation...'}
+              </p>
+              <p className="mt-2 text-sm text-slate-500">
+                {extractionProgress.phase === 'generating' 
+                  ? 'Cela peut prendre quelques secondes'
+                  : 'Analyse du contenu avec OCR et IA'}
+              </p>
             </div>
           ) : (
             <>
