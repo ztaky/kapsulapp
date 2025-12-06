@@ -445,7 +445,7 @@ serve(async (req) => {
         ...messages,
       ],
       stream: useStreaming,
-      max_tokens: 8192,
+      max_tokens: 32768, // Increased for complete course generation
     };
 
     // Add tools for studio mode
@@ -499,8 +499,26 @@ serve(async (req) => {
       
       const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
       if (toolCall && toolCall.function?.arguments) {
+        const rawArgs = toolCall.function.arguments;
+        
+        // Check for truncated JSON response
+        const trimmedArgs = rawArgs.trim();
+        const lastChar = trimmedArgs[trimmedArgs.length - 1];
+        if (lastChar !== '}' && lastChar !== ']') {
+          console.error('[unified-chat] Response appears truncated. Last 100 chars:', trimmedArgs.slice(-100));
+          console.error('[unified-chat] Response length:', rawArgs.length);
+          return new Response(JSON.stringify({ 
+            error: 'La réponse IA a été tronquée (trop longue). Essayez avec moins de modules ou un sujet plus simple.',
+            code: 'RESPONSE_TRUNCATED',
+            details: `Response ended with: "${lastChar}" (length: ${rawArgs.length})`
+          }), {
+            status: 422,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
         try {
-          const args = JSON.parse(toolCall.function.arguments);
+          const args = JSON.parse(rawArgs);
           console.log(`[unified-chat] Tool call parsed successfully: ${toolCall.function.name}`);
           return new Response(JSON.stringify({ 
             toolName: toolCall.function.name,
@@ -511,9 +529,10 @@ serve(async (req) => {
           });
         } catch (parseError) {
           console.error('[unified-chat] Failed to parse tool arguments:', parseError);
-          console.error('[unified-chat] Raw arguments:', toolCall.function.arguments?.substring(0, 500));
+          console.error('[unified-chat] Raw arguments (first 500):', rawArgs?.substring(0, 500));
+          console.error('[unified-chat] Raw arguments (last 200):', rawArgs?.slice(-200));
           return new Response(JSON.stringify({ 
-            error: 'Échec du parsing de la réponse IA',
+            error: 'Échec du parsing de la réponse IA. La réponse peut être incomplète.',
             code: 'TOOL_PARSE_ERROR',
             details: String(parseError)
           }), {

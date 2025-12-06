@@ -319,7 +319,9 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
       if (data?.error) {
         console.error("AI returned error:", data.error, "Code:", data.code);
         
-        if (data.code === 'TOOL_CALL_MISSING') {
+        if (data.code === 'RESPONSE_TRUNCATED') {
+          toast.error("La réponse est trop longue. Réduisez le nombre de modules ou simplifiez le sujet.", { duration: 6000 });
+        } else if (data.code === 'TOOL_CALL_MISSING') {
           toast.error("L'IA n'a pas pu générer le cours. Essayez avec une description plus précise.");
         } else if (data.code === 'TOOL_PARSE_ERROR') {
           toast.error("Erreur de parsing de la réponse IA. Veuillez réessayer.");
