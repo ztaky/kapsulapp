@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.extract-document-content]
 verify_jwt = false
+
+[functions.extract-url-content]
+verify_jwt = false

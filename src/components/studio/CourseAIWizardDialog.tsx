@@ -129,6 +129,24 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
     }
   };
 
+  const extractUrlContent = async (url: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-url-content', {
+        body: { url },
+      });
+
+      if (error) {
+        console.error(`Error extracting content from ${url}:`, error);
+        return '';
+      }
+
+      return data?.extractedText || '';
+    } catch (err) {
+      console.error(`Failed to extract content from ${url}:`, err);
+      return '';
+    }
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     
@@ -141,42 +159,65 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
       }[wizardData.targetAudience] || wizardData.targetAudience;
 
       // Extract content from uploaded files
-      let extractedContents: { fileName: string; content: string }[] = [];
+      let extractedFileContents: { fileName: string; content: string }[] = [];
+      let extractedUrlContents: { url: string; content: string }[] = [];
       
       if (wizardData.uploadedFiles.length > 0) {
-        toast.info("Extraction du contenu des documents...");
+        toast.info("Extraction du contenu des documents (OCR inclus)...");
         
         const extractionPromises = wizardData.uploadedFiles.map(async (file) => {
           const content = await extractDocumentContent(file);
           return { fileName: file.name, content };
         });
         
-        extractedContents = await Promise.all(extractionPromises);
-        extractedContents = extractedContents.filter(ec => ec.content.length > 0);
+        extractedFileContents = await Promise.all(extractionPromises);
+        extractedFileContents = extractedFileContents.filter(ec => ec.content.length > 0);
         
-        if (extractedContents.length > 0) {
-          toast.success(`Contenu extrait de ${extractedContents.length} fichier(s)`);
+        if (extractedFileContents.length > 0) {
+          toast.success(`Contenu extrait de ${extractedFileContents.length} fichier(s)`);
+        }
+      }
+
+      // Extract content from URLs
+      if (wizardData.referenceLinks.length > 0) {
+        toast.info("Extraction du contenu des liens web...");
+        
+        const urlExtractionPromises = wizardData.referenceLinks.map(async (url) => {
+          const content = await extractUrlContent(url);
+          return { url, content };
+        });
+        
+        extractedUrlContents = await Promise.all(urlExtractionPromises);
+        extractedUrlContents = extractedUrlContents.filter(ec => ec.content.length > 0);
+        
+        if (extractedUrlContents.length > 0) {
+          toast.success(`Contenu extrait de ${extractedUrlContents.length} lien(s)`);
         }
       }
 
       // Build resources section for prompt with extracted content
       let resourcesSection = "";
-      if (extractedContents.length > 0 || wizardData.referenceLinks.length > 0) {
+      if (extractedFileContents.length > 0 || extractedUrlContents.length > 0) {
         resourcesSection = "\n\nRESSOURCES ET CONTENU FOURNIS PAR LE FORMATEUR:";
         
-        if (extractedContents.length > 0) {
+        if (extractedFileContents.length > 0) {
           resourcesSection += "\n\n--- CONTENU DES DOCUMENTS ---";
-          for (const ec of extractedContents) {
+          for (const ec of extractedFileContents) {
             resourcesSection += `\n\n=== ${ec.fileName} ===\n${ec.content}`;
           }
         }
         
-        if (wizardData.referenceLinks.length > 0) {
-          resourcesSection += `\n\n--- LIENS DE RÉFÉRENCE ---\n${wizardData.referenceLinks.join("\n")}`;
+        if (extractedUrlContents.length > 0) {
+          resourcesSection += "\n\n--- CONTENU DES PAGES WEB ---";
+          for (const ec of extractedUrlContents) {
+            resourcesSection += `\n\n=== ${ec.url} ===\n${ec.content}`;
+          }
         }
         
-        resourcesSection += "\n\n⚠️ IMPORTANT: Utilise le contenu extrait ci-dessus comme BASE PRINCIPALE pour structurer et rédiger le cours. Intègre les concepts, exemples et informations de ces documents dans les leçons de manière pédagogique.";
+        resourcesSection += "\n\n⚠️ IMPORTANT: Utilise le contenu extrait ci-dessus comme BASE PRINCIPALE pour structurer et rédiger le cours. Intègre les concepts, exemples et informations de ces documents et pages web dans les leçons de manière pédagogique.";
       }
+
+      const hasExtractedContent = extractedFileContents.length > 0 || extractedUrlContents.length > 0;
 
       const prompt = `Génère un cours complet avec l'outil create_complete_course.
 
@@ -191,7 +232,7 @@ INSTRUCTIONS:
 - Ajoute un quiz (has_quiz: true) à la dernière leçon de chaque module
 - Le contenu de chaque leçon doit faire minimum 250 mots, structuré avec objectif, points clés et exemples
 - Adapte le vocabulaire et les exemples au public cible
-${extractedContents.length > 0 ? "- UTILISE PRIORITAIREMENT le contenu des documents fournis pour enrichir les leçons" : ""}`;
+${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et pages web fournis pour enrichir les leçons" : ""}`;
 
       const { data, error } = await supabase.functions.invoke("unified-chat", {
         body: {
