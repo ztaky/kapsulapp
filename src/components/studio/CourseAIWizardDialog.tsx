@@ -282,26 +282,74 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
 
       const hasExtractedContent = extractedFileContents.length > 0 || extractedUrlContents.length > 0;
 
-      const prompt = `Génère un cours complet avec l'outil create_complete_course.
+      const moduleCountNum = parseInt(wizardData.moduleCount);
+      
+      const prompt = `Tu es un EXPERT PÉDAGOGIQUE qui fait des RECHERCHES APPROFONDIES pour créer des cours de haute qualité.
 
-SUJET DU COURS: ${wizardData.subject}
+MISSION: Génère un cours complet et professionnel avec l'outil create_complete_course.
+
+=== INFORMATIONS DU COURS ===
+SUJET: ${wizardData.subject}
 PUBLIC CIBLE: ${audienceLabel}
 OBJECTIFS D'APPRENTISSAGE: ${wizardData.objectives}
-NOMBRE DE MODULES SOUHAITÉS: ${wizardData.moduleCount}${resourcesSection}
+${resourcesSection}
 
-INSTRUCTIONS:
-- Crée exactement ${wizardData.moduleCount} modules progressifs
-- Chaque module doit avoir 2-4 leçons avec du contenu pédagogique détaillé
-- Ajoute un quiz (has_quiz: true) à la dernière leçon de chaque module
-- Le contenu de chaque leçon doit faire minimum 250 mots, structuré avec objectif, points clés et exemples
-- Adapte le vocabulaire et les exemples au public cible
-${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et pages web fournis pour enrichir les leçons" : ""}`;
+=== EXIGENCES CRITIQUES ===
+
+📊 STRUCTURE OBLIGATOIRE:
+- Tu DOIS créer EXACTEMENT ${moduleCountNum} modules (pas ${moduleCountNum - 1}, pas ${moduleCountNum + 1}, mais PRÉCISÉMENT ${moduleCountNum})
+- Chaque module doit avoir 3-4 leçons
+- Ajoute un quiz (has_quiz: true) à la DERNIÈRE leçon de chaque module
+
+📝 QUALITÉ DU CONTENU (TRÈS IMPORTANT):
+- Chaque leçon DOIT faire minimum 400 mots
+- Inclus des DONNÉES CHIFFRÉES, des STATISTIQUES et des FAITS vérifiables
+- Cite des ÉTUDES, des RECHERCHES ou des EXPERTS reconnus dans le domaine
+- Donne des EXEMPLES CONCRETS et PRATIQUES que l'apprenant peut appliquer immédiatement
+- Utilise un vocabulaire SPÉCIFIQUE au domaine "${wizardData.subject}"
+- Adapte les exemples au niveau "${audienceLabel}"
+
+📖 FORMAT DE CHAQUE LEÇON:
+🎯 **Objectif de la leçon** (ce que l'apprenant saura faire)
+
+📖 **Introduction** (contexte et importance, avec une statistique ou fait marquant)
+
+💡 **Points clés** (4-5 concepts détaillés avec exemples)
+- Point 1 avec explication approfondie
+- Point 2 avec exemple pratique
+- etc.
+
+🔍 **Étude de cas / Exemple concret** (situation réelle et applicable)
+
+✅ **À retenir** (3-4 points essentiels résumés)
+
+💪 **Exercice pratique** (action concrète à réaliser)
+
+${hasExtractedContent ? `
+
+⚠️ RESSOURCES À EXPLOITER:
+Analyse EN PROFONDEUR le contenu des documents et pages web fournis ci-dessus.
+- Extrais les concepts clés et intègre-les dans les leçons
+- Utilise les exemples et données des documents
+- Structure le cours autour des informations fournies
+- Si les documents contiennent des méthodologies, intègre-les étape par étape
+` : `
+
+🔬 MODE RECHERCHE:
+Comme aucun document n'est fourni, tu dois agir comme un chercheur expert:
+- Inclus des informations précises et actualisées sur "${wizardData.subject}"
+- Mentionne des techniques, méthodes ou frameworks reconnus dans ce domaine
+- Donne des conseils basés sur les meilleures pratiques du secteur
+`}
+
+RAPPEL FINAL: Tu DOIS créer EXACTEMENT ${moduleCountNum} modules. Vérifie avant de répondre.`;
 
       const { data, error } = await supabase.functions.invoke("unified-chat", {
         body: {
           messages: [{ role: "user", content: prompt }],
           mode: "studio",
           forceTool: "create_complete_course",
+          useProModel: true, // Signal to use more powerful model
         },
       });
 
@@ -359,6 +407,13 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
         console.error("Invalid course data structure:", courseData);
         toast.error("Le cours généré est incomplet. Veuillez réessayer.");
         return;
+      }
+
+      // Validate module count
+      const requestedModules = parseInt(wizardData.moduleCount);
+      if (courseData.modules.length !== requestedModules) {
+        console.warn(`Module count mismatch: requested ${requestedModules}, got ${courseData.modules.length}`);
+        toast.warning(`${courseData.modules.length} modules générés au lieu de ${requestedModules}. Vous pouvez ajuster manuellement.`, { duration: 5000 });
       }
 
       onCourseGenerated(courseData);
