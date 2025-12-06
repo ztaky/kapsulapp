@@ -134,14 +134,20 @@ INSTRUCTIONS:
 
       let courseData: GeneratedCourseData;
       
+      console.log("AI Response received:", JSON.stringify(data, null, 2));
+      
       // The response should contain the tool call data directly
       if (data?.toolName === "create_complete_course" && data?.data) {
         courseData = data.data as GeneratedCourseData;
       } else if (data?.data?.course && data?.data?.modules) {
         courseData = data.data as GeneratedCourseData;
+      } else if (data?.course && data?.modules) {
+        // Handle case where data is directly the course data
+        courseData = data as GeneratedCourseData;
       } else {
-        console.warn("Unexpected response format, using fallback:", data);
-        courseData = generateDefaultCourse(wizardData);
+        console.error("Unexpected response format:", data);
+        toast.error("Format de réponse inattendu. Veuillez réessayer.");
+        return;
       }
 
       onCourseGenerated(courseData);
