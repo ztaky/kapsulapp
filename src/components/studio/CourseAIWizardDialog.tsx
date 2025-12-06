@@ -305,11 +305,22 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw new Error(error.message || "Erreur lors de l'appel à l'IA");
+      }
 
       let courseData: GeneratedCourseData;
       
+      // Log full response for debugging
       console.log("AI Response received:", JSON.stringify(data, null, 2));
+      
+      // Check for error in response
+      if (data?.error) {
+        console.error("AI returned error:", data.error);
+        toast.error(data.error);
+        return;
+      }
       
       // The response should contain the tool call data directly
       if (data?.toolName === "create_complete_course" && data?.data) {
@@ -320,8 +331,22 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
         // Handle case where data is directly the course data
         courseData = data as GeneratedCourseData;
       } else {
-        console.error("Unexpected response format:", data);
-        toast.error("Format de réponse inattendu. Veuillez réessayer.");
+        // Log the actual structure received
+        console.error("Unexpected response format. Keys received:", data ? Object.keys(data) : "null");
+        console.error("Full response:", data);
+        
+        // Try to provide a more helpful error message
+        const errorMsg = typeof data === 'string' 
+          ? "L'IA a retourné une réponse textuelle au lieu d'un cours structuré."
+          : "Format de réponse inattendu. Veuillez réessayer.";
+        toast.error(errorMsg);
+        return;
+      }
+
+      // Validate course data structure
+      if (!courseData.course?.title || !Array.isArray(courseData.modules) || courseData.modules.length === 0) {
+        console.error("Invalid course data structure:", courseData);
+        toast.error("Le cours généré est incomplet. Veuillez réessayer.");
         return;
       }
 
@@ -341,7 +366,8 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
       
     } catch (error) {
       console.error("Error generating course:", error);
-      toast.error("Erreur lors de la génération. Veuillez réessayer.");
+      const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+      toast.error(`Erreur: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }

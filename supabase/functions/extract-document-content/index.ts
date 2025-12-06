@@ -1,10 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Chunk-based base64 conversion to avoid stack overflow on large files
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+    for (let j = 0; j < chunk.length; j++) {
+      binary += String.fromCharCode(chunk[j]);
+    }
+  }
+  return btoa(binary);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,7 +30,7 @@ serve(async (req) => {
 
     if (!fileUrl) {
       return new Response(
-        JSON.stringify({ error: 'File URL is required' }),
+        JSON.stringify({ error: 'File URL is required', extractedText: '' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -35,6 +47,21 @@ serve(async (req) => {
 
     const fileBuffer = await fileResponse.arrayBuffer();
     const fileBytes = new Uint8Array(fileBuffer);
+    
+    console.log(`File fetched: ${fileBytes.length} bytes`);
+
+    // Check file size limit (10MB for AI processing)
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (fileBytes.length > MAX_SIZE) {
+      console.log(`File too large for AI processing: ${fileBytes.length} bytes`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'File too large for processing (max 10MB)', 
+          extractedText: '' 
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     let extractedText = '';
     const extension = fileName.split('.').pop()?.toLowerCase() || fileType;
@@ -58,7 +85,9 @@ serve(async (req) => {
     } 
     // For images, use OCR with AI
     else if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'tif'].includes(extension)) {
-      const base64Content = btoa(String.fromCharCode(...fileBytes));
+      // Use chunk-based base64 conversion to prevent stack overflow
+      const base64Content = uint8ArrayToBase64(fileBytes);
+      console.log(`Base64 conversion complete: ${base64Content.length} characters`);
       
       const mimeTypes: Record<string, string> = {
         'jpg': 'image/jpeg',
@@ -73,7 +102,7 @@ serve(async (req) => {
 
       const mimeType = mimeTypes[extension] || 'image/jpeg';
       
-      console.log(`Performing OCR on image: ${fileName} (${fileBytes.length} bytes)`);
+      console.log(`Performing OCR on image: ${fileName}`);
 
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -121,12 +150,33 @@ serve(async (req) => {
       } else {
         const errorText = await aiResponse.text();
         console.error(`OCR failed: ${aiResponse.status} - ${errorText}`);
+        
+        // Handle rate limits and payment errors for OCR
+        if (aiResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'Rate limit exceeded. Please try again later.', 
+              extractedText: '' 
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (aiResponse.status === 402) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'AI credits exhausted. Please add more credits.', 
+              extractedText: '' 
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
     }
     // For documents (PDF, DOCX, etc.), use AI to extract content
     else if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(extension)) {
-      // Convert to base64 for AI processing
-      const base64Content = btoa(String.fromCharCode(...fileBytes));
+      // Use chunk-based base64 conversion to prevent stack overflow
+      const base64Content = uint8ArrayToBase64(fileBytes);
+      console.log(`Base64 conversion complete: ${base64Content.length} characters`);
       
       // Determine MIME type
       const mimeTypes: Record<string, string> = {
@@ -141,7 +191,7 @@ serve(async (req) => {
 
       const mimeType = mimeTypes[extension] || 'application/octet-stream';
       
-      console.log(`Sending ${extension} document to AI for extraction (${fileBytes.length} bytes)`);
+      console.log(`Sending ${extension} document to AI for extraction`);
 
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -189,10 +239,19 @@ serve(async (req) => {
         const errorText = await aiResponse.text();
         console.error(`Document extraction failed: ${aiResponse.status} - ${errorText}`);
         
-        if (aiResponse.status === 429 || aiResponse.status === 402) {
+        if (aiResponse.status === 429) {
           return new Response(
             JSON.stringify({ 
-              error: aiResponse.status === 429 ? 'Rate limit exceeded' : 'Payment required',
+              error: 'Rate limit exceeded. Please try again later.', 
+              extractedText: '' 
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (aiResponse.status === 402) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'AI credits exhausted. Please add more credits.', 
               extractedText: '' 
             }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
