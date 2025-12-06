@@ -105,6 +105,30 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
     }
   };
 
+  const extractDocumentContent = async (file: AttachedFile): Promise<string> => {
+    if (!file.url) return '';
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-document-content', {
+        body: {
+          fileUrl: file.url,
+          fileName: file.name,
+          fileType: file.type,
+        },
+      });
+
+      if (error) {
+        console.error(`Error extracting content from ${file.name}:`, error);
+        return '';
+      }
+
+      return data?.extractedText || '';
+    } catch (err) {
+      console.error(`Failed to extract content from ${file.name}:`, err);
+      return '';
+    }
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     
@@ -116,17 +140,42 @@ export function CourseAIWizardDialog({ open, onOpenChange, onCourseGenerated }: 
         professionnel: "Professionnels - experts du domaine"
       }[wizardData.targetAudience] || wizardData.targetAudience;
 
-      // Build resources section for prompt
+      // Extract content from uploaded files
+      let extractedContents: { fileName: string; content: string }[] = [];
+      
+      if (wizardData.uploadedFiles.length > 0) {
+        toast.info("Extraction du contenu des documents...");
+        
+        const extractionPromises = wizardData.uploadedFiles.map(async (file) => {
+          const content = await extractDocumentContent(file);
+          return { fileName: file.name, content };
+        });
+        
+        extractedContents = await Promise.all(extractionPromises);
+        extractedContents = extractedContents.filter(ec => ec.content.length > 0);
+        
+        if (extractedContents.length > 0) {
+          toast.success(`Contenu extrait de ${extractedContents.length} fichier(s)`);
+        }
+      }
+
+      // Build resources section for prompt with extracted content
       let resourcesSection = "";
-      if (wizardData.uploadedFiles.length > 0 || wizardData.referenceLinks.length > 0) {
-        resourcesSection = "\n\nRESSOURCES FOURNIES PAR LE FORMATEUR:";
-        if (wizardData.uploadedFiles.length > 0) {
-          resourcesSection += `\nFichiers uploadés: ${wizardData.uploadedFiles.map(f => f.name).join(", ")}`;
+      if (extractedContents.length > 0 || wizardData.referenceLinks.length > 0) {
+        resourcesSection = "\n\nRESSOURCES ET CONTENU FOURNIS PAR LE FORMATEUR:";
+        
+        if (extractedContents.length > 0) {
+          resourcesSection += "\n\n--- CONTENU DES DOCUMENTS ---";
+          for (const ec of extractedContents) {
+            resourcesSection += `\n\n=== ${ec.fileName} ===\n${ec.content}`;
+          }
         }
+        
         if (wizardData.referenceLinks.length > 0) {
-          resourcesSection += `\nLiens de référence: ${wizardData.referenceLinks.join(", ")}`;
+          resourcesSection += `\n\n--- LIENS DE RÉFÉRENCE ---\n${wizardData.referenceLinks.join("\n")}`;
         }
-        resourcesSection += "\n\nUtilise ces ressources comme base pour structurer et enrichir le contenu du cours. Intègre les concepts et informations de ces documents dans les leçons.";
+        
+        resourcesSection += "\n\n⚠️ IMPORTANT: Utilise le contenu extrait ci-dessus comme BASE PRINCIPALE pour structurer et rédiger le cours. Intègre les concepts, exemples et informations de ces documents dans les leçons de manière pédagogique.";
       }
 
       const prompt = `Génère un cours complet avec l'outil create_complete_course.
@@ -141,7 +190,8 @@ INSTRUCTIONS:
 - Chaque module doit avoir 2-4 leçons avec du contenu pédagogique détaillé
 - Ajoute un quiz (has_quiz: true) à la dernière leçon de chaque module
 - Le contenu de chaque leçon doit faire minimum 250 mots, structuré avec objectif, points clés et exemples
-- Adapte le vocabulaire et les exemples au public cible`;
+- Adapte le vocabulaire et les exemples au public cible
+${extractedContents.length > 0 ? "- UTILISE PRIORITAIREMENT le contenu des documents fournis pour enrichir les leçons" : ""}`;
 
       const { data, error } = await supabase.functions.invoke("unified-chat", {
         body: {

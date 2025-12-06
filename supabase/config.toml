@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.send-school-contact]
 verify_jwt = false
+
+[functions.extract-document-content]
+verify_jwt = false
