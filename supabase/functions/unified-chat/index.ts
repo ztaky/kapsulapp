@@ -431,6 +431,9 @@ serve(async (req) => {
     // Check if a specific tool is requested (non-streaming mode)
     const forceTool = context.forceTool as string | undefined;
     const useStreaming = !forceTool;
+    
+    // Use more powerful model for complete course generation
+    const useProModel = context.useProModel === true;
 
     // Build request body - enhance system prompt if tool is forced
     let enhancedSystemPrompt = systemPrompt;
@@ -438,14 +441,18 @@ serve(async (req) => {
       enhancedSystemPrompt += `\n\nINSTRUCTION CRITIQUE: Tu DOIS obligatoirement utiliser l'outil "${forceTool}" pour répondre. NE RÉPONDS JAMAIS avec du texte simple. UTILISE UNIQUEMENT l'outil demandé.`;
     }
 
+    // Select model based on task complexity
+    const selectedModel = useProModel ? 'google/gemini-2.5-pro' : 'google/gemini-2.5-flash';
+    console.log(`[unified-chat] Using model: ${selectedModel}, useProModel: ${useProModel}`);
+
     const requestBody: any = {
-      model: 'google/gemini-2.5-flash',
+      model: selectedModel,
       messages: [
         { role: 'system', content: enhancedSystemPrompt },
         ...messages,
       ],
       stream: useStreaming,
-      max_tokens: 32768, // Increased for complete course generation
+      max_tokens: 65536, // Increased further for detailed course content
     };
 
     // Add tools for studio mode
