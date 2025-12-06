@@ -86,6 +86,14 @@ export function CourseResourcesUpload({
     setIsUploading(true);
 
     try {
+      // Get current user ID for RLS-compliant path
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Vous devez être connecté pour uploader des fichiers");
+        setIsUploading(false);
+        return;
+      }
+
       const newFiles: AttachedFile[] = [];
 
       for (const file of Array.from(selectedFiles)) {
@@ -101,9 +109,9 @@ export function CourseResourcesUpload({
           continue;
         }
 
-        // Upload to Supabase storage
+        // Upload to Supabase storage with user_id as first folder (required by RLS policy)
         const fileId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        const filePath = `course-resources/${fileId}-${file.name}`;
+        const filePath = `${user.id}/${fileId}-${file.name}`;
 
         const { error: uploadError } = await supabase.storage
           .from("ai-assistant-uploads")
