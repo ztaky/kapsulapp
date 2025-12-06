@@ -313,12 +313,26 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
       let courseData: GeneratedCourseData;
       
       // Log full response for debugging
-      console.log("AI Response received:", JSON.stringify(data, null, 2));
+      console.log("AI Response received:", JSON.stringify(data, null, 2).substring(0, 2000));
       
-      // Check for error in response
+      // Check for specific error codes from unified-chat
       if (data?.error) {
-        console.error("AI returned error:", data.error);
-        toast.error(data.error);
+        console.error("AI returned error:", data.error, "Code:", data.code);
+        
+        if (data.code === 'TOOL_CALL_MISSING') {
+          toast.error("L'IA n'a pas pu générer le cours. Essayez avec une description plus précise.");
+        } else if (data.code === 'TOOL_PARSE_ERROR') {
+          toast.error("Erreur de parsing de la réponse IA. Veuillez réessayer.");
+        } else {
+          toast.error(data.error);
+        }
+        return;
+      }
+      
+      // Check if we got text content instead of tool call (shouldn't happen with improved backend)
+      if (data?.content && !data?.toolName && !data?.data) {
+        console.error("AI returned text instead of tool call:", data.content?.substring(0, 300));
+        toast.error("L'IA n'a pas généré un cours structuré. Essayez avec une description plus claire du sujet.");
         return;
       }
       
@@ -333,13 +347,8 @@ ${hasExtractedContent ? "- UTILISE PRIORITAIREMENT le contenu des documents et p
       } else {
         // Log the actual structure received
         console.error("Unexpected response format. Keys received:", data ? Object.keys(data) : "null");
-        console.error("Full response:", data);
-        
-        // Try to provide a more helpful error message
-        const errorMsg = typeof data === 'string' 
-          ? "L'IA a retourné une réponse textuelle au lieu d'un cours structuré."
-          : "Format de réponse inattendu. Veuillez réessayer.";
-        toast.error(errorMsg);
+        console.error("Full response:", JSON.stringify(data, null, 2).substring(0, 1000));
+        toast.error("Format de réponse inattendu. Veuillez réessayer avec une description plus simple.");
         return;
       }
 
