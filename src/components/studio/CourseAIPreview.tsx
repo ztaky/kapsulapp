@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -44,11 +44,11 @@ export function CourseAIPreview({
   const [editingDescription, setEditingDescription] = useState(false);
 
   // Update local state when initialData changes
-  useState(() => {
+  useEffect(() => {
     if (initialData) {
       setCourseData(initialData);
     }
-  });
+  }, [initialData]);
 
   if (!courseData) return null;
 
