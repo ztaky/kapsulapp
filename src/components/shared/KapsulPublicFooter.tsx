@@ -3,19 +3,53 @@ import kapsulLogo from "@/assets/kapsul-logo.png";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
 import { Cookie } from "lucide-react";
 
-export function KapsulFooter() {
+interface KapsulPublicFooterProps {
+  variant?: "full" | "compact";
+  className?: string;
+}
+
+export function KapsulPublicFooter({ 
+  variant = "full", 
+  className = "" 
+}: KapsulPublicFooterProps) {
   const { resetConsent } = useCookieConsent();
 
   const handleManageCookies = () => {
     resetConsent();
-    // Small delay to ensure state is updated before banner shows
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   };
 
+  // Compact variant - just legal links
+  if (variant === "compact") {
+    return (
+      <div className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground ${className}`}>
+        <span>© {new Date().getFullYear()} Kapsul</span>
+        <span className="text-border hidden sm:inline">|</span>
+        <Link to="/mentions-legales" className="hover:text-foreground transition-colors">
+          Mentions légales
+        </Link>
+        <Link to="/confidentialite" className="hover:text-foreground transition-colors">
+          Confidentialité
+        </Link>
+        <Link to="/cgv" className="hover:text-foreground transition-colors">
+          CGV
+        </Link>
+        <button 
+          onClick={handleManageCookies}
+          className="hover:text-foreground transition-colors flex items-center gap-1"
+        >
+          <Cookie className="w-3 h-3" />
+          Cookies
+        </button>
+      </div>
+    );
+  }
+
+  // Full variant - complete footer with navigation
   return (
-    <footer className="bg-[#0F172A] border-t border-white/10">
+    <footer className={`bg-[#0F172A] border-t border-white/10 ${className}`}>
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Logo & Description */}

@@ -11,7 +11,7 @@ import { Loader2, Eye, EyeOff, ArrowLeft, CheckCircle, Sparkles } from "lucide-r
 import kapsulLogo from "@/assets/kapsul-logo.png";
 import confetti from "canvas-confetti";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
-import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 
 // Helper function to translate Supabase auth errors to French
 const getAuthErrorMessage = (error: any): string => {
@@ -502,7 +502,7 @@ const Auth = () => {
         </CardContent>
       </Card>
       
-      <LegalFooterLinks variant="kapsul" className="mt-6" />
+      <KapsulPublicFooter variant="compact" className="mt-6" />
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Cookie } from "lucide-react";
 import { Link } from "react-router-dom";
-import { KapsulFooter } from "@/components/landing/KapsulFooter";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 
 export default function Cookies() {
@@ -95,7 +95,7 @@ export default function Cookies() {
         </div>
       </main>
 
-      <KapsulFooter />
+      <KapsulPublicFooter />
     </div>
   );
 }

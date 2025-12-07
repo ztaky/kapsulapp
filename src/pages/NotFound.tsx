@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 
 const NotFound = () => {
   const location = useLocation();
@@ -18,7 +18,7 @@ const NotFound = () => {
           Retour à l'accueil
         </a>
       </div>
-      <LegalFooterLinks variant="kapsul" className="pb-8" />
+      <KapsulPublicFooter variant="compact" className="pb-8" />
     </div>
   );
 };

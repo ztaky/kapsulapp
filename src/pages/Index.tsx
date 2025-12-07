@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bot, Check, X, AlertTriangle, Shield, Gift, ChevronLeft, ChevronRight, BarChart3, GripVertical, Smartphone, Sparkles, Settings, Play, Loader2, ChevronDown, BookOpen, FileText, Users, Zap, Palette, Award, MessageCircle, LayoutTemplate, TrendingUp, Globe } from "lucide-react";
-import { KapsulFooter } from "@/components/landing/KapsulFooter";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import CountdownTimer from "@/components/landing/CountdownTimer";
@@ -709,7 +709,7 @@ const Index = () => {
       </section>
 
       {/* FOOTER */}
-      <KapsulFooter />
+      <KapsulPublicFooter />
 
       {/* Sales Chatbot */}
       <SalesChatWidget onFounderClick={handleFounderCheckout} />

@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
-import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -60,7 +60,7 @@ const PaymentSuccess = () => {
           <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
           <p className="text-muted-foreground">Vérification de votre paiement...</p>
         </div>
-        <LegalFooterLinks variant="kapsul" className="mt-8" />
+        <KapsulPublicFooter variant="compact" className="mt-8" />
       </div>
     );
   }
