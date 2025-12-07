@@ -5,7 +5,7 @@ import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { SupportChatWidget } from "@/components/support/SupportChatWidget";
 import { Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
+import { CoachPublicFooter } from "@/components/shared/CoachPublicFooter";
 import { useQuery } from "@tanstack/react-query";
 
 interface StudentOrganization {
@@ -95,9 +95,9 @@ export default function StudentLayout() {
             <div className="flex flex-wrap items-center justify-center gap-6">
               {organizations.length > 0 ? (
                 organizations.map((org) => (
-                  <LegalFooterLinks 
+                  <CoachPublicFooter 
                     key={org.id} 
-                    variant="coach" 
+                    variant="compact" 
                     organizationSlug={org.slug}
                     organizationName={organizations.length > 1 ? org.name : undefined}
                   />
