@@ -6,7 +6,7 @@ import { GlobalSearch } from "@/components/studio/GlobalSearch";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 
 export default function StudioLayout() {
   const { slug } = useParams<{ slug: string }>();
@@ -74,7 +74,7 @@ export default function StudioLayout() {
           </div>
 
           <footer className="shrink-0 border-t border-border/40 bg-background/50 py-3 px-8">
-            <LegalFooterLinks variant="kapsul" />
+            <KapsulPublicFooter variant="compact" />
           </footer>
         </main>
         <SupportChatWidget organizationId={currentOrg.id} />

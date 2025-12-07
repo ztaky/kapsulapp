@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GraduationCap, BookOpen, Users, Mail, ArrowRight, MessageSquare } from 'lucide-react';
 import { ContactForm } from '@/components/school/ContactForm';
+import { CoachPublicFooter } from '@/components/shared/CoachPublicFooter';
 
 interface Organization {
   id: string;
@@ -342,45 +343,12 @@ const SchoolPublicPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-card py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              {organization.logo_url ? (
-                <img 
-                  src={organization.logo_url} 
-                  alt={organization.name} 
-                  className="h-6 w-6 object-contain"
-                />
-              ) : (
-                <div 
-                  className="h-6 w-6 rounded flex items-center justify-center text-white text-xs font-bold"
-                  style={{ backgroundColor: brandColor }}
-                >
-                  {organization.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <span className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} {organization.name}
-              </span>
-            </div>
-            
-            {legalPages && legalPages.length > 0 && (
-              <div className="flex flex-wrap gap-4 text-sm">
-                {legalPages.map((page) => (
-                  <Link 
-                    key={page.type}
-                    to={`/school/${slug}/legal/${page.type}`}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {page.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </footer>
+      <CoachPublicFooter
+        organizationSlug={slug!}
+        organizationName={organization.name}
+        organizationLogo={organization.logo_url}
+        brandColor={brandColor}
+      />
     </div>
   );
 };
