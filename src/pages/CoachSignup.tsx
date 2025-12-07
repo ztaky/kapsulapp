@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, CheckCircle, PartyPopper } from "lucide-react";
 import kapsulLogo from "@/assets/kapsul-logo.png";
+import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
 
 // Helper function to translate Supabase auth errors to French
 const getAuthErrorMessage = (error: unknown): string => {
@@ -507,9 +508,11 @@ export default function CoachSignup() {
       </Card>
 
       {/* Footer */}
-      <p className="text-sm text-slate-500 mt-8 text-center max-w-md">
+      <p className="text-sm text-slate-500 mt-6 text-center max-w-md">
         En créant votre académie, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
       </p>
+      
+      <LegalFooterLinks variant="kapsul" className="mt-4" />
     </div>
   );
 }
