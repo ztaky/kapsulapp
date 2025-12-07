@@ -8,6 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Search, ThumbsUp, HelpCircle, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { KapsulFooter } from "@/components/landing/KapsulFooter";
 
 interface FAQEntry {
   id: string;
@@ -256,6 +257,8 @@ export default function FAQ() {
           </CardContent>
         </Card>
       </div>
+
+      <KapsulFooter />
     </div>
   );
 }
