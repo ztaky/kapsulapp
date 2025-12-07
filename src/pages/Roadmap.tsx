@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Calendar, CheckCircle2, Clock, Rocket } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { KapsulFooter } from "@/components/landing/KapsulFooter";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -162,7 +162,7 @@ export default function Roadmap() {
         )}
       </main>
 
-      <KapsulFooter />
+      <KapsulPublicFooter />
     </div>
   );
 }

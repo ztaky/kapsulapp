@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { KapsulFooter } from "@/components/landing/KapsulFooter";
+import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 import kapsulLogo from "@/assets/kapsul-logo.png";
 
 export default function Confidentialite() {
@@ -82,7 +82,7 @@ export default function Confidentialite() {
         </div>
       </main>
 
-      <KapsulFooter />
+      <KapsulPublicFooter />
     </div>
   );
 }
