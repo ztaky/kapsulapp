@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
+import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -54,11 +55,12 @@ const PaymentSuccess = () => {
 
   if (verifying) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
           <p className="text-muted-foreground">Vérification de votre paiement...</p>
         </div>
+        <LegalFooterLinks variant="kapsul" className="mt-8" />
       </div>
     );
   }
