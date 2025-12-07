@@ -1,4 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { LegalFooterLinks } from "@/components/shared/LegalFooterLinks";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -445,6 +446,17 @@ export default function CourseSalesPage() {
           </Button>
         </div>
       )}
+
+      {/* Footer with legal links */}
+      <footer className="bg-slate-50 border-t border-slate-200 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LegalFooterLinks 
+            variant="coach" 
+            organizationSlug={slug} 
+            organizationName={organization?.name}
+          />
+        </div>
+      </footer>
     </div>
   );
 }
