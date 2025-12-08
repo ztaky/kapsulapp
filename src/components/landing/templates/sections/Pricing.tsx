@@ -11,11 +11,17 @@ interface PricingProps {
   installmentsEnabled?: boolean;
   installmentsCount?: number;
   onCheckout?: (paymentType: 'full' | 'installments') => void;
+  primaryColor?: string;
+  primaryDarkColor?: string;
 }
 
-export function Pricing({ content, landingSlug, installmentsEnabled, installmentsCount = 3, onCheckout }: PricingProps) {
+export function Pricing({ content, landingSlug, installmentsEnabled, installmentsCount = 3, onCheckout, primaryColor = '#ea580c', primaryDarkColor = '#9333ea' }: PricingProps) {
   const [cgvAccepted, setCgvAccepted] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<'full' | 'installments'>('full');
+
+  // Dynamic gradients based on theme colors
+  const buttonGradient = `linear-gradient(135deg, ${primaryColor} 0%, ${primaryDarkColor} 100%)`;
+  const accentGradient = `linear-gradient(90deg, ${primaryColor}, ${primaryDarkColor})`;
 
   const handleCtaClick = (e: React.MouseEvent, paymentType: 'full' | 'installments') => {
     if (!cgvAccepted) {
@@ -44,8 +50,9 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
 
   return (
     <section 
+      id="pricing"
       className="relative py-20 md:py-28 px-4 font-inter"
-      style={{ 
+      style={{
         backgroundColor: '#f8f9fa', 
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         backgroundImage: `
@@ -60,7 +67,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-4">
           <span 
             style={{ 
-              background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
+              background: accentGradient,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -97,7 +104,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
-              style={{ color: '#f97316' }}
+              style={{ color: primaryColor }}
             >
               CGV
             </a>
@@ -107,7 +114,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
-              style={{ color: '#f97316' }}
+              style={{ color: primaryColor }}
             >
               Politique de Confidentialité
             </a>
@@ -117,7 +124,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
-              style={{ color: '#f97316' }}
+              style={{ color: primaryColor }}
             >
               Mentions Légales
             </a>
@@ -136,7 +143,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                 <div className="grid md:grid-cols-2 gap-3">
                   {content.offers[0].features.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                      <ArrowRightCircle className="w-5 h-5 flex-shrink-0" style={{ color: '#f97316' }} fill="#f97316" stroke="white" />
+                      <ArrowRightCircle className="w-5 h-5 flex-shrink-0" style={{ color: primaryColor }} fill={primaryColor} stroke="white" />
                       <span className="text-sm" style={{ color: '#1e1b4b' }}>{feature}</span>
                     </div>
                   ))}
@@ -147,7 +154,8 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
             <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {/* Full Payment Option */}
             <div 
-              className={`relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all ${selectedPayment === 'full' ? 'ring-2 ring-orange-500 shadow-lg' : 'border-2 border-gray-200 hover:border-gray-300'}`}
+              className={`relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all ${selectedPayment === 'full' ? 'ring-2 shadow-lg' : 'border-2 border-gray-200 hover:border-gray-300'}`}
+              style={selectedPayment === 'full' ? { '--tw-ring-color': primaryColor } as React.CSSProperties : {}}
               onClick={() => setSelectedPayment('full')}
             >
               <div className="p-6 text-center">
@@ -163,7 +171,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                   onClick={(e) => handleCtaClick(e, 'full')}
                   disabled={!cgvAccepted}
                   className="w-full text-base py-5 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
-                  style={{ background: '#22c55e', color: 'white' }}
+                  style={{ background: buttonGradient, color: 'white' }}
                 >
                   Payer {price}€
                 </Button>
@@ -172,15 +180,16 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
 
             {/* Installments Option */}
             <div 
-              className={`relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all ${selectedPayment === 'installments' ? 'ring-2 ring-orange-500 shadow-lg' : 'border-2 border-gray-200 hover:border-gray-300'}`}
+              className={`relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all ${selectedPayment === 'installments' ? 'ring-2 shadow-lg' : 'border-2 border-gray-200 hover:border-gray-300'}`}
+              style={selectedPayment === 'installments' ? { '--tw-ring-color': primaryColor } as React.CSSProperties : {}}
               onClick={() => setSelectedPayment('installments')}
             >
-              <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-bold py-1 text-center">
+              <div className="absolute top-0 left-0 right-0 text-white text-xs font-bold py-1 text-center" style={{ background: accentGradient }}>
                 FACILITÉ DE PAIEMENT
               </div>
               <div className="p-6 pt-10 text-center">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <CreditCard className="w-5 h-5 text-orange-600" />
+                  <CreditCard className="w-5 h-5" style={{ color: primaryColor }} />
                   <span className="font-semibold" style={{ color: '#1e1b4b' }}>{installmentsCount}x sans frais</span>
                 </div>
                 <div className="mb-2">
@@ -193,7 +202,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                   onClick={(e) => handleCtaClick(e, 'installments')}
                   disabled={!cgvAccepted}
                   className="w-full text-base py-5 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
-                  style={{ background: '#f97316', color: 'white' }}
+                  style={{ background: buttonGradient, color: 'white' }}
                 >
                   Payer en {installmentsCount}x
                 </Button>
@@ -231,10 +240,10 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                         key={i} 
                         className="flex items-center justify-center gap-3 py-4 border-b border-gray-200"
                       >
-                        <ArrowRightCircle 
+                      <ArrowRightCircle 
                           className="w-5 h-5 flex-shrink-0" 
-                          style={{ color: '#f97316' }}
-                          fill="#f97316"
+                          style={{ color: primaryColor }}
+                          fill={primaryColor}
                           stroke="white"
                         />
                         <span className="text-base" style={{ color: '#1e1b4b' }}>{feature}</span>
@@ -246,7 +255,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                     onClick={(e) => handleCtaClick(e, 'full')}
                     disabled={!cgvAccepted}
                     className="w-full max-w-xs mx-auto mt-8 text-lg py-6 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
-                    style={{ background: '#f97316', color: 'white' }}
+                    style={{ background: buttonGradient, color: 'white' }}
                   >
                     {content.offers[0].cta}
                   </Button>
