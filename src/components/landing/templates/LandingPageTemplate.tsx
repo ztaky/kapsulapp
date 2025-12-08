@@ -114,9 +114,9 @@ export function LandingPageTemplate({
   const activeSections = getEnabledTemplateSections();
   const isEnabled = (sectionId: string) => activeSections.includes(sectionId);
 
-  // Force coral red to violet branding across all sections
-  const primaryColor = '#e11d48';
-  const primaryDarkColor = '#9333ea';
+  // Get colors from theme config (set via DesignEditor) with fallback to coral red → violet
+  const primaryColor = theme?.colors?.primary || '#e11d48';
+  const primaryDarkColor = theme?.colors?.primaryDark || '#9333ea';
 
   return (
     <ThemeProvider theme={theme}>
