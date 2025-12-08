@@ -16,7 +16,6 @@ import { FounderBadge } from "@/components/shared/FounderBadge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { AICreditsShop } from "@/components/credits/AICreditsShop";
-import { StripeConnectAlert } from "@/components/studio/StripeConnectAlert";
 import { toast } from "sonner";
 
 export default function StudioDashboard() {
@@ -234,14 +233,6 @@ export default function StudioDashboard() {
           onOpenChange={setShowCreditsShop}
           organizationId={currentOrg.id}
           organizationSlug={slug || ""}
-        />
-      )}
-
-      {/* Stripe Connect Alert */}
-      {currentOrg && !currentOrg.stripe_account_id && (
-        <StripeConnectAlert 
-          organizationSlug={slug || ""} 
-          variant="warning" 
         />
       )}
 
