@@ -115,7 +115,7 @@ export function LandingPageTemplate({
   const isEnabled = (sectionId: string) => activeSections.includes(sectionId);
 
   // Extract theme colors for passing to components
-  const primaryColor = theme?.colors?.primary || '#ec4899';
+  const primaryColor = theme?.colors?.primary || '#e11d48';
   const primaryDarkColor = theme?.colors?.primaryDark || '#9333ea';
 
   return (
