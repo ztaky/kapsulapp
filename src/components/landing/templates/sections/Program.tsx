@@ -6,8 +6,8 @@ interface ProgramProps {
 }
 
 export function Program({ content }: ProgramProps) {
-  const gradientStyle = 'linear-gradient(90deg, #ec4899 0%, #9333ea 100%)';
-  const pinkColor = '#ec4899';
+  const gradientStyle = 'linear-gradient(90deg, #e11d48 0%, #9333ea 100%)';
+  const coralColor = '#e11d48';
   const purpleColor = '#9333ea';
   const greenColor = '#10b981';
 
@@ -52,7 +52,7 @@ export function Program({ content }: ProgramProps) {
         <div className="grid md:grid-cols-2 gap-12 mb-20">
           {content.weeks.map((week, weekIndex) => {
             const isWeek1 = weekIndex === 0;
-            const accentColor = isWeek1 ? pinkColor : purpleColor;
+            const accentColor = isWeek1 ? coralColor : purpleColor;
             const weekNumber = isWeek1 ? '1' : '2';
             const subtitle = isWeek1 
               ? "L'IA devient ton assistant opérationnel"
@@ -132,7 +132,7 @@ export function Program({ content }: ProgramProps) {
             className="px-10 py-5 rounded-full text-white text-xl font-bold transition-all hover:scale-105 hover:shadow-xl"
             style={{ 
               background: gradientStyle,
-              boxShadow: '0 10px 30px rgba(236, 72, 153, 0.3)'
+              boxShadow: '0 10px 30px rgba(225, 29, 72, 0.3)'
             }}
           >
             Je veux la méthode IA Mastery

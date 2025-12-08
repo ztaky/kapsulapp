@@ -12,7 +12,7 @@ export function Agitation({ content }: AgitationProps) {
   const { theme } = useTheme();
 
   // Custom gradient matching Hero
-  const subtitleGradient = 'linear-gradient(90deg, #ec4899 0%, #9333ea 100%)';
+  const subtitleGradient = 'linear-gradient(90deg, #e11d48 0%, #9333ea 100%)';
 
   return (
     <section 
@@ -123,7 +123,7 @@ export function Agitation({ content }: AgitationProps) {
                     >
                       <AlertTriangle 
                         className="w-5 h-5 flex-shrink-0 mt-0.5" 
-                        style={{ color: '#ec4899' }}
+                        style={{ color: '#e11d48' }}
                       />
                       <div>
                         <p 

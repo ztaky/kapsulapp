@@ -6,10 +6,10 @@ interface PedagogyProps {
 }
 
 // Gradients harmonisés
-const headlineGradient = 'linear-gradient(90deg, #ec4899 0%, #9333ea 100%)';
-const titleGradient = 'linear-gradient(90deg, #db2777 0%, #9333ea 100%)';
+const headlineGradient = 'linear-gradient(90deg, #e11d48 0%, #9333ea 100%)';
+const titleGradient = 'linear-gradient(90deg, #e11d48 0%, #9333ea 100%)';
 const badgeGradient = 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)';
-const accentColor = '#ec4899';
+const accentColor = '#e11d48';
 const cardBgColor = '#fdf2f8';
 
 export function Pedagogy({ content }: PedagogyProps) {
