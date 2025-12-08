@@ -38,6 +38,7 @@ import { LandingPageAIChat } from "@/components/landing/LandingPageAIChat";
 import { DesignEditor } from "@/components/landing/DesignEditor";
 import { PreviewDeviceSelector, getPreviewMaxWidth, type PreviewDevice } from "@/components/landing/PreviewDeviceSelector";
 import { useEditorHistory } from "@/hooks/useEditorHistory";
+import { useCoachPreferences } from "@/hooks/useCoachPreferences";
 
 const SECTIONS = [
   { id: 'hero', label: 'Hero', icon: LayoutTemplate, required: true },
@@ -68,6 +69,7 @@ export default function LandingPageFullEditor() {
   const [localDesignConfig, setLocalDesignConfig] = useState<any>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
+  const [isSavingPalette, setIsSavingPalette] = useState(false);
   
   // History for undo/redo
   const { pushState, initHistory, undo, redo, canUndo, canRedo, historyInfo } = useEditorHistory();
@@ -91,6 +93,11 @@ export default function LandingPageFullEditor() {
     },
     enabled: !!pageId,
   });
+
+  // Coach preferences for personal palette (after landingPage is available)
+  const { preferences: coachPreferences, updatePreferences } = useCoachPreferences(
+    landingPage?.organization_id || null
+  );
 
   // Initialize local state when data loads
   useEffect(() => {
@@ -558,6 +565,16 @@ export default function LandingPageFullEditor() {
               <DesignEditor
                 designConfig={localDesignConfig}
                 onChange={handleDesignChange}
+                coachPreferences={coachPreferences}
+                onSaveAsMyPalette={async (colors) => {
+                  setIsSavingPalette(true);
+                  try {
+                    await updatePreferences({ preferred_colors: colors });
+                  } finally {
+                    setIsSavingPalette(false);
+                  }
+                }}
+                isSavingPalette={isSavingPalette}
               />
             </div>
           )}

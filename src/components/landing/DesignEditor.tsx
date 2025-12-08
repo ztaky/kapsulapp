@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,16 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Palette, Type, Sun, Moon, Check } from "lucide-react";
+import { Palette, Type, Sun, Moon, Check, Star, Loader2 } from "lucide-react";
+import { CoachPreferences } from "@/hooks/useCoachPreferences";
+import { toast } from "sonner";
 
 interface DesignEditorProps {
   designConfig: any;
   onChange: (key: string, value: any) => void;
+  coachPreferences?: CoachPreferences | null;
+  onSaveAsMyPalette?: (colors: string[]) => Promise<void>;
+  isSavingPalette?: boolean;
 }
 
 // Available fonts with Google Fonts support
@@ -37,9 +41,8 @@ const AVAILABLE_FONTS = [
   { value: "Sora", label: "Sora", category: "Sans-serif" },
 ];
 
-// Preset color palettes
+// Preset color palettes (available for all coaches)
 const COLOR_PRESETS = [
-  { name: "Rouge Corail", primary: "#e11d48", secondary: "#9333ea" },
   { name: "Orange Chaleur", primary: "#ea580c", secondary: "#f59e0b" },
   { name: "Bleu Confiance", primary: "#2563eb", secondary: "#3b82f6" },
   { name: "Vert Nature", primary: "#059669", secondary: "#10b981" },
@@ -49,7 +52,13 @@ const COLOR_PRESETS = [
   { name: "Cyan Tech", primary: "#0891b2", secondary: "#06b6d4" },
 ];
 
-export function DesignEditor({ designConfig, onChange }: DesignEditorProps) {
+export function DesignEditor({ 
+  designConfig, 
+  onChange, 
+  coachPreferences,
+  onSaveAsMyPalette,
+  isSavingPalette = false
+}: DesignEditorProps) {
   const colors = designConfig?.colors || ["#ea580c", "#f59e0b"];
   const fonts = designConfig?.fonts || { heading: "Inter", body: "Inter" };
   const theme = designConfig?.theme || "light";
@@ -60,9 +69,21 @@ export function DesignEditor({ designConfig, onChange }: DesignEditorProps) {
     onChange("colors", newColors);
   };
 
-  const applyPreset = (preset: typeof COLOR_PRESETS[0]) => {
+  const applyPreset = (preset: { name: string; primary: string; secondary: string }) => {
     onChange("colors", [preset.primary, preset.secondary]);
   };
+
+  const handleSaveAsPalette = async () => {
+    if (onSaveAsMyPalette) {
+      await onSaveAsMyPalette(colors);
+    }
+  };
+
+  // Check if current colors match coach's saved palette
+  const hasPersonalPalette = coachPreferences?.preferred_colors && coachPreferences.preferred_colors.length >= 2;
+  const isPersonalPaletteActive = hasPersonalPalette && 
+    colors[0] === coachPreferences?.preferred_colors[0] && 
+    colors[1] === coachPreferences?.preferred_colors[1];
 
   return (
     <ScrollArea className="h-full">
@@ -156,6 +177,59 @@ export function DesignEditor({ designConfig, onChange }: DesignEditorProps) {
               }}
             />
           </div>
+
+          {/* Personal Palette (Coach's saved palette) */}
+          {hasPersonalPalette && (
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                Ma palette personnelle
+              </Label>
+              <button
+                onClick={() => applyPreset({
+                  name: "Ma palette",
+                  primary: coachPreferences!.preferred_colors[0],
+                  secondary: coachPreferences!.preferred_colors[1]
+                })}
+                className={`w-full p-2 rounded-lg transition-all border-2 ${
+                  isPersonalPaletteActive
+                    ? 'border-amber-500 bg-amber-500/10'
+                    : 'border-border hover:border-amber-500/50'
+                }`}
+              >
+                <div 
+                  className="h-10 rounded-md"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${coachPreferences!.preferred_colors[0]}, ${coachPreferences!.preferred_colors[1]})` 
+                  }}
+                />
+                {isPersonalPaletteActive && (
+                  <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-amber-600">
+                    <Check className="h-3 w-3" />
+                    Palette active
+                  </div>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Save as personal palette */}
+          {onSaveAsMyPalette && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveAsPalette}
+              disabled={isSavingPalette || isPersonalPaletteActive}
+              className="w-full"
+            >
+              {isSavingPalette ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Star className="h-4 w-4 mr-2" />
+              )}
+              {hasPersonalPalette ? 'Mettre à jour ma palette' : 'Sauvegarder comme ma palette'}
+            </Button>
+          )}
 
           {/* Color Presets */}
           <div className="space-y-2">
