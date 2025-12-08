@@ -85,51 +85,6 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
           {content.subheadline}
         </p>
 
-        {/* CGV Checkbox */}
-        <div className="flex items-center justify-center gap-3 mb-10 max-w-2xl mx-auto">
-          <Checkbox 
-            id="cgv-accept-pricing" 
-            checked={cgvAccepted} 
-            onCheckedChange={(checked) => setCgvAccepted(checked === true)}
-            className="border-gray-400"
-          />
-          <label 
-            htmlFor="cgv-accept-pricing" 
-            className="text-sm cursor-pointer text-left"
-            style={{ color: '#1e1b4b' }}
-          >
-            {"J'accepte les "}
-            <a 
-              href={legalLinks.cgv} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline hover:opacity-80"
-              style={{ color: primaryColor }}
-            >
-              CGV
-            </a>
-            {", la "}
-            <a 
-              href={legalLinks.confidentialite} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline hover:opacity-80"
-              style={{ color: primaryColor }}
-            >
-              Politique de Confidentialité
-            </a>
-            {" et les "}
-            <a 
-              href={legalLinks.mentions} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline hover:opacity-80"
-              style={{ color: primaryColor }}
-            >
-              Mentions Légales
-            </a>
-          </label>
-        </div>
 
         {/* Payment Options */}
         {installmentsEnabled ? (
@@ -209,6 +164,66 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
               </div>
             </div>
           </div>
+
+            {/* Message d'aide + CGV Checkbox sous les boutons */}
+            {!cgvAccepted && (
+              <p className="text-center text-sm mt-6" style={{ color: '#6b7280' }}>
+                ☝️ Cochez les conditions ci-dessous pour activer le paiement
+              </p>
+            )}
+            
+            <div 
+              className="mt-6 max-w-2xl mx-auto p-4 rounded-xl transition-all"
+              style={{ 
+                backgroundColor: cgvAccepted ? '#f0fdf4' : '#fef3c7',
+                border: cgvAccepted ? '2px solid #22c55e' : `2px solid ${primaryColor}`
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <Checkbox 
+                  id="cgv-accept-pricing-bottom" 
+                  checked={cgvAccepted} 
+                  onCheckedChange={(checked) => setCgvAccepted(checked === true)}
+                  className="mt-0.5 border-gray-500 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                />
+                <label 
+                  htmlFor="cgv-accept-pricing-bottom" 
+                  className="text-sm cursor-pointer text-left font-medium"
+                  style={{ color: '#1e1b4b' }}
+                >
+                  {"J'accepte les "}
+                  <a 
+                    href={legalLinks.cgv} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:opacity-80 font-semibold"
+                    style={{ color: primaryColor }}
+                  >
+                    CGV
+                  </a>
+                  {", la "}
+                  <a 
+                    href={legalLinks.confidentialite} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:opacity-80 font-semibold"
+                    style={{ color: primaryColor }}
+                  >
+                    Politique de Confidentialité
+                  </a>
+                  {" et les "}
+                  <a 
+                    href={legalLinks.mentions} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:opacity-80 font-semibold"
+                    style={{ color: primaryColor }}
+                  >
+                    Mentions Légales
+                  </a>
+                </label>
+              </div>
+            </div>
           </>
         ) : (
           /* Single Payment Option (existing layout) */
@@ -265,6 +280,66 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                 </div>
               </div>
             )}
+
+            {/* Message d'aide + CGV Checkbox sous le bouton (single payment) */}
+            {!cgvAccepted && (
+              <p className="text-center text-sm mt-6" style={{ color: '#6b7280' }}>
+                ☝️ Cochez les conditions ci-dessous pour activer le paiement
+              </p>
+            )}
+            
+            <div 
+              className="mt-6 max-w-md mx-auto p-4 rounded-xl transition-all"
+              style={{ 
+                backgroundColor: cgvAccepted ? '#f0fdf4' : '#fef3c7',
+                border: cgvAccepted ? '2px solid #22c55e' : `2px solid ${primaryColor}`
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <Checkbox 
+                  id="cgv-accept-pricing-single" 
+                  checked={cgvAccepted} 
+                  onCheckedChange={(checked) => setCgvAccepted(checked === true)}
+                  className="mt-0.5 border-gray-500 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                />
+                <label 
+                  htmlFor="cgv-accept-pricing-single" 
+                  className="text-sm cursor-pointer text-left font-medium"
+                  style={{ color: '#1e1b4b' }}
+                >
+                  {"J'accepte les "}
+                  <a 
+                    href={legalLinks.cgv} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:opacity-80 font-semibold"
+                    style={{ color: primaryColor }}
+                  >
+                    CGV
+                  </a>
+                  {", la "}
+                  <a 
+                    href={legalLinks.confidentialite} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:opacity-80 font-semibold"
+                    style={{ color: primaryColor }}
+                  >
+                    Politique de Confidentialité
+                  </a>
+                  {" et les "}
+                  <a 
+                    href={legalLinks.mentions} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:opacity-80 font-semibold"
+                    style={{ color: primaryColor }}
+                  >
+                    Mentions Légales
+                  </a>
+                </label>
+              </div>
+            </div>
           </div>
         )}
       </div>
