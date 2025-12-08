@@ -6,7 +6,7 @@ import { useFounderStatus } from "@/hooks/useFounderStatus";
 import { useStudentLimit } from "@/hooks/useStudentLimit";
 import { useAICredits } from "@/hooks/useAICredits";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight, Sparkles, Plus } from "lucide-react";
+import { Users, DollarSign, BookOpen, TrendingUp, ArrowRight, Sparkles, Plus, AlertTriangle } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingPopup } from "@/components/onboarding/OnboardingPopup";
@@ -16,6 +16,7 @@ import { FounderBadge } from "@/components/shared/FounderBadge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { AICreditsShop } from "@/components/credits/AICreditsShop";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 export default function StudioDashboard() {
@@ -45,6 +46,31 @@ export default function StudioDashboard() {
     completeOnboarding,
     refetch: refetchOnboarding,
   } = useOnboarding(currentOrg?.id);
+
+  // Check if legal pages need customization
+  const { data: legalPagesStatus } = useQuery({
+    queryKey: ["legal-pages-status", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg?.id) return null;
+
+      const { data: legalPages } = await supabase
+        .from("legal_pages")
+        .select("content")
+        .eq("organization_id", currentOrg.id);
+
+      if (!legalPages || legalPages.length === 0) {
+        return { hasLegalPages: false, needsCustomization: false };
+      }
+
+      // Check if any page contains the placeholder
+      const needsCustomization = legalPages.some(page => 
+        page.content?.includes("[À COMPLÉTER]")
+      );
+
+      return { hasLegalPages: true, needsCustomization };
+    },
+    enabled: !!currentOrg?.id,
+  });
 
   // Handle credits purchase success from URL params
   useEffect(() => {
@@ -234,6 +260,24 @@ export default function StudioDashboard() {
           organizationId={currentOrg.id}
           organizationSlug={slug || ""}
         />
+      )}
+
+      {/* Legal Pages Warning */}
+      {legalPagesStatus?.needsCustomization && (
+        <Alert variant="default" className="border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800">Pages légales à personnaliser</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            Vos pages légales contiennent des informations par défaut à remplacer (SIRET, adresse, etc.).
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-amber-800 underline ml-1"
+              onClick={() => navigate(`/school/${slug}/studio/legal-pages`)}
+            >
+              Personnaliser maintenant →
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Hero Header */}
