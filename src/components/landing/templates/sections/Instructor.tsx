@@ -1,15 +1,16 @@
 import { InstructorContent } from '@/config/landingPageSchema';
-import { useTheme } from '@/theme/ThemeProvider';
 import { Monitor } from 'lucide-react';
 import instructorPhoto from '@/assets/instructor-photo.png';
 
 interface InstructorProps {
   content: InstructorContent;
   trainerPhoto?: string;
+  primaryColor?: string;
+  primaryDarkColor?: string;
 }
 
-export function Instructor({ content, trainerPhoto }: InstructorProps) {
-  const { theme } = useTheme();
+export function Instructor({ content, trainerPhoto, primaryColor = '#e11d48', primaryDarkColor = '#9333ea' }: InstructorProps) {
+  const gradientStyle = `linear-gradient(90deg, ${primaryColor}, ${primaryDarkColor})`;
   
   const credentials = [
     "23 ans d'entrepreneuriat (j'ai vécu tous les hauts et les bas)",
@@ -40,7 +41,7 @@ export function Instructor({ content, trainerPhoto }: InstructorProps) {
             <h3 
               className="text-2xl md:text-3xl font-bold mb-8"
               style={{ 
-                background: 'linear-gradient(90deg, #d4a574, #c4956a)',
+                background: gradientStyle,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
@@ -55,7 +56,7 @@ export function Instructor({ content, trainerPhoto }: InstructorProps) {
                 <li key={index} className="flex items-start gap-3">
                   <span 
                     className="w-2 h-2 rounded-full flex-shrink-0 mt-2"
-                    style={{ backgroundColor: '#d4a574' }}
+                    style={{ backgroundColor: primaryColor }}
                   />
                   <span 
                     className="text-base md:text-lg"
@@ -72,7 +73,7 @@ export function Instructor({ content, trainerPhoto }: InstructorProps) {
               <div className="flex justify-center mb-4">
                 <div 
                   className="w-16 h-16 flex items-center justify-center"
-                  style={{ color: '#d4a574' }}
+                  style={{ color: primaryColor }}
                 >
                   <Monitor className="w-12 h-12" strokeWidth={1.5} />
                 </div>
@@ -80,7 +81,7 @@ export function Instructor({ content, trainerPhoto }: InstructorProps) {
               <h4 
                 className="text-xl md:text-2xl font-bold mb-4"
                 style={{ 
-                  background: 'linear-gradient(90deg, #d4a574, #c4956a)',
+                  background: gradientStyle,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text'
@@ -101,7 +102,7 @@ export function Instructor({ content, trainerPhoto }: InstructorProps) {
               <h4 
                 className="text-xl md:text-2xl font-bold mb-4"
                 style={{ 
-                  background: 'linear-gradient(90deg, #d4a574, #c4956a)',
+                  background: gradientStyle,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text'
