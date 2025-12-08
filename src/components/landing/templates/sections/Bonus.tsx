@@ -53,7 +53,7 @@ const bonusItems = [
   }
 ];
 
-export function Bonus({ content, primaryColor = '#ea580c', primaryDarkColor = '#9333ea' }: BonusProps) {
+export function Bonus({ content, primaryColor = '#ec4899', primaryDarkColor = '#9333ea' }: BonusProps) {
   const accentGradient = `linear-gradient(90deg, ${primaryColor}, ${primaryDarkColor})`;
   const buttonGradient = `linear-gradient(90deg, ${primaryColor}, ${primaryDarkColor})`;
 

@@ -15,7 +15,7 @@ export function Guarantee({ content }: GuaranteeProps) {
         {/* Icône bouclier avec dégradé */}
         <div 
           className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}
+          style={{ background: 'linear-gradient(135deg, #9333ea, #ec4899)' }}
         >
           <Shield 
             className="w-10 h-10 text-white" 
@@ -28,7 +28,7 @@ export function Guarantee({ content }: GuaranteeProps) {
           <span style={{ color: '#1e1b4b' }}>Ta Garantie </span>
           <span 
             style={{ 
-              background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
+              background: 'linear-gradient(90deg, #ec4899, #db2777, #9333ea)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -49,7 +49,7 @@ export function Guarantee({ content }: GuaranteeProps) {
         <p 
           className="text-xl md:text-2xl font-semibold"
           style={{ 
-            background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
+            background: 'linear-gradient(90deg, #ec4899, #db2777, #9333ea)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
