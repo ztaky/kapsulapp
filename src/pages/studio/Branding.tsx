@@ -1076,12 +1076,17 @@ export default function StudioBranding() {
       </div>
 
       {/* Custom Domain Card */}
-      <CustomDomainCard
-        customDomain={formData.custom_domain}
-        onDomainChange={(domain) => setFormData({ ...formData, custom_domain: domain })}
-        onSave={() => updateOrgMutation.mutate(formData)}
-        isSaving={updateOrgMutation.isPending}
-      />
+      {currentOrg && (
+        <CustomDomainCard
+          customDomain={formData.custom_domain}
+          customDomainStatus={(currentOrg as any).custom_domain_status}
+          organizationId={currentOrg.id}
+          onDomainChange={(domain) => setFormData({ ...formData, custom_domain: domain })}
+          onSave={() => updateOrgMutation.mutate(formData)}
+          onStatusChange={() => refetchOrgs()}
+          isSaving={updateOrgMutation.isPending}
+        />
+      )}
 
       {/* Save Button */}
       <div className="flex justify-end">

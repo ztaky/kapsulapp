@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.extract-url-content]
 verify_jwt = false
+
+[functions.verify-dns]
+verify_jwt = false
