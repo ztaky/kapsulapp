@@ -9,6 +9,172 @@ const corsHeaders = {
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// Default legal page templates
+function generateDefaultLegalPages(academyName: string, coachName: string) {
+  const placeholder = "[À COMPLÉTER]";
+  
+  return {
+    cgv: {
+      title: "Conditions Générales de Vente",
+      content: `# Conditions Générales de Vente
+
+## Article 1 – Identification du vendeur
+
+**${academyName}**
+Représenté par : ${coachName || placeholder}
+SIRET : ${placeholder}
+Adresse : ${placeholder}
+Email : ${placeholder}
+Téléphone : ${placeholder}
+
+## Article 2 – Objet
+
+Les présentes Conditions Générales de Vente (CGV) définissent les droits et obligations des parties dans le cadre de la vente de formations en ligne proposées par ${academyName}.
+
+## Article 3 – Prix
+
+Les prix sont indiqués en euros TTC. ${academyName} se réserve le droit de modifier ses prix à tout moment. Les formations seront facturées sur la base des tarifs en vigueur au moment de la validation de la commande.
+
+## Article 4 – Commande
+
+La validation de la commande implique l'acceptation des présentes CGV. Un email de confirmation sera envoyé à l'acheteur.
+
+## Article 5 – Modalités de paiement
+
+Le paiement s'effectue par carte bancaire via notre prestataire de paiement sécurisé Stripe.
+
+## Article 6 – Droit de rétractation
+
+Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne peut être exercé pour les contenus numériques fournis sur un support immatériel dont l'exécution a commencé avec l'accord du consommateur.
+
+## Article 7 – Accès aux formations
+
+L'accès aux formations est accordé dès réception du paiement, pour une durée illimitée sauf mention contraire.
+
+## Article 8 – Propriété intellectuelle
+
+L'ensemble des contenus des formations reste la propriété exclusive de ${academyName}. Toute reproduction ou diffusion est strictement interdite.
+
+## Article 9 – Responsabilité
+
+${academyName} s'engage à fournir ses meilleurs efforts pour délivrer des formations de qualité. La responsabilité de ${academyName} ne saurait être engagée en cas d'utilisation inadaptée des formations.
+
+## Article 10 – Litiges
+
+En cas de litige, une solution amiable sera recherchée. À défaut, les tribunaux français seront compétents.
+
+---
+
+⚠️ **Ce document contient des informations à personnaliser.** Recherchez "[À COMPLÉTER]" et remplacez par vos informations.`
+    },
+    politique_confidentialite: {
+      title: "Politique de Confidentialité",
+      content: `# Politique de Confidentialité
+
+## Responsable du traitement
+
+**${academyName}**
+Représenté par : ${coachName || placeholder}
+Email : ${placeholder}
+
+## Données collectées
+
+Dans le cadre de nos services, nous collectons :
+- **Données d'identification** : nom, prénom, adresse email
+- **Données de paiement** : traitées de manière sécurisée par Stripe
+- **Données de navigation** : cookies, logs de connexion
+
+## Finalités du traitement
+
+Vos données sont utilisées pour :
+- La gestion de votre compte et l'accès aux formations
+- L'envoi de communications relatives à vos formations
+- L'amélioration de nos services
+
+## Base légale
+
+Le traitement de vos données repose sur :
+- L'exécution du contrat (accès aux formations)
+- Votre consentement (newsletter, cookies)
+- Nos intérêts légitimes (amélioration des services)
+
+## Durée de conservation
+
+Vos données sont conservées pendant la durée de votre inscription, puis 3 ans après votre dernière activité.
+
+## Vos droits
+
+Conformément au RGPD, vous disposez des droits suivants :
+- **Accès** : obtenir une copie de vos données
+- **Rectification** : corriger vos données inexactes
+- **Effacement** : supprimer vos données
+- **Portabilité** : recevoir vos données dans un format structuré
+- **Opposition** : vous opposer au traitement
+
+Pour exercer vos droits, contactez-nous à : ${placeholder}
+
+## Cookies
+
+Nous utilisons des cookies pour :
+- Le fonctionnement du site (cookies essentiels)
+- L'analyse d'audience (avec votre consentement)
+
+## Sécurité
+
+Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos données.
+
+## Modifications
+
+Cette politique peut être mise à jour. La date de dernière modification sera indiquée.
+
+---
+
+⚠️ **Ce document contient des informations à personnaliser.** Recherchez "[À COMPLÉTER]" et remplacez par vos informations.`
+    },
+    mentions_legales: {
+      title: "Mentions Légales",
+      content: `# Mentions Légales
+
+## Éditeur du site
+
+**${academyName}**
+
+Représentant légal : ${coachName || placeholder}
+Forme juridique : ${placeholder}
+SIRET : ${placeholder}
+Adresse : ${placeholder}
+Email : ${placeholder}
+Téléphone : ${placeholder}
+
+## Hébergement
+
+Ce site est hébergé par :
+Supabase Inc.
+970 Toa Payoh North #07-04
+Singapore 318992
+
+## Propriété intellectuelle
+
+L'ensemble du contenu de ce site (textes, images, vidéos, formations) est protégé par le droit d'auteur et reste la propriété exclusive de ${academyName}.
+
+Toute reproduction, représentation, modification ou exploitation non autorisée est interdite.
+
+## Données personnelles
+
+Pour toute question relative à vos données personnelles, consultez notre Politique de Confidentialité ou contactez-nous à : ${placeholder}
+
+## Crédits
+
+Site créé avec Kapsul - Plateforme de formations en ligne
+https://kapsul.app
+
+---
+
+⚠️ **Ce document contient des informations à personnaliser.** Recherchez "[À COMPLÉTER]" et remplacez par vos informations.`
+    }
+  };
+}
+
 // Generate welcome email HTML
 function generateWelcomeEmailHTML(coachName: string, academyName: string, academySlug: string, baseUrl: string, isFounder: boolean) {
   const studioUrl = `${baseUrl}/school/${academySlug}/studio`;
@@ -258,7 +424,28 @@ serve(async (req) => {
       // Non-blocking error
     }
 
-    // 4. Send welcome email
+    // 4. Create default legal pages
+    console.log('Creating default legal pages...');
+    const legalTemplates = generateDefaultLegalPages(academyName, profile?.full_name || '');
+    
+    const legalPagesData = [
+      { organization_id: organization.id, type: 'cgv' as const, ...legalTemplates.cgv },
+      { organization_id: organization.id, type: 'politique_confidentialite' as const, ...legalTemplates.politique_confidentialite },
+      { organization_id: organization.id, type: 'mentions_legales' as const, ...legalTemplates.mentions_legales },
+    ];
+
+    const { error: legalError } = await supabase
+      .from('legal_pages')
+      .insert(legalPagesData);
+
+    if (legalError) {
+      console.error('Legal pages creation error:', legalError);
+      // Non-blocking error - academy creation should still succeed
+    } else {
+      console.log('Legal pages created successfully');
+    }
+
+    // 5. Send welcome email
     if (profile?.email) {
       try {
         // Get base URL from request origin or fallback
