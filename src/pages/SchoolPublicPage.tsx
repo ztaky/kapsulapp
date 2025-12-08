@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { GraduationCap, BookOpen, Users, Mail, ArrowRight, MessageSquare } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, Mail, ArrowRight, MessageSquare, LogIn } from 'lucide-react';
 import { ContactForm } from '@/components/school/ContactForm';
 import { CoachPublicFooter } from '@/components/shared/CoachPublicFooter';
 
@@ -167,14 +167,27 @@ const SchoolPublicPage = () => {
             )}
             <span className="font-semibold text-lg text-foreground">{organization.name}</span>
           </div>
-          {organization.contact_email && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={`mailto:${organization.contact_email}`}>
-                <Mail className="h-4 w-4 mr-2" />
-                Contact
-              </a>
+          <div className="flex items-center gap-2">
+            {organization.contact_email && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={`mailto:${organization.contact_email}`}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contact
+                </a>
+              </Button>
+            )}
+            <Button 
+              size="sm" 
+              asChild
+              style={{ backgroundColor: brandColor }}
+              className="hover:opacity-90 text-white"
+            >
+              <Link to="/auth">
+                <LogIn className="h-4 w-4 mr-2" />
+                Se connecter
+              </Link>
             </Button>
-          )}
+          </div>
         </div>
       </header>
 
