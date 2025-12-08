@@ -6,7 +6,7 @@ interface SolutionTimeframeProps {
 }
 
 export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
-  const gradientStyle = 'linear-gradient(90deg, #ea580c 0%, #9333ea 100%)';
+  const gradientStyle = 'linear-gradient(90deg, #ec4899 0%, #9333ea 100%)';
   const bgColor = '#1a1a2e';
   const cardBgColor = '#fef3e2';
 
@@ -102,7 +102,7 @@ export function SolutionTimeframe({ content }: SolutionTimeframeProps) {
         {/* Orange separator line */}
         <div 
           className="w-48 h-1 mx-auto mb-16 rounded-full"
-          style={{ backgroundColor: '#ea580c' }}
+          style={{ backgroundColor: '#ec4899' }}
         />
 
         {/* Two cards side by side */}

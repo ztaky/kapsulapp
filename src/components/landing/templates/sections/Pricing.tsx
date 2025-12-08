@@ -15,7 +15,7 @@ interface PricingProps {
   primaryDarkColor?: string;
 }
 
-export function Pricing({ content, landingSlug, installmentsEnabled, installmentsCount = 3, onCheckout, primaryColor = '#ea580c', primaryDarkColor = '#9333ea' }: PricingProps) {
+export function Pricing({ content, landingSlug, installmentsEnabled, installmentsCount = 3, onCheckout, primaryColor = '#ec4899', primaryDarkColor = '#9333ea' }: PricingProps) {
   const [cgvAccepted, setCgvAccepted] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<'full' | 'installments'>('full');
 

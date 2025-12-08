@@ -23,7 +23,7 @@ export function FAQ({ content }: FAQProps) {
   const headlineParts = content.headline.split(/(\*\*[^*]+\*\*)/g);
 
   const closedColor = '#2d3748';
-  const openColor = '#ea580c';
+  const openColor = '#ec4899';
 
   return (
     <section 
@@ -42,7 +42,7 @@ export function FAQ({ content }: FAQProps) {
                 <span 
                   key={i}
                   style={{
-                    background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
+                    background: 'linear-gradient(90deg, #ec4899, #db2777, #9333ea)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -108,8 +108,8 @@ export function FAQ({ content }: FAQProps) {
               href="#pricing"
               className="inline-block px-8 py-4 rounded-xl text-white font-bold text-lg md:text-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
               style={{
-                background: 'linear-gradient(90deg, #ea580c, #db2777, #7c3aed)',
-                boxShadow: '0 10px 40px rgba(234, 88, 12, 0.3)'
+                background: 'linear-gradient(90deg, #ec4899, #db2777, #9333ea)',
+                boxShadow: '0 10px 40px rgba(236, 72, 153, 0.3)'
               }}
             >
               Je suis prêt(e) à gagner 20h / semaine avec l'IA

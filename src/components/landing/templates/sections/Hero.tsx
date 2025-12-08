@@ -13,7 +13,7 @@ export function Hero({ content, primaryColor, primaryDarkColor }: HeroProps) {
   const { theme } = useTheme();
 
   // Use theme colors or provided colors, with fallback
-  const primary = primaryColor || theme?.colors?.primary || '#ea580c';
+  const primary = primaryColor || theme?.colors?.primary || '#ec4899';
   const primaryDark = primaryDarkColor || theme?.colors?.primaryDark || '#9333ea';
   const titleGradient = `linear-gradient(90deg, ${primary} 0%, ${primaryDark} 100%)`;
   const buttonGradient = `linear-gradient(135deg, ${primary} 0%, ${primaryDark} 100%)`;
