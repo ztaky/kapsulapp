@@ -145,12 +145,20 @@ export function LandingPageTemplate({
 
         {/* Section 5 - Program */}
         {isEnabled('program') && content.program && (
-          <Program content={content.program} />
+          <Program 
+            content={content.program}
+            primaryColor={primaryColor}
+            primaryDarkColor={primaryDarkColor}
+          />
         )}
 
         {/* Section 6 - Testimonials */}
         {isEnabled('testimonials') && content.testimonials && (
-          <Testimonials content={content.testimonials} />
+          <Testimonials 
+            content={content.testimonials}
+            primaryColor={primaryColor}
+            primaryDarkColor={primaryDarkColor}
+          />
         )}
 
         {/* Section 7 - Bonus */}

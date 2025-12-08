@@ -1,15 +1,25 @@
 import { ProgramContent } from '@/config/landingPageSchema';
 import { CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ProgramProps {
   content: ProgramContent;
+  primaryColor?: string;
+  primaryDarkColor?: string;
 }
 
-export function Program({ content }: ProgramProps) {
-  const gradientStyle = 'linear-gradient(90deg, #e11d48 0%, #9333ea 100%)';
-  const coralColor = '#e11d48';
-  const purpleColor = '#9333ea';
+export function Program({ content, primaryColor = '#e11d48', primaryDarkColor = '#9333ea' }: ProgramProps) {
+  const gradientStyle = `linear-gradient(90deg, ${primaryColor} 0%, ${primaryDarkColor} 100%)`;
+  const coralColor = primaryColor;
+  const purpleColor = primaryDarkColor;
   const greenColor = '#10b981';
+
+  const handleScrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section 
@@ -128,15 +138,17 @@ export function Program({ content }: ProgramProps) {
 
         {/* CTA Button */}
         <div className="text-center">
-          <button
-            className="px-10 py-5 rounded-full text-white text-xl font-bold transition-all hover:scale-105 hover:shadow-xl"
+          <Button
+            size="lg"
+            onClick={handleScrollToPricing}
+            className="text-lg md:text-xl px-10 py-6 h-auto rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-[1.02] text-white font-semibold"
             style={{ 
               background: gradientStyle,
-              boxShadow: '0 10px 30px rgba(225, 29, 72, 0.3)'
+              boxShadow: `0 10px 30px ${primaryColor}4D`
             }}
           >
             Je veux la méthode IA Mastery
-          </button>
+          </Button>
           <p 
             className="mt-4 text-sm"
             style={{ color: '#9ca3af' }}

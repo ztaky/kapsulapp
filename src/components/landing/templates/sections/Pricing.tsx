@@ -170,7 +170,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                   size="lg"
                   onClick={(e) => handleCtaClick(e, 'full')}
                   disabled={!cgvAccepted}
-                  className="w-full text-base py-5 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+                    className="w-full text-base py-5 h-auto rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
                   style={{ background: buttonGradient, color: 'white' }}
                 >
                   Payer {price}€
@@ -201,10 +201,10 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                   size="lg"
                   onClick={(e) => handleCtaClick(e, 'installments')}
                   disabled={!cgvAccepted}
-                  className="w-full text-base py-5 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
-                  style={{ background: buttonGradient, color: 'white' }}
-                >
-                  Payer en {installmentsCount}x
+                    className="w-full text-base py-5 h-auto rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+                    style={{ background: buttonGradient, color: 'white' }}
+                  >
+                    Payer en {installmentsCount}x
                 </Button>
               </div>
             </div>
@@ -254,7 +254,7 @@ export function Pricing({ content, landingSlug, installmentsEnabled, installment
                     size="lg"
                     onClick={(e) => handleCtaClick(e, 'full')}
                     disabled={!cgvAccepted}
-                    className="w-full max-w-xs mx-auto mt-8 text-lg py-6 h-auto rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+                    className="w-full max-w-xs mx-auto mt-8 text-lg py-6 h-auto rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
                     style={{ background: buttonGradient, color: 'white' }}
                   >
                     {content.offers[0].cta}
