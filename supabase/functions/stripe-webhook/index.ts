@@ -488,19 +488,12 @@ serve(async (req) => {
       }
 
       // Regular course purchase flow
-      const userId = session.client_reference_id;
+      let userId = session.client_reference_id;
       const courseId = session.metadata?.course_id;
+      const isGuest = session.metadata?.is_guest === "true";
       const amountTotal = session.amount_total
         ? session.amount_total / 100
         : 0;
-
-      if (!userId) {
-        console.error("No client_reference_id found in session");
-        return new Response(
-          JSON.stringify({ error: "Missing user ID" }),
-          { status: 400, headers: corsHeaders }
-        );
-      }
 
       if (!courseId) {
         console.error("No course_id found in session metadata");
@@ -510,11 +503,124 @@ serve(async (req) => {
         );
       }
 
-      // Create Supabase admin client
+      // Create Supabase admin client early for guest handling
       const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
       );
+
+      // Handle guest checkout: create or find user by email
+      if (!userId && isGuest) {
+        const customerEmail = session.customer_email || session.customer_details?.email;
+        const customerName = session.customer_details?.name;
+        
+        if (!customerEmail) {
+          console.error("Guest checkout but no email found");
+          return new Response(
+            JSON.stringify({ error: "Missing customer email" }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        console.log(`Guest checkout detected for: ${customerEmail}`);
+
+        // Check if user already exists
+        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        const existingUser = existingUsers?.users?.find(u => u.email === customerEmail);
+
+        if (existingUser) {
+          console.log(`Found existing user for email ${customerEmail}: ${existingUser.id}`);
+          userId = existingUser.id;
+        } else {
+          // Create new user account
+          console.log(`Creating new user account for: ${customerEmail}`);
+          
+          // Generate a random temporary password
+          const tempPassword = crypto.randomUUID();
+          
+          const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: customerEmail,
+            password: tempPassword,
+            email_confirm: true, // Auto-confirm email
+            user_metadata: {
+              full_name: customerName || "",
+              created_from: "guest_checkout",
+            },
+          });
+
+          if (createError || !newUser.user) {
+            console.error("Error creating user:", createError);
+            return new Response(
+              JSON.stringify({ error: "Failed to create user account" }),
+              { status: 500, headers: corsHeaders }
+            );
+          }
+
+          userId = newUser.user.id;
+          console.log(`Created new user: ${userId}`);
+
+          // Send welcome email with password reset link
+          const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+          const { data: course } = await supabaseAdmin
+            .from("courses")
+            .select("title, organization_id, organizations:organization_id(slug, name)")
+            .eq("id", courseId)
+            .single();
+
+          const org = (course as any)?.organizations;
+          const courseUrl = org
+            ? `https://lovable.dev/school/${org.slug}/learning/${courseId}`
+            : undefined;
+
+          // Generate magic link for password setup
+          const { data: magicLink } = await supabaseAdmin.auth.admin.generateLink({
+            type: "recovery",
+            email: customerEmail,
+          });
+
+          // Send a special welcome email for new guest purchasers
+          try {
+            console.log("Sending welcome email to new guest customer:", customerEmail);
+            const welcomeResponse = await fetch(
+              `${supabaseUrl}/functions/v1/send-transactional-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                },
+                body: JSON.stringify({
+                  type: "welcome_purchase",
+                  organizationId: course?.organization_id,
+                  recipientEmail: customerEmail,
+                  recipientName: customerName || undefined,
+                  courseName: course?.title,
+                  courseUrl: courseUrl,
+                  isNewAccount: true,
+                  passwordResetUrl: magicLink?.properties?.action_link,
+                }),
+              }
+            );
+
+            if (!welcomeResponse.ok) {
+              const errorText = await welcomeResponse.text();
+              console.error("Welcome email failed:", errorText);
+            } else {
+              console.log("Welcome email sent to new guest customer");
+            }
+          } catch (emailError) {
+            console.error("Error sending welcome email:", emailError);
+          }
+        }
+      }
+
+      if (!userId) {
+        console.error("No user ID found after guest handling");
+        return new Response(
+          JSON.stringify({ error: "Missing user ID" }),
+          { status: 400, headers: corsHeaders }
+        );
+      }
 
       // Check if purchase already exists
       const { data: existingPurchase } = await supabaseAdmin

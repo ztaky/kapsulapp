@@ -22,23 +22,20 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    // Guest checkout: authentication is now OPTIONAL
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    let user = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user: authUser }, error: userError } = await supabaseClient.auth.getUser(token);
+      if (!userError && authUser) {
+        user = authUser;
+        console.log("Authenticated user:", user.email);
+      }
     }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Not authenticated" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    
+    console.log("Guest checkout enabled:", !user);
 
     const { courseId, successUrl, cancelUrl, paymentType = "full" } = await req.json();
 
@@ -87,13 +84,21 @@ serve(async (req) => {
         );
       }
 
+      // Prepare common session config
+      const baseMetadata = {
+        course_id: courseId,
+        organization_id: organization.id,
+        payment_type: paymentType,
+        is_guest: user ? "false" : "true",
+        ...(user && { user_id: user.id }),
+      };
+
       // Handle installment payment
       if (paymentType === "installments" && course.installments_enabled && course.installment_price_id) {
         console.log(`Creating installment checkout: ${course.installments_count}x payments`);
         
         const installmentsCount = course.installments_count || 3;
         const monthlyAmount = Math.ceil((course.price * 100) / installmentsCount);
-        const applicationFeeAmount = Math.round(monthlyAmount * 0.10);
 
         // Create subscription checkout session with cancellation after N payments
         const session = await stripe.checkout.sessions.create({
@@ -105,21 +110,16 @@ serve(async (req) => {
               quantity: 1,
             },
           ],
-          client_reference_id: user.id,
-          customer_email: user.email,
+          // For authenticated users, use client_reference_id; for guests, let Stripe collect email
+          ...(user && { client_reference_id: user.id }),
+          ...(user && { customer_email: user.email }),
           metadata: {
-            course_id: courseId,
-            organization_id: organization.id,
-            user_id: user.id,
-            payment_type: "installments",
+            ...baseMetadata,
             total_installments: installmentsCount.toString(),
           },
           subscription_data: {
             metadata: {
-              course_id: courseId,
-              organization_id: organization.id,
-              user_id: user.id,
-              payment_type: "installments",
+              ...baseMetadata,
               total_installments: installmentsCount.toString(),
               payments_made: "0",
             },
@@ -132,7 +132,7 @@ serve(async (req) => {
           cancel_url: cancelUrl || `${origin}/school/${organization.slug}/course/${courseId}?canceled=true`,
         });
 
-        console.log(`Created installment checkout session: ${session.id}`);
+        console.log(`Created installment checkout session: ${session.id} (guest: ${!user})`);
 
         return new Response(
           JSON.stringify({ url: session.url, sessionId: session.id, type: "installments" }),
@@ -140,7 +140,7 @@ serve(async (req) => {
         );
       }
 
-      // Handle full payment (existing logic)
+      // Handle full payment (one-time)
       const amount = Math.round(course.price * 100);
       const applicationFeeAmount = Math.round(amount * 0.10);
 
@@ -161,14 +161,10 @@ serve(async (req) => {
             quantity: 1,
           },
         ],
-        client_reference_id: user.id,
-        customer_email: user.email,
-        metadata: {
-          course_id: courseId,
-          organization_id: organization.id,
-          user_id: user.id,
-          payment_type: "full",
-        },
+        // For authenticated users, use client_reference_id; for guests, let Stripe collect email
+        ...(user && { client_reference_id: user.id }),
+        ...(user && { customer_email: user.email }),
+        metadata: baseMetadata,
         success_url: successUrl || `${origin}/school/${organization.slug}/learning/${courseId}?success=true`,
         cancel_url: cancelUrl || `${origin}/school/${organization.slug}/course/${courseId}?canceled=true`,
         payment_intent_data: {
@@ -179,7 +175,7 @@ serve(async (req) => {
         },
       });
 
-      console.log(`Created checkout session: ${session.id} with connected account`);
+      console.log(`Created checkout session: ${session.id} with connected account (guest: ${!user})`);
 
       return new Response(
         JSON.stringify({ url: session.url, sessionId: session.id, type: "full" }),
