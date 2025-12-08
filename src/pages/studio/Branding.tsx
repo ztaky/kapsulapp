@@ -191,6 +191,7 @@ export default function StudioBranding() {
           paypal_merchant_id: data.paypal_merchant_id || null,
           facebook_pixel_id: data.facebook_pixel_id || null,
           gtm_container_id: data.gtm_container_id || null,
+          custom_domain: data.custom_domain || null,
         } as any)
         .eq("id", currentOrg.id);
 
