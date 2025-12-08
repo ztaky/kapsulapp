@@ -1020,6 +1020,7 @@ export type Database = {
           brand_color: string | null
           contact_email: string | null
           created_at: string
+          custom_domain: string | null
           description: string | null
           email_limit_per_month: number | null
           facebook_pixel_id: string | null
@@ -1046,6 +1047,7 @@ export type Database = {
           brand_color?: string | null
           contact_email?: string | null
           created_at?: string
+          custom_domain?: string | null
           description?: string | null
           email_limit_per_month?: number | null
           facebook_pixel_id?: string | null
@@ -1072,6 +1074,7 @@ export type Database = {
           brand_color?: string | null
           contact_email?: string | null
           created_at?: string
+          custom_domain?: string | null
           description?: string | null
           email_limit_per_month?: number | null
           facebook_pixel_id?: string | null

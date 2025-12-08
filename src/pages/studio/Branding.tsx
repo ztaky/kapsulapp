@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { Save, Mail, Send, Eye, Webhook, Zap, CheckCircle2, CreditCard, AlertCircle, ExternalLink, Loader2, Unlink, BarChart3 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { CustomDomainCard } from "@/components/studio/CustomDomainCard";
 
 interface StripeConnectStatus {
   connected: boolean;
@@ -48,6 +49,7 @@ export default function StudioBranding() {
     paypal_merchant_id: "",
     facebook_pixel_id: "",
     gtm_container_id: "",
+    custom_domain: "",
   });
 
   // Check Stripe Connect status
@@ -86,6 +88,7 @@ export default function StudioBranding() {
         paypal_merchant_id: org.paypal_merchant_id || "",
         facebook_pixel_id: org.facebook_pixel_id || "",
         gtm_container_id: org.gtm_container_id || "",
+        custom_domain: org.custom_domain || "",
       });
       
       // Check Stripe status when org loads
@@ -1071,6 +1074,14 @@ export default function StudioBranding() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Custom Domain Card */}
+      <CustomDomainCard
+        customDomain={formData.custom_domain}
+        onDomainChange={(domain) => setFormData({ ...formData, custom_domain: domain })}
+        onSave={() => updateOrgMutation.mutate(formData)}
+        isSaving={updateOrgMutation.isPending}
+      />
 
       {/* Save Button */}
       <div className="flex justify-end">
