@@ -281,7 +281,7 @@ export function CourseInfoCard({ course, courseId }: CourseInfoCardProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-emerald-700">
-            Les paiements de vos élèves sont traités via Stripe Connect et versés directement sur votre compte bancaire (commission de 10% prélevée par Kapsul).
+            Les paiements de vos élèves sont traités via Stripe Connect et versés directement sur votre compte bancaire.
           </p>
           <p className="text-xs text-emerald-600 mt-2">
             Configurez votre compte Stripe dans les paramètres de votre académie (Personnalisation).
