@@ -1,5 +1,6 @@
 import { TestimonialsContent } from '@/config/landingPageSchema';
 import { Star, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Support both new format (author object) and legacy format (flat structure)
 interface LegacyTestimonial {
@@ -13,12 +14,21 @@ interface LegacyTestimonial {
 
 interface TestimonialsProps {
   content: TestimonialsContent | LegacyTestimonial[];
+  primaryColor?: string;
+  primaryDarkColor?: string;
 }
 
-export function Testimonials({ content }: TestimonialsProps) {
-  const gradientStyle = 'linear-gradient(90deg, #ea580c 0%, #ec4899 100%)';
+export function Testimonials({ content, primaryColor = '#e11d48', primaryDarkColor = '#9333ea' }: TestimonialsProps) {
+  const gradientStyle = `linear-gradient(90deg, ${primaryColor} 0%, ${primaryDarkColor} 100%)`;
   const goldColor = '#d4a853';
   const darkBg = '#1a1a1a';
+
+  const handleScrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // Detect format: array = legacy format, object with items = new format
   const isLegacyFormat = Array.isArray(content);
@@ -147,15 +157,17 @@ export function Testimonials({ content }: TestimonialsProps) {
         {/* CTA Button */}
         {cta && (
           <div className="text-center">
-            <button
-              className="px-10 py-5 rounded-full text-white text-lg md:text-xl font-bold transition-all hover:scale-105 hover:shadow-xl"
+            <Button
+              size="lg"
+              onClick={handleScrollToPricing}
+              className="text-lg md:text-xl px-10 py-6 h-auto rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-[1.02] text-white font-semibold"
               style={{ 
                 background: gradientStyle,
-                boxShadow: '0 10px 30px rgba(234, 88, 12, 0.3)'
+                boxShadow: `0 10px 30px ${primaryColor}4D`
               }}
             >
               {cta}
-            </button>
+            </Button>
             <p 
               className="mt-4 text-sm"
               style={{ color: '#9ca3af' }}
