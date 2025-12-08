@@ -16,8 +16,19 @@ export function Footer({ content, landingSlug }: FooterProps) {
     { text: 'CGV', url: `/lp/${landingSlug}/legal/cgv` },
   ] : [];
 
-  // Combine custom links with legal links
-  const allLinks = [...(content.links || []), ...legalLinks];
+  // Filter custom links to exclude legal duplicates (will be auto-generated)
+  const legalKeywords = ['cgv', 'mentions', 'confidentialité', 'confidentialite', 'politique'];
+  
+  const customLinksFiltered = (content.links || []).filter(link => {
+    const textLower = link.text.toLowerCase();
+    const urlLower = link.url.toLowerCase();
+    return !legalKeywords.some(keyword => 
+      textLower.includes(keyword) || urlLower.includes(keyword)
+    );
+  });
+
+  // Combine filtered custom links with auto-generated legal links
+  const allLinks = [...customLinksFiltered, ...legalLinks];
 
   return (
     <footer 
