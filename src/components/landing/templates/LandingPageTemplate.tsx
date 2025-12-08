@@ -114,9 +114,9 @@ export function LandingPageTemplate({
   const activeSections = getEnabledTemplateSections();
   const isEnabled = (sectionId: string) => activeSections.includes(sectionId);
 
-  // Extract theme colors for passing to components
-  const primaryColor = theme?.colors?.primary || '#e11d48';
-  const primaryDarkColor = theme?.colors?.primaryDark || '#9333ea';
+  // Force coral red to violet branding across all sections
+  const primaryColor = '#e11d48';
+  const primaryDarkColor = '#9333ea';
 
   return (
     <ThemeProvider theme={theme}>
@@ -169,7 +169,12 @@ export function LandingPageTemplate({
 
         {/* Section 10 - Instructor */}
         {isEnabled('instructor') && content.instructor && (
-          <Instructor content={content.instructor} trainerPhoto={trainerPhoto} />
+          <Instructor 
+            content={content.instructor} 
+            trainerPhoto={trainerPhoto}
+            primaryColor={primaryColor}
+            primaryDarkColor={primaryDarkColor}
+          />
         )}
 
         {/* Section 11 - Upsell (optionnel) */}
