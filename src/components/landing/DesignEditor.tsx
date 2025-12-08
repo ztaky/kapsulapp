@@ -39,6 +39,7 @@ const AVAILABLE_FONTS = [
 
 // Preset color palettes
 const COLOR_PRESETS = [
+  { name: "Rouge Corail", primary: "#e11d48", secondary: "#9333ea" },
   { name: "Orange Chaleur", primary: "#ea580c", secondary: "#f59e0b" },
   { name: "Bleu Confiance", primary: "#2563eb", secondary: "#3b82f6" },
   { name: "Vert Nature", primary: "#059669", secondary: "#10b981" },
@@ -46,7 +47,6 @@ const COLOR_PRESETS = [
   { name: "Rose Moderne", primary: "#db2777", secondary: "#ec4899" },
   { name: "Indigo Pro", primary: "#4f46e5", secondary: "#6366f1" },
   { name: "Cyan Tech", primary: "#0891b2", secondary: "#06b6d4" },
-  { name: "Noir Élégant", primary: "#171717", secondary: "#404040" },
 ];
 
 export function DesignEditor({ designConfig, onChange }: DesignEditorProps) {
