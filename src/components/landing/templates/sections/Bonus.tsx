@@ -2,6 +2,8 @@ import { BonusContent } from '@/config/landingPageSchema';
 
 interface BonusProps {
   content?: BonusContent;
+  primaryColor?: string;
+  primaryDarkColor?: string;
 }
 
 // Hardcoded bonus data matching the design
@@ -51,7 +53,10 @@ const bonusItems = [
   }
 ];
 
-export function Bonus({ content }: BonusProps) {
+export function Bonus({ content, primaryColor = '#ea580c', primaryDarkColor = '#9333ea' }: BonusProps) {
+  const accentGradient = `linear-gradient(90deg, ${primaryColor}, ${primaryDarkColor})`;
+  const buttonGradient = `linear-gradient(90deg, ${primaryColor}, ${primaryDarkColor})`;
+
   return (
     <section 
       className="relative py-20 md:py-28 px-4 font-inter"
@@ -71,7 +76,7 @@ export function Bonus({ content }: BonusProps) {
           <span style={{ color: '#1e1b4b' }}>4 </span>
           <span 
             style={{
-              background: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)',
+              background: accentGradient,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -106,7 +111,7 @@ export function Bonus({ content }: BonusProps) {
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center"
                   style={{ 
-                    background: 'linear-gradient(135deg, #7c3aed, #db2777)'
+                    background: `linear-gradient(135deg, ${primaryDarkColor}, ${primaryColor})`
                   }}
                 >
                   <span className="text-white font-bold text-lg">
@@ -119,7 +124,7 @@ export function Bonus({ content }: BonusProps) {
               <h3 
                 className="text-lg md:text-xl font-bold mb-2 text-center"
                 style={{ 
-                  background: 'linear-gradient(90deg, #ea580c, #db2777)',
+                  background: accentGradient,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text'
@@ -177,8 +182,8 @@ export function Bonus({ content }: BonusProps) {
             href="#pricing"
             className="inline-block px-8 py-4 rounded-xl text-white font-bold text-lg md:text-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl"
             style={{
-              background: 'linear-gradient(90deg, #ea580c, #db2777, #7c3aed)',
-              boxShadow: '0 10px 40px rgba(234, 88, 12, 0.3)'
+              background: buttonGradient,
+              boxShadow: `0 10px 40px ${primaryColor}4D`
             }}
           >
             J'accède à la formation + 4 bonus

@@ -5,14 +5,25 @@ import { CheckCircle2, Star, CreditCard } from 'lucide-react';
 
 interface HeroProps {
   content: HeroContent & { hero_image?: string };
+  primaryColor?: string;
+  primaryDarkColor?: string;
 }
 
-export function Hero({ content }: HeroProps) {
+export function Hero({ content, primaryColor, primaryDarkColor }: HeroProps) {
   const { theme } = useTheme();
 
-  // Custom gradient: warm orange → deep violet (Option A - élégant)
-  const titleGradient = 'linear-gradient(90deg, #ea580c 0%, #9333ea 100%)';
-  const buttonGradient = 'linear-gradient(135deg, #ea580c 0%, #9333ea 100%)';
+  // Use theme colors or provided colors, with fallback
+  const primary = primaryColor || theme?.colors?.primary || '#ea580c';
+  const primaryDark = primaryDarkColor || theme?.colors?.primaryDark || '#9333ea';
+  const titleGradient = `linear-gradient(90deg, ${primary} 0%, ${primaryDark} 100%)`;
+  const buttonGradient = `linear-gradient(135deg, ${primary} 0%, ${primaryDark} 100%)`;
+
+  const handleScrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-24 md:py-32 overflow-hidden font-inter" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}>
@@ -85,6 +96,7 @@ export function Hero({ content }: HeroProps) {
         <div className="pt-4 space-y-3">
           <Button 
             size="lg"
+            onClick={handleScrollToPricing}
             className="text-base md:text-lg px-8 md:px-12 py-6 md:py-7 h-auto rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-[1.02] text-white font-semibold"
             style={{ 
               background: buttonGradient,
