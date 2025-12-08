@@ -212,7 +212,7 @@ export default function LandingPageView() {
   const { design_config, content, trainer_info, courses } = landingPage;
   
   // Generate dynamic color palette with theme support
-  const baseColors = design_config?.colors || ["#ea580c", "#f59e0b"];
+  const baseColors = design_config?.colors || ["#e11d48", "#9333ea"];
   const theme = design_config?.theme || 'light';
   const palette = generateDynamicPalette(baseColors, theme);
   const ctaStyle = design_config?.ctaStyle || 'gradient';
