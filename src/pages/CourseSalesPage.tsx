@@ -111,13 +111,7 @@ export default function CourseSalesPage() {
       return;
     }
 
-    if (!session) {
-      localStorage.setItem("redirectAfterAuth", window.location.pathname);
-      navigate("/auth");
-      return;
-    }
-
-    // Use Stripe checkout session for connected accounts
+    // Guest checkout: no need to redirect to auth
     setIsCheckoutLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
