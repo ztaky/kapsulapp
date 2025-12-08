@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { Save, Mail, Send, Eye, Webhook, Zap, CheckCircle2, CreditCard, AlertCircle, ExternalLink, Loader2, Unlink, BarChart3 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { CustomDomainCard } from "@/components/studio/CustomDomainCard";
+import { DomainRedirectionGuide } from "@/components/studio/DomainRedirectionGuide";
 
 interface StripeConnectStatus {
   connected: boolean;
@@ -1076,17 +1076,9 @@ export default function StudioBranding() {
         </Card>
       </div>
 
-      {/* Custom Domain Card */}
+      {/* Domain Redirection Guide */}
       {currentOrg && (
-        <CustomDomainCard
-          customDomain={formData.custom_domain}
-          customDomainStatus={(currentOrg as any).custom_domain_status}
-          organizationId={currentOrg.id}
-          onDomainChange={(domain) => setFormData({ ...formData, custom_domain: domain })}
-          onSave={() => updateOrgMutation.mutate(formData)}
-          onStatusChange={() => refetchOrgs()}
-          isSaving={updateOrgMutation.isPending}
-        />
+        <DomainRedirectionGuide slug={currentOrg.slug} />
       )}
 
       {/* Save Button */}
