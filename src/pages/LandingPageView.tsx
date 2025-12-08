@@ -160,8 +160,8 @@ export default function LandingPageView() {
     const config: LandingPageConfig = {
       theme: themeData || {
         colors: {
-          primary: landingPage.design_config?.colors?.[0] || '#ea580c',
-          primaryDark: landingPage.design_config?.colors?.[1] || '#f59e0b',
+          primary: landingPage.design_config?.colors?.[0] || '#e11d48',
+          primaryDark: landingPage.design_config?.colors?.[1] || '#9333ea',
           bgDark: '#0a0e27',
           bgLight: '#fef8f3',
           textDark: '#1a1a1a',
