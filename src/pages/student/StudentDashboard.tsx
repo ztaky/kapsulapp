@@ -256,7 +256,15 @@ const StudentDashboard = () => {
                     {course.completedLessons} / {course.totalLessons} leçons terminées
                   </p>
                 </div>
-                <Button variant="gradient" className="w-full mt-4 shadow-lg" size="sm">
+                <Button 
+                  variant="gradient" 
+                  className="w-full mt-4 shadow-lg" 
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/school/${course.organization_slug}/learn/${course.id}`);
+                  }}
+                >
                   <PlayCircle className="mr-2 h-4 w-4" />
                   Continuer
                 </Button>
