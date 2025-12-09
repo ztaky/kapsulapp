@@ -25,6 +25,9 @@ interface TransactionalEmailRequest {
   sequenceStepId?: string;
   templateId?: string;
   customVariables?: Record<string, string>;
+  // For welcome_purchase with new account
+  passwordResetUrl?: string;
+  isNewAccount?: boolean;
 }
 
 interface OrganizationBranding {
@@ -155,12 +158,16 @@ function generateWelcomeEmailHtml(
   branding: OrganizationBranding,
   recipientName: string,
   courseName: string,
-  courseUrl: string
+  courseUrl: string,
+  recipientEmail?: string,
+  passwordResetUrl?: string,
+  isNewAccount?: boolean
 ): string {
   const brandColor = branding.brand_color || "#d97706";
   const academyName = branding.name;
   const logoUrl = branding.logo_url;
   const supportEmail = branding.contact_email || `contact@${branding.slug}.kapsulapp.io`;
+  const showPasswordSetup = isNewAccount && passwordResetUrl;
 
   return `
 <!DOCTYPE html>
@@ -191,22 +198,112 @@ function generateWelcomeEmailHtml(
                 Bonjour${recipientName ? ` <strong>${recipientName}</strong>` : ''} !
               </p>
               <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-                Félicitations pour votre inscription à <strong style="color: ${brandColor};">"${courseName}"</strong> ! 
-                Vous avez fait un excellent choix pour développer vos compétences.
+                Félicitations pour votre achat de <strong style="color: ${brandColor};">"${courseName}"</strong> ! 
+                Votre formation vous attend.
               </p>
               
-              <!-- CTA Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
+              ${showPasswordSetup ? `
+              <!-- Login Credentials Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 12px; margin-bottom: 24px; border: 1px solid #86efac;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <p style="color: #166534; font-size: 14px; font-weight: 700; margin: 0 0 16px; text-transform: uppercase; letter-spacing: 0.5px;">
+                      📧 Vos identifiants de connexion
+                    </p>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <span style="color: #64748b; font-size: 14px;">Email :</span>
+                        </td>
+                        <td style="padding: 8px 0; text-align: right;">
+                          <span style="color: #334155; font-size: 14px; font-weight: 600; font-family: monospace; background-color: #ffffff; padding: 4px 8px; border-radius: 4px;">${recipientEmail}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <span style="color: #64748b; font-size: 14px;">Mot de passe :</span>
+                        </td>
+                        <td style="padding: 8px 0; text-align: right;">
+                          <span style="color: #f97316; font-size: 14px; font-weight: 600;">À définir ci-dessous ↓</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Password Setup CTA -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="${courseUrl}" style="display: inline-block; background: linear-gradient(135deg, ${brandColor} 0%, ${adjustColor(brandColor, -20)} 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px ${brandColor}40;">
-                      🚀 Commencer ma formation
+                    <a href="${passwordResetUrl}" style="display: inline-block; background: linear-gradient(135deg, ${brandColor} 0%, ${adjustColor(brandColor, -20)} 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px ${brandColor}40;">
+                      🔐 Définir mon mot de passe
                     </a>
                   </td>
                 </tr>
               </table>
               
-              <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
+              <!-- Instructions -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="color: #334155; font-size: 14px; font-weight: 600; margin: 0 0 12px;">Comment accéder à votre formation :</p>
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 6px 12px 6px 0; vertical-align: top;">
+                          <span style="display: inline-block; background-color: ${brandColor}; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">1</span>
+                        </td>
+                        <td style="padding: 6px 0; color: #475569; font-size: 14px; line-height: 1.5;">
+                          Cliquez sur <strong>"Définir mon mot de passe"</strong> ci-dessus
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 12px 6px 0; vertical-align: top;">
+                          <span style="display: inline-block; background-color: ${brandColor}; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">2</span>
+                        </td>
+                        <td style="padding: 6px 0; color: #475569; font-size: 14px; line-height: 1.5;">
+                          Créez votre mot de passe personnel
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 12px 6px 0; vertical-align: top;">
+                          <span style="display: inline-block; background-color: ${brandColor}; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">3</span>
+                        </td>
+                        <td style="padding: 6px 0; color: #475569; font-size: 14px; line-height: 1.5;">
+                          Connectez-vous et commencez à apprendre !
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              ` : `
+              <!-- CTA Button (for existing users) -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
+                <tr>
+                  <td align="center">
+                    <a href="${courseUrl}" style="display: inline-block; background: linear-gradient(135deg, ${brandColor} 0%, ${adjustColor(brandColor, -20)} 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px ${brandColor}40;">
+                      🚀 Accéder à ma formation
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              `}
+              
+              ${showPasswordSetup ? `
+              <!-- Secondary CTA -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="${courseUrl}" style="display: inline-block; color: ${brandColor}; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; border: 2px solid ${brandColor};">
+                      📚 Voir ma formation
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+              
+              <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 20px 0 0; text-align: center;">
                 Des questions ? Contactez-nous à <a href="mailto:${supportEmail}" style="color: ${brandColor}; text-decoration: none;">${supportEmail}</a>
               </p>
             </td>
@@ -650,7 +747,10 @@ serve(async (req) => {
             branding,
             request.recipientName || "",
             request.courseName || "votre formation",
-            courseUrl
+            courseUrl,
+            request.recipientEmail,
+            request.passwordResetUrl,
+            request.isNewAccount
           );
           break;
 
