@@ -569,7 +569,7 @@ serve(async (req) => {
 
           const org = (course as any)?.organizations;
           const courseUrl = org
-            ? `https://lovable.dev/school/${org.slug}/learning/${courseId}`
+            ? `https://kapsulapp.io/school/${org.slug}/learn/${courseId}`
             : undefined;
 
           // Generate magic link for password setup
@@ -728,7 +728,7 @@ serve(async (req) => {
         } else {
           const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
           const courseUrl = org 
-            ? `https://lovable.dev/school/${org.slug}/learning/${courseId}`
+            ? `https://kapsulapp.io/school/${org.slug}/learn/${courseId}`
             : undefined;
 
           // Send outgoing webhooks if configured

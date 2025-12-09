@@ -611,13 +611,14 @@ serve(async (req) => {
     let html: string;
     let templateId: string | undefined;
 
-    const siteUrl = "https://lovable.dev";
-    const courseUrl = request.courseUrl || `${siteUrl}/school/${branding.slug}/learning`;
+    const siteUrl = "https://kapsulapp.io";
+    const courseUrl = request.courseUrl || `${siteUrl}/student`;
     const loginUrl = `${siteUrl}/school/${branding.slug}/auth`;
 
     // Prepare variables for substitution
     const variables: Record<string, string> = {
       student_name: request.recipientName || "",
+      recipient_name: request.recipientName || "",
       student_email: request.recipientEmail,
       course_name: request.courseName || "votre formation",
       academy_name: branding.name,
