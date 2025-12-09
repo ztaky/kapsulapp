@@ -61,7 +61,7 @@ const REGISTRAR_INSTRUCTIONS = [
 export function DomainRedirectionGuide({ slug }: DomainRedirectionGuideProps) {
   const [copied, setCopied] = useState(false);
   
-  const academyUrl = `https://app.kapsul.dev/school/${slug}`;
+  const academyUrl = `https://kapsulapp.io/school/${slug}`;
 
   const copyToClipboard = async () => {
     try {
