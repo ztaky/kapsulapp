@@ -89,7 +89,7 @@ serve(async (req) => {
           { role: "system", content: SECTION_GENERATOR_SYSTEM_PROMPT },
           { role: "user", content: prompt },
         ],
-        max_tokens: 8192,
+        max_tokens: 16384,
       }),
     });
 

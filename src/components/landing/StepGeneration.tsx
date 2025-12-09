@@ -97,19 +97,45 @@ export function StepGeneration({ data, onSuccess }: StepGenerationProps) {
         
         console.log("Réponse brute de l'IA:", responseData.content);
         
-        // Nettoyer la réponse
+        // Nettoyer la réponse avec parsing robuste
         let cleaned = responseData.content;
         cleaned = cleaned.replace(/```json\n?/g, '').replace(/```\n?/g, '');
         cleaned = cleaned.trim();
+        
+        // Supprimer les virgules trailing avant } ou ]
         cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
         
-        console.log("JSON nettoyé:", cleaned);
+        // Supprimer les caractères de contrôle invalides
+        cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, (char) => {
+          if (char === '\n' || char === '\r' || char === '\t') return char;
+          return '';
+        });
+        
+        // Tenter de réparer les JSON tronqués
+        if (!cleaned.endsWith('}') && !cleaned.endsWith(']')) {
+          console.warn("JSON potentiellement tronqué, tentative de réparation...");
+          // Trouver le dernier caractère valide et fermer proprement
+          const lastValidIndex = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'), cleaned.lastIndexOf('"'));
+          if (lastValidIndex > 0) {
+            cleaned = cleaned.substring(0, lastValidIndex + 1);
+          }
+          // Compter et fermer les accolades/crochets manquants
+          const openBraces = (cleaned.match(/{/g) || []).length;
+          const closeBraces = (cleaned.match(/}/g) || []).length;
+          const openBrackets = (cleaned.match(/\[/g) || []).length;
+          const closeBrackets = (cleaned.match(/\]/g) || []).length;
+          cleaned += ']'.repeat(Math.max(0, openBrackets - closeBrackets));
+          cleaned += '}'.repeat(Math.max(0, openBraces - closeBraces));
+        }
+        
+        console.log("JSON nettoyé (500 premiers caractères):", cleaned.substring(0, 500));
         
         try {
           return JSON.parse(cleaned);
         } catch (e) {
           console.error("Erreur parsing JSON:", e);
-          console.error("JSON problématique:", cleaned);
+          console.error("JSON problématique (1000 premiers caractères):", cleaned.substring(0, 1000));
+          console.error("Fin du JSON (500 derniers caractères):", cleaned.substring(cleaned.length - 500));
           throw new Error(`L'IA a retourné un JSON invalide: ${(e as Error).message}`);
         }
       };
