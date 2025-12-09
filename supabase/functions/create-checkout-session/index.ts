@@ -128,7 +128,7 @@ serve(async (req) => {
               destination: organization.stripe_account_id,
             },
           },
-          success_url: successUrl || `${origin}/school/${organization.slug}/learning/${courseId}?success=true&type=installments`,
+          success_url: successUrl || `${origin}/school/${organization.slug}/learn/${courseId}?success=true&type=installments`,
           cancel_url: cancelUrl || `${origin}/school/${organization.slug}/course/${courseId}?canceled=true`,
         });
 
@@ -165,7 +165,7 @@ serve(async (req) => {
         ...(user && { client_reference_id: user.id }),
         ...(user && { customer_email: user.email }),
         metadata: baseMetadata,
-        success_url: successUrl || `${origin}/school/${organization.slug}/learning/${courseId}?success=true`,
+        success_url: successUrl || `${origin}/school/${organization.slug}/learn/${courseId}?success=true`,
         cancel_url: cancelUrl || `${origin}/school/${organization.slug}/course/${courseId}?canceled=true`,
         payment_intent_data: {
           application_fee_amount: applicationFeeAmount,
