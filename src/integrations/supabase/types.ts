@@ -60,6 +60,7 @@ export type Database = {
       }
       ai_credits: {
         Row: {
+          bonus_credits: number
           created_at: string
           credits_used: number
           id: string
@@ -68,6 +69,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bonus_credits?: number
           created_at?: string
           credits_used?: number
           id?: string
@@ -76,6 +78,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bonus_credits?: number
           created_at?: string
           credits_used?: number
           id?: string
