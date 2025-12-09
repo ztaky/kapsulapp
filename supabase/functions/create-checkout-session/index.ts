@@ -105,6 +105,7 @@ serve(async (req) => {
           mode: "subscription",
           payment_method_types: ["card"],
           allow_promotion_codes: true,
+          invoice_creation: { enabled: true },
           line_items: [
             {
               price: course.installment_price_id,
@@ -149,6 +150,7 @@ serve(async (req) => {
         mode: "payment",
         payment_method_types: ["card"],
         allow_promotion_codes: true,
+        invoice_creation: { enabled: true },
         line_items: [
           {
             price_data: {
