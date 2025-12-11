@@ -3,7 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Loader2, RefreshCw, Check, Eye, EyeOff, Calculator, ListChecks, HelpCircle, Gamepad2, SlidersHorizontal, FileText } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Sparkles, Loader2, RefreshCw, Check, Eye, EyeOff, Calculator, ListChecks, 
+  HelpCircle, Gamepad2, SlidersHorizontal, FileText, MessageSquare, Code, 
+  Send, AlertTriangle, CheckCircle2
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -13,6 +18,7 @@ interface AIToolBuilderProps {
     generatedCode?: string;
     generatedAt?: string;
     category?: string;
+    conversationHistory?: Array<{ role: string; content: string }>;
   };
   onChange: (config: any) => void;
   organizationId?: string;
@@ -71,15 +77,119 @@ const EXAMPLE_PROMPTS_BY_CATEGORY: Record<string, string[]> = {
   ],
 };
 
+const REFINEMENT_SUGGESTIONS = [
+  "Change les couleurs en bleu et violet",
+  "Ajoute un bouton de réinitialisation",
+  "Ajoute des animations plus fluides",
+  "Rends l'interface plus compacte",
+  "Ajoute un compteur de temps",
+  "Améliore le feedback visuel",
+];
+
+// Simple HTML validation
+function validateHtmlCode(code: string): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!code || code.trim().length === 0) {
+    return { isValid: false, errors: ['Le code est vide'] };
+  }
+
+  // Check for basic HTML structure
+  const hasStyleOrDiv = /<style[\s\S]*?>|<div[\s\S]*?>/i.test(code);
+  if (!hasStyleOrDiv) {
+    errors.push('Le code doit contenir au moins une balise <style> ou <div>');
+  }
+
+  // Check for unclosed tags (basic check)
+  const openTags = code.match(/<([a-z][a-z0-9]*)\b[^>]*>/gi) || [];
+  const closeTags = code.match(/<\/([a-z][a-z0-9]*)\s*>/gi) || [];
+  const selfClosing = ['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr'];
+  
+  const openTagCounts: Record<string, number> = {};
+  const closeTagCounts: Record<string, number> = {};
+  
+  openTags.forEach(tag => {
+    const match = tag.match(/<([a-z][a-z0-9]*)/i);
+    if (match && !selfClosing.includes(match[1].toLowerCase())) {
+      const tagName = match[1].toLowerCase();
+      openTagCounts[tagName] = (openTagCounts[tagName] || 0) + 1;
+    }
+  });
+  
+  closeTags.forEach(tag => {
+    const match = tag.match(/<\/([a-z][a-z0-9]*)/i);
+    if (match) {
+      const tagName = match[1].toLowerCase();
+      closeTagCounts[tagName] = (closeTagCounts[tagName] || 0) + 1;
+    }
+  });
+  
+  Object.keys(openTagCounts).forEach(tag => {
+    const openCount = openTagCounts[tag] || 0;
+    const closeCount = closeTagCounts[tag] || 0;
+    if (openCount > closeCount) {
+      errors.push(`Balise <${tag}> non fermée (${openCount - closeCount} manquante(s))`);
+    }
+  });
+
+  // Check for basic JavaScript syntax issues
+  const scriptMatch = code.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi);
+  if (scriptMatch) {
+    scriptMatch.forEach(script => {
+      const jsCode = script.replace(/<\/?script[^>]*>/gi, '');
+      // Check for common JS errors
+      const openBraces = (jsCode.match(/{/g) || []).length;
+      const closeBraces = (jsCode.match(/}/g) || []).length;
+      if (openBraces !== closeBraces) {
+        errors.push(`JavaScript: accolades non équilibrées ({: ${openBraces}, }: ${closeBraces})`);
+      }
+      
+      const openParens = (jsCode.match(/\(/g) || []).length;
+      const closeParens = (jsCode.match(/\)/g) || []).length;
+      if (openParens !== closeParens) {
+        errors.push(`JavaScript: parenthèses non équilibrées ((: ${openParens}, ): ${closeParens})`);
+      }
+    });
+  }
+
+  return { isValid: errors.length === 0, errors };
+}
+
 export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonContext, courseContext }: AIToolBuilderProps) {
   const [description, setDescription] = useState(toolConfig.description || '');
   const [category, setCategory] = useState(toolConfig.category || '');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState<'generate' | 'refine' | 'code'>('generate');
+  const [refinementMessage, setRefinementMessage] = useState('');
+  const [editedCode, setEditedCode] = useState(toolConfig.generatedCode || '');
+  const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; errors: string[] }>({ isValid: true, errors: [] });
+  const [conversationHistory, setConversationHistory] = useState<Array<{ role: string; content: string }>>(
+    toolConfig.conversationHistory || []
+  );
 
-  const generateTool = async () => {
-    if (!description.trim()) {
-      toast.error('Veuillez décrire l\'outil que vous souhaitez créer');
+  // Sync editedCode when generatedCode changes externally
+  useEffect(() => {
+    if (toolConfig.generatedCode && toolConfig.generatedCode !== editedCode) {
+      setEditedCode(toolConfig.generatedCode);
+    }
+  }, [toolConfig.generatedCode]);
+
+  // Validate code when it changes in code editor
+  useEffect(() => {
+    if (activeTab === 'code' && editedCode) {
+      const validation = validateHtmlCode(editedCode);
+      setCodeValidation(validation);
+    }
+  }, [editedCode, activeTab]);
+
+  const generateTool = async (isRefinement = false, customMessage?: string) => {
+    const messageToSend = isRefinement ? (customMessage || refinementMessage) : description;
+    
+    if (!messageToSend.trim()) {
+      toast.error(isRefinement 
+        ? 'Veuillez décrire les modifications souhaitées' 
+        : 'Veuillez décrire l\'outil que vous souhaitez créer'
+      );
       return;
     }
 
@@ -88,11 +198,13 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
     try {
       const { data, error } = await supabase.functions.invoke('generate-interactive-tool', {
         body: { 
-          description, 
+          description: messageToSend, 
           organizationId,
-          category: category || undefined,
+          category: isRefinement ? undefined : (category || undefined),
           lessonContext,
           courseContext,
+          conversationHistory: isRefinement ? conversationHistory : undefined,
+          currentCode: isRefinement ? (editedCode || toolConfig.generatedCode) : undefined,
         },
       });
 
@@ -114,21 +226,50 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
         });
       }
 
+      // Update conversation history
+      const newHistory = isRefinement 
+        ? [...conversationHistory, { role: 'user', content: messageToSend }, { role: 'assistant', content: 'Code modifié avec succès' }]
+        : [{ role: 'user', content: messageToSend }, { role: 'assistant', content: 'Code généré avec succès' }];
+      
+      setConversationHistory(newHistory);
+      setEditedCode(data.code);
+      
       onChange({
-        description,
-        category,
+        description: isRefinement ? toolConfig.description : messageToSend,
+        category: isRefinement ? toolConfig.category : category,
         generatedCode: data.code,
         generatedAt: new Date().toISOString(),
+        conversationHistory: newHistory,
       });
 
-      toast.success('Outil généré avec succès !');
-      setShowPreview(true);
+      toast.success(isRefinement ? 'Outil modifié avec succès !' : 'Outil généré avec succès !');
+      
+      if (isRefinement) {
+        setRefinementMessage('');
+      }
+      
+      setActiveTab(isRefinement ? 'refine' : 'generate');
     } catch (error: any) {
       console.error('Error generating tool:', error);
       toast.error(error.message || 'Erreur lors de la génération');
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const applyCodeChanges = () => {
+    const validation = validateHtmlCode(editedCode);
+    if (!validation.isValid) {
+      toast.error('Le code contient des erreurs. Veuillez les corriger avant d\'appliquer.');
+      return;
+    }
+
+    onChange({
+      ...toolConfig,
+      generatedCode: editedCode,
+      generatedAt: new Date().toISOString(),
+    });
+    toast.success('Modifications du code appliquées !');
   };
 
   const useExample = (example: string) => {
@@ -140,6 +281,7 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
   };
 
   const currentExamples = category ? EXAMPLE_PROMPTS_BY_CATEGORY[category] || [] : [];
+  const hasGeneratedCode = !!toolConfig.generatedCode;
 
   return (
     <div className="space-y-4">
@@ -159,122 +301,299 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
         </Card>
       )}
 
-      {/* Category Selection */}
-      <div>
-        <Label className="mb-2 block">Type d'outil (optionnel)</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {TOOL_CATEGORIES.map((cat) => {
-            const IconComponent = cat.icon;
-            const isSelected = category === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => selectCategory(cat.id)}
-                className={`relative p-3 rounded-lg border-2 transition-all text-left ${
-                  isSelected 
-                    ? 'border-primary bg-primary/5 shadow-md' 
-                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center mb-2`}>
-                  <IconComponent className="h-4 w-4 text-white" />
-                </div>
-                <p className="font-medium text-sm">{cat.label}</p>
-                <p className="text-xs text-muted-foreground line-clamp-1">{cat.description}</p>
-                {isSelected && (
-                  <div className="absolute top-2 right-2">
-                    <Check className="h-4 w-4 text-primary" />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Tabs for different modes */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="generate" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Générer
+          </TabsTrigger>
+          <TabsTrigger value="refine" disabled={!hasGeneratedCode} className="gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Affiner
+          </TabsTrigger>
+          <TabsTrigger value="code" disabled={!hasGeneratedCode} className="gap-2">
+            <Code className="h-4 w-4" />
+            Code
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Description */}
-      <div>
-        <Label>Description de l'outil à créer</Label>
-        <Textarea
-          rows={4}
-          placeholder={category 
-            ? `Décrivez votre ${TOOL_CATEGORIES.find(c => c.id === category)?.label.toLowerCase() || 'outil'}...`
-            : "Décrivez l'outil interactif que vous souhaitez créer pour vos étudiants..."
-          }
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="mt-1"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Soyez précis : fonctionnalités, champs de saisie, calculs, résultats attendus...
-        </p>
-      </div>
-
-      {/* Example prompts by category */}
-      {currentExamples.length > 0 && (
-        <div>
-          <p className="text-sm font-medium mb-2">💡 Exemples pour {TOOL_CATEGORIES.find(c => c.id === category)?.label} :</p>
-          <div className="flex flex-wrap gap-2">
-            {currentExamples.map((example, index) => (
-              <Button
-                key={index}
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-xs h-auto py-1.5 px-3 whitespace-normal text-left"
-                onClick={() => useExample(example)}
-              >
-                {example}
-              </Button>
-            ))}
+        {/* Generate Tab */}
+        <TabsContent value="generate" className="space-y-4 mt-4">
+          {/* Category Selection */}
+          <div>
+            <Label className="mb-2 block">Type d'outil (optionnel)</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {TOOL_CATEGORIES.map((cat) => {
+                const IconComponent = cat.icon;
+                const isSelected = category === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => selectCategory(cat.id)}
+                    className={`relative p-3 rounded-lg border-2 transition-all text-left ${
+                      isSelected 
+                        ? 'border-primary bg-primary/5 shadow-md' 
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center mb-2`}>
+                      <IconComponent className="h-4 w-4 text-white" />
+                    </div>
+                    <p className="font-medium text-sm">{cat.label}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{cat.description}</p>
+                    {isSelected && (
+                      <div className="absolute top-2 right-2">
+                        <Check className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Generate button */}
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          onClick={generateTool}
-          disabled={isGenerating || !description.trim()}
-          className="flex-1"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Génération en cours...
-            </>
-          ) : toolConfig.generatedCode ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Régénérer l'outil
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Générer avec l'IA
-            </>
+          {/* Description */}
+          <div>
+            <Label>Description de l'outil à créer</Label>
+            <Textarea
+              rows={4}
+              placeholder={category 
+                ? `Décrivez votre ${TOOL_CATEGORIES.find(c => c.id === category)?.label.toLowerCase() || 'outil'}...`
+                : "Décrivez l'outil interactif que vous souhaitez créer pour vos étudiants..."
+              }
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Soyez précis : fonctionnalités, champs de saisie, calculs, résultats attendus...
+            </p>
+          </div>
+
+          {/* Example prompts by category */}
+          {currentExamples.length > 0 && (
+            <div>
+              <p className="text-sm font-medium mb-2">💡 Exemples pour {TOOL_CATEGORIES.find(c => c.id === category)?.label} :</p>
+              <div className="flex flex-wrap gap-2">
+                {currentExamples.map((example, index) => (
+                  <Button
+                    key={index}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-auto py-1.5 px-3 whitespace-normal text-left"
+                    onClick={() => useExample(example)}
+                  >
+                    {example}
+                  </Button>
+                ))}
+              </div>
+            </div>
           )}
-        </Button>
 
-        {toolConfig.generatedCode && (
+          {/* Generate button */}
           <Button
             type="button"
-            variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
+            onClick={() => generateTool(false)}
+            disabled={isGenerating || !description.trim()}
+            className="w-full"
           >
-            {showPreview ? (
-              <EyeOff className="h-4 w-4" />
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Génération en cours...
+              </>
+            ) : hasGeneratedCode ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Régénérer l'outil
+              </>
             ) : (
-              <Eye className="h-4 w-4" />
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Générer avec l'IA
+              </>
             )}
           </Button>
-        )}
-      </div>
+        </TabsContent>
 
-      {/* Success state */}
-      {toolConfig.generatedCode && (
+        {/* Refine Tab - Conversation Mode */}
+        <TabsContent value="refine" className="space-y-4 mt-4">
+          {hasGeneratedCode && (
+            <>
+              {/* Conversation History */}
+              {conversationHistory.length > 0 && (
+                <div className="space-y-2 max-h-48 overflow-y-auto p-3 bg-muted/30 rounded-lg">
+                  {conversationHistory.map((msg, idx) => (
+                    <div 
+                      key={idx}
+                      className={`text-sm p-2 rounded ${
+                        msg.role === 'user' 
+                          ? 'bg-primary/10 ml-4' 
+                          : 'bg-green-100 dark:bg-green-900/30 mr-4'
+                      }`}
+                    >
+                      <span className="font-medium">
+                        {msg.role === 'user' ? '👤 Vous: ' : '🤖 IA: '}
+                      </span>
+                      {msg.content}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Quick suggestions */}
+              <div>
+                <p className="text-sm font-medium mb-2">💡 Suggestions rapides :</p>
+                <div className="flex flex-wrap gap-2">
+                  {REFINEMENT_SUGGESTIONS.map((suggestion, index) => (
+                    <Button
+                      key={index}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => generateTool(true, suggestion)}
+                      disabled={isGenerating}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Refinement input */}
+              <div className="flex gap-2">
+                <Textarea
+                  rows={2}
+                  placeholder="Décrivez les modifications souhaitées... (ex: 'ajoute un graphique', 'change les couleurs en vert')"
+                  value={refinementMessage}
+                  onChange={(e) => setRefinementMessage(e.target.value)}
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      generateTool(true);
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  onClick={() => generateTool(true)}
+                  disabled={isGenerating || !refinementMessage.trim()}
+                  className="self-end"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+
+              {/* Preview */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Prévisualisation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="border rounded-lg bg-background overflow-hidden">
+                    <AIToolPreview code={editedCode || toolConfig.generatedCode || ''} />
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+
+        {/* Code Tab - Manual Editor */}
+        <TabsContent value="code" className="space-y-4 mt-4">
+          {hasGeneratedCode && (
+            <>
+              {/* Validation status */}
+              <div className={`flex items-center gap-2 p-3 rounded-lg ${
+                codeValidation.isValid 
+                  ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300' 
+                  : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300'
+              }`}>
+                {codeValidation.isValid ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="text-sm">Code valide</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-4 w-4" />
+                    <div className="text-sm">
+                      <p className="font-medium">Erreurs détectées :</p>
+                      <ul className="list-disc list-inside text-xs mt-1">
+                        {codeValidation.errors.map((err, i) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Code editor */}
+              <div>
+                <Label>Code HTML/CSS/JavaScript</Label>
+                <Textarea
+                  className="font-mono text-xs min-h-[300px] mt-1"
+                  value={editedCode}
+                  onChange={(e) => setEditedCode(e.target.value)}
+                  spellCheck={false}
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={applyCodeChanges}
+                  disabled={!codeValidation.isValid || editedCode === toolConfig.generatedCode}
+                  className="flex-1"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Appliquer les modifications
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditedCode(toolConfig.generatedCode || '')}
+                  disabled={editedCode === toolConfig.generatedCode}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Live preview */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Prévisualisation en direct
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="border rounded-lg bg-background overflow-hidden">
+                    <AIToolPreview code={editedCode} />
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Success state - shown in generate tab */}
+      {activeTab === 'generate' && hasGeneratedCode && (
         <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
           <CardContent className="p-3 flex items-center gap-2">
             <Check className="h-4 w-4 text-green-600" />
@@ -282,23 +601,6 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
               Outil généré le {new Date(toolConfig.generatedAt!).toLocaleString('fr-FR')}
               {toolConfig.category && ` (${TOOL_CATEGORIES.find(c => c.id === toolConfig.category)?.label})`}
             </span>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Preview with sandboxed iframe */}
-      {showPreview && toolConfig.generatedCode && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Prévisualisation (Mode Coach)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="border rounded-lg bg-background overflow-hidden">
-              <AIToolPreview code={toolConfig.generatedCode} />
-            </div>
           </CardContent>
         </Card>
       )}
