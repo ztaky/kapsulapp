@@ -7,11 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Sparkles, Loader2, RefreshCw, Check, Eye, Calculator, ListChecks, 
   HelpCircle, Gamepad2, SlidersHorizontal, FileText, MessageSquare, Code, 
-  Send, AlertTriangle, CheckCircle2, Wand2
+  Send, AlertTriangle, CheckCircle2, Wand2, Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AssistedToolWizard } from './AssistedToolWizard';
+import { ScrollArea } from '@/components/ui/scroll-area';
+
+interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
 
 interface AIToolBuilderProps {
   toolConfig: {
@@ -19,7 +26,7 @@ interface AIToolBuilderProps {
     generatedCode?: string;
     generatedAt?: string;
     category?: string;
-    conversationHistory?: Array<{ role: string; content: string }>;
+    conversationHistory?: ConversationMessage[];
   };
   onChange: (config: any) => void;
   organizationId?: string;
@@ -85,6 +92,8 @@ const REFINEMENT_SUGGESTIONS = [
   "Rends l'interface plus compacte",
   "Ajoute un compteur de temps",
   "Améliore le feedback visuel",
+  "Ajoute un graphique de résultats",
+  "Rends le design plus moderne",
 ];
 
 // Simple HTML validation
@@ -165,9 +174,11 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
   const [refinementMessage, setRefinementMessage] = useState('');
   const [editedCode, setEditedCode] = useState(toolConfig.generatedCode || '');
   const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; errors: string[] }>({ isValid: true, errors: [] });
-  const [conversationHistory, setConversationHistory] = useState<Array<{ role: string; content: string }>>(
+  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>(
     toolConfig.conversationHistory || []
   );
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Sync editedCode when generatedCode changes externally
   useEffect(() => {
@@ -183,6 +194,13 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
       setCodeValidation(validation);
     }
   }, [editedCode, activeTab]);
+
+  // Auto-scroll to bottom of chat when new messages arrive
+  useEffect(() => {
+    if (activeTab === 'refine' && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [conversationHistory, activeTab]);
 
   const generateTool = async (isRefinement = false, customMessage?: string) => {
     const messageToSend = isRefinement ? (customMessage || refinementMessage) : description;
@@ -228,10 +246,14 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
         });
       }
 
-      // Update conversation history
-      const newHistory = isRefinement 
-        ? [...conversationHistory, { role: 'user', content: messageToSend }, { role: 'assistant', content: 'Code modifié avec succès' }]
-        : [{ role: 'user', content: messageToSend }, { role: 'assistant', content: 'Code généré avec succès' }];
+      // Update conversation history with timestamps
+      const now = new Date().toISOString();
+      const userMessage: ConversationMessage = { role: 'user', content: messageToSend, timestamp: now };
+      const assistantMessage: ConversationMessage = { role: 'assistant', content: 'Modifications appliquées', timestamp: now };
+      
+      const newHistory: ConversationMessage[] = isRefinement 
+        ? [...conversationHistory, userMessage, assistantMessage]
+        : [userMessage, assistantMessage];
       
       setConversationHistory(newHistory);
       setEditedCode(data.code);
@@ -326,7 +348,11 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
         });
       }
 
-      const newHistory = [{ role: 'user', content: promptText }, { role: 'assistant', content: 'Code généré avec succès' }];
+      const now = new Date().toISOString();
+      const newHistory: ConversationMessage[] = [
+        { role: 'user', content: promptText, timestamp: now },
+        { role: 'assistant', content: 'Outil généré avec succès', timestamp: now }
+      ];
       setConversationHistory(newHistory);
       setEditedCode(data.code);
       
@@ -523,40 +549,86 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
         {/* Refine Tab - Conversation Mode */}
         <TabsContent value="refine" className="space-y-4 mt-4">
           {hasGeneratedCode && (
-            <>
-              {/* Conversation History */}
-              {conversationHistory.length > 0 && (
-                <div className="space-y-2 max-h-48 overflow-y-auto p-3 bg-muted/30 rounded-lg">
-                  {conversationHistory.map((msg, idx) => (
-                    <div 
-                      key={idx}
-                      className={`text-sm p-2 rounded ${
-                        msg.role === 'user' 
-                          ? 'bg-primary/10 ml-4' 
-                          : 'bg-green-100 dark:bg-green-900/30 mr-4'
-                      }`}
-                    >
-                      <span className="font-medium">
-                        {msg.role === 'user' ? '👤 Vous: ' : '🤖 IA: '}
-                      </span>
-                      {msg.content}
-                    </div>
-                  ))}
+            <div className="flex flex-col h-[500px]">
+              {/* Chat Header */}
+              <div className="flex items-center justify-between pb-3 border-b">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  <span className="font-medium">Mode conversation</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({conversationHistory.length} message{conversationHistory.length > 1 ? 's' : ''})
+                  </span>
                 </div>
-              )}
+                {conversationHistory.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setConversationHistory([]);
+                      onChange({ ...toolConfig, conversationHistory: [] });
+                    }}
+                    className="text-xs text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Effacer l'historique
+                  </Button>
+                )}
+              </div>
 
-              {/* Quick suggestions */}
-              <div>
-                <p className="text-sm font-medium mb-2">💡 Suggestions rapides :</p>
-                <div className="flex flex-wrap gap-2">
-                  {REFINEMENT_SUGGESTIONS.map((suggestion, index) => (
+              {/* Conversation History */}
+              <ScrollArea className="flex-1 py-4">
+                <div className="space-y-3 pr-4">
+                  {conversationHistory.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm">Aucun message pour le moment</p>
+                      <p className="text-xs mt-1">Utilisez le champ ci-dessous pour affiner votre outil</p>
+                    </div>
+                  ) : (
+                    conversationHistory.map((msg, idx) => (
+                      <div 
+                        key={idx}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div 
+                          className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
+                            msg.role === 'user' 
+                              ? 'bg-primary text-primary-foreground rounded-tr-sm' 
+                              : 'bg-muted rounded-tl-sm'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          <p className={`text-[10px] mt-1 ${
+                            msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                          }`}>
+                            {new Date(msg.timestamp).toLocaleTimeString('fr-FR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+              </ScrollArea>
+
+              {/* Quick Suggestions */}
+              <div className="py-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground mb-2">💡 Suggestions rapides :</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {REFINEMENT_SUGGESTIONS.slice(0, 4).map((suggestion, index) => (
                     <Button
                       key={index}
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="text-xs"
-                      onClick={() => generateTool(true, suggestion)}
+                      className="text-xs h-7 px-2"
+                      onClick={() => {
+                        setRefinementMessage(suggestion);
+                        inputRef.current?.focus();
+                      }}
                       disabled={isGenerating}
                     >
                       {suggestion}
@@ -565,26 +637,30 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
                 </div>
               </div>
 
-              {/* Refinement input */}
-              <div className="flex gap-2">
+              {/* Input Area */}
+              <div className="flex gap-2 pt-2 border-t">
                 <Textarea
+                  ref={inputRef}
                   rows={2}
-                  placeholder="Décrivez les modifications souhaitées... (ex: 'ajoute un graphique', 'change les couleurs en vert')"
+                  placeholder="Décrivez les modifications souhaitées... (Entrée pour envoyer)"
                   value={refinementMessage}
                   onChange={(e) => setRefinementMessage(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 resize-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      generateTool(true);
+                      if (refinementMessage.trim()) {
+                        generateTool(true);
+                      }
                     }
                   }}
+                  disabled={isGenerating}
                 />
                 <Button
                   type="button"
                   onClick={() => generateTool(true)}
                   disabled={isGenerating || !refinementMessage.trim()}
-                  className="self-end"
+                  className="self-end h-10 w-10 p-0"
                 >
                   {isGenerating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -594,21 +670,21 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
                 </Button>
               </div>
 
-              {/* Preview */}
-              <Card>
-                <CardHeader className="pb-2">
+              {/* Preview Card */}
+              <Card className="mt-4">
+                <CardHeader className="pb-2 pt-3">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Eye className="h-4 w-4" />
-                    Prévisualisation
+                    Prévisualisation en direct
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-3">
                   <div className="border rounded-lg bg-background overflow-hidden">
                     <AIToolPreview code={editedCode || toolConfig.generatedCode || ''} />
                   </div>
                 </CardContent>
               </Card>
-            </>
+            </div>
           )}
         </TabsContent>
 
