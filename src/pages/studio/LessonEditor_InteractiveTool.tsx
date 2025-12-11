@@ -20,6 +20,16 @@ interface InteractiveToolEditorProps {
   toolConfig: any;
   organizationId?: string;
   lessonId?: string;
+  lessonContext?: {
+    title?: string;
+    objective?: string;
+    content?: string;
+  };
+  courseContext?: {
+    title?: string;
+    description?: string;
+    specialty?: string;
+  };
   onChange: (toolId: string | null, toolConfig: any) => void;
 }
 
@@ -44,7 +54,7 @@ const areConfigsEqual = (config1: any, config2: any): boolean => {
   }
 };
 
-export function InteractiveToolEditor({ toolId, toolConfig, organizationId, lessonId, onChange }: InteractiveToolEditorProps) {
+export function InteractiveToolEditor({ toolId, toolConfig, organizationId, lessonId, lessonContext, courseContext, onChange }: InteractiveToolEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [mode, setMode] = useState<"library" | "create" | "edit">("library");
   const [newToolType, setNewToolType] = useState<string>("ai_tool");
@@ -512,6 +522,8 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, less
               onChange(newToolType, config);
             }}
             organizationId={organizationId}
+            lessonContext={lessonContext}
+            courseContext={courseContext}
           />
 
           {/* Save & Return buttons */}
@@ -577,6 +589,8 @@ export function InteractiveToolEditor({ toolId, toolConfig, organizationId, less
               onChange(newToolType, config);
             }}
             organizationId={organizationId}
+            lessonContext={lessonContext}
+            courseContext={courseContext}
           />
 
           {/* Update & Return buttons */}
@@ -616,12 +630,24 @@ function ToolConfigEditor({
   toolType, 
   config, 
   onChange,
-  organizationId
+  organizationId,
+  lessonContext,
+  courseContext
 }: { 
   toolType: string; 
   config: any; 
   onChange: (config: any) => void;
   organizationId?: string;
+  lessonContext?: {
+    title?: string;
+    objective?: string;
+    content?: string;
+  };
+  courseContext?: {
+    title?: string;
+    description?: string;
+    specialty?: string;
+  };
 }) {
   const [showPreview, setShowPreview] = useState(false);
 
@@ -632,6 +658,8 @@ function ToolConfigEditor({
           toolConfig={config}
           onChange={onChange}
           organizationId={organizationId}
+          lessonContext={lessonContext}
+          courseContext={courseContext}
         />
       );
 
