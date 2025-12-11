@@ -204,7 +204,7 @@ serve(async (req) => {
   }
 
   try {
-    const { description, organizationId, category, lessonContext, courseContext } = await req.json();
+    const { description, organizationId, category, lessonContext, courseContext, conversationHistory, currentCode } = await req.json();
 
     if (!description) {
       return new Response(
@@ -303,7 +303,51 @@ Crée un mini-jeu avec :
         break;
     }
 
-    const userPrompt = `Crée un outil interactif pédagogique avec les spécifications suivantes :
+    // Build messages array based on conversation mode
+    let messages: Array<{ role: string; content: string }> = [];
+    
+    // Check if this is a refinement request (has conversation history or current code)
+    const isRefinement = conversationHistory?.length > 0 || currentCode;
+    
+    if (isRefinement && currentCode) {
+      // Refinement mode: use existing code and apply modifications
+      const refinementSystemPrompt = `${SYSTEM_PROMPT}
+
+MODE AFFINAGE:
+Tu as déjà généré un outil interactif. L'utilisateur souhaite le modifier.
+Voici le code actuel de l'outil:
+
+\`\`\`html
+${currentCode}
+\`\`\`
+
+INSTRUCTIONS POUR L'AFFINAGE:
+- Modifie UNIQUEMENT les parties demandées par l'utilisateur
+- Conserve la structure et les fonctionnalités existantes non mentionnées
+- Assure-toi que les modifications s'intègrent bien au code existant
+- Retourne le code HTML COMPLET avec les modifications appliquées`;
+
+      messages = [
+        { role: 'system', content: refinementSystemPrompt },
+      ];
+      
+      // Add conversation history if exists
+      if (conversationHistory && conversationHistory.length > 0) {
+        for (const msg of conversationHistory) {
+          messages.push({ role: msg.role, content: msg.content });
+        }
+      }
+      
+      // Add current refinement request
+      messages.push({ 
+        role: 'user', 
+        content: `Modifie l'outil existant selon cette demande: ${description}
+
+Retourne le code HTML complet modifié.`
+      });
+    } else {
+      // Initial generation mode
+      const userPrompt = `Crée un outil interactif pédagogique avec les spécifications suivantes :
 
 ${description}
 ${categoryInstructions}
@@ -311,10 +355,18 @@ ${contextPrompt}
 
 L'outil doit être intuitif, visuellement attrayant et parfaitement fonctionnel. Génère le code HTML complet.`;
 
+      messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt }
+      ];
+    }
+
     console.log('[generate-interactive-tool] Generating with context:', { 
       hasCategory: !!category, 
       hasCourseContext: !!courseContext, 
-      hasLessonContext: !!lessonContext 
+      hasLessonContext: !!lessonContext,
+      isRefinement,
+      messagesCount: messages.length
     });
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -325,10 +377,7 @@ L'outil doit être intuitif, visuellement attrayant et parfaitement fonctionnel.
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt }
-        ],
+        messages,
         temperature: 0.7,
         max_tokens: 10000,
       }),
