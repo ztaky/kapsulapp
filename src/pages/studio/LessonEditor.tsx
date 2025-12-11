@@ -48,7 +48,7 @@ export default function LessonEditor() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("organizations")
-        .select("id")
+        .select("id, specialty")
         .eq("slug", slug)
         .single();
       if (error) throw error;
@@ -66,7 +66,12 @@ export default function LessonEditor() {
           *,
           modules!inner(
             id,
-            course_id
+            course_id,
+            courses!inner(
+              id,
+              title,
+              description
+            )
           )
         `)
         .eq("id", lessonId)
@@ -76,6 +81,20 @@ export default function LessonEditor() {
       return data;
     },
   });
+
+  // Get course context for AI tool builder
+  const courseContext = lesson?.modules?.courses ? {
+    title: lesson.modules.courses.title,
+    description: lesson.modules.courses.description,
+    specialty: organization?.specialty,
+  } : undefined;
+
+  // Get lesson context for AI tool builder  
+  const lessonContext = {
+    title: formData.title,
+    objective: formData.objective,
+    content: formData.content_text,
+  };
 
   useEffect(() => {
     if (lesson) {
@@ -278,6 +297,8 @@ export default function LessonEditor() {
                   toolConfig={formData.tool_config}
                   organizationId={organization?.id}
                   lessonId={lessonId}
+                  lessonContext={lessonContext}
+                  courseContext={courseContext}
                   onChange={(toolId, toolConfig) =>
                     setFormData({ ...formData, tool_id: toolId, tool_config: toolConfig })
                   }

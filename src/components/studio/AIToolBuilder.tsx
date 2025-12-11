@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Loader2, RefreshCw, Check, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Loader2, RefreshCw, Check, Eye, EyeOff, Calculator, ListChecks, HelpCircle, Gamepad2, SlidersHorizontal, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -12,21 +12,68 @@ interface AIToolBuilderProps {
     description?: string;
     generatedCode?: string;
     generatedAt?: string;
+    category?: string;
   };
   onChange: (config: any) => void;
   organizationId?: string;
+  lessonContext?: {
+    title?: string;
+    objective?: string;
+    content?: string;
+  };
+  courseContext?: {
+    title?: string;
+    description?: string;
+    specialty?: string;
+  };
 }
 
-const EXAMPLE_PROMPTS = [
-  "Un calculateur de calories qui demande le poids, la taille, l'âge et le niveau d'activité",
-  "Un quiz interactif sur les bases de la nutrition avec 5 questions",
-  "Une checklist interactive pour suivre ses habitudes quotidiennes",
-  "Un convertisseur d'unités (kg/lbs, km/miles, etc.)",
-  "Un calculateur d'IMC avec interprétation des résultats",
+const TOOL_CATEGORIES = [
+  { id: 'quiz', label: 'Quiz', icon: HelpCircle, description: 'Questions à choix multiples avec score', color: 'from-purple-500 to-indigo-500' },
+  { id: 'calculator', label: 'Calculateur', icon: Calculator, description: 'Calculs et formules interactives', color: 'from-green-500 to-emerald-500' },
+  { id: 'checklist', label: 'Checklist', icon: ListChecks, description: 'Liste de tâches avec progression', color: 'from-orange-500 to-amber-500' },
+  { id: 'simulator', label: 'Simulateur', icon: SlidersHorizontal, description: 'Visualisation dynamique', color: 'from-blue-500 to-cyan-500' },
+  { id: 'form', label: 'Formulaire', icon: FileText, description: 'Formulaire interactif avec validation', color: 'from-pink-500 to-rose-500' },
+  { id: 'game', label: 'Mini-jeu', icon: Gamepad2, description: 'Jeu éducatif ludique', color: 'from-red-500 to-orange-500' },
 ];
 
-export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBuilderProps) {
+const EXAMPLE_PROMPTS_BY_CATEGORY: Record<string, string[]> = {
+  quiz: [
+    "Un quiz de 5 questions sur les bases de la nutrition avec explications",
+    "Un quiz sur les règles de grammaire française avec 3 niveaux de difficulté",
+    "Un quiz interactif sur l'histoire de France avec images",
+  ],
+  calculator: [
+    "Un calculateur de calories journalières basé sur le poids, la taille, l'âge et l'activité",
+    "Un calculateur d'IMC avec interprétation des résultats et conseils",
+    "Un convertisseur d'unités (kg/lbs, km/miles, °C/°F)",
+    "Un calculateur de pourcentage de réduction pour les soldes",
+  ],
+  checklist: [
+    "Une checklist de préparation à un entretien d'embauche",
+    "Un tracker d'habitudes quotidiennes (sport, méditation, lecture)",
+    "Une liste de contrôle pour un projet avec progression",
+  ],
+  simulator: [
+    "Un simulateur d'épargne avec intérêts composés sur plusieurs années",
+    "Un visualiseur de budget mensuel avec graphiques",
+    "Un simulateur de croissance d'investissement",
+  ],
+  form: [
+    "Un formulaire de diagnostic de niveau en anglais",
+    "Un questionnaire d'auto-évaluation des compétences professionnelles",
+    "Un formulaire d'inscription avec validation en temps réel",
+  ],
+  game: [
+    "Un memory game sur le vocabulaire anglais",
+    "Un jeu de rapidité pour apprendre les tables de multiplication",
+    "Un puzzle de mots pour enrichir le vocabulaire",
+  ],
+};
+
+export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonContext, courseContext }: AIToolBuilderProps) {
   const [description, setDescription] = useState(toolConfig.description || '');
+  const [category, setCategory] = useState(toolConfig.category || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -40,7 +87,13 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-interactive-tool', {
-        body: { description, organizationId },
+        body: { 
+          description, 
+          organizationId,
+          category: category || undefined,
+          lessonContext,
+          courseContext,
+        },
       });
 
       if (error) throw error;
@@ -63,6 +116,7 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
 
       onChange({
         description,
+        category,
         generatedCode: data.code,
         generatedAt: new Date().toISOString(),
       });
@@ -81,13 +135,73 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
     setDescription(example);
   };
 
+  const selectCategory = (catId: string) => {
+    setCategory(catId === category ? '' : catId);
+  };
+
+  const currentExamples = category ? EXAMPLE_PROMPTS_BY_CATEGORY[category] || [] : [];
+
   return (
     <div className="space-y-4">
+      {/* Context indicator */}
+      {(lessonContext?.title || courseContext?.title) && (
+        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+          <CardContent className="p-3">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <strong>🎯 Contexte détecté :</strong>{' '}
+              {courseContext?.title && <span>Cours "{courseContext.title}"</span>}
+              {lessonContext?.title && <span> - Leçon "{lessonContext.title}"</span>}
+            </p>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              L'IA utilisera ce contexte pour générer un outil adapté à votre formation.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Category Selection */}
+      <div>
+        <Label className="mb-2 block">Type d'outil (optionnel)</Label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {TOOL_CATEGORIES.map((cat) => {
+            const IconComponent = cat.icon;
+            const isSelected = category === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => selectCategory(cat.id)}
+                className={`relative p-3 rounded-lg border-2 transition-all text-left ${
+                  isSelected 
+                    ? 'border-primary bg-primary/5 shadow-md' 
+                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center mb-2`}>
+                  <IconComponent className="h-4 w-4 text-white" />
+                </div>
+                <p className="font-medium text-sm">{cat.label}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{cat.description}</p>
+                {isSelected && (
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Description */}
       <div>
         <Label>Description de l'outil à créer</Label>
         <Textarea
           rows={4}
-          placeholder="Décrivez l'outil interactif que vous souhaitez créer pour vos étudiants..."
+          placeholder={category 
+            ? `Décrivez votre ${TOOL_CATEGORIES.find(c => c.id === category)?.label.toLowerCase() || 'outil'}...`
+            : "Décrivez l'outil interactif que vous souhaitez créer pour vos étudiants..."
+          }
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="mt-1"
@@ -97,26 +211,28 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
         </p>
       </div>
 
-      {/* Exemples de prompts */}
-      <div>
-        <p className="text-sm font-medium mb-2">Exemples d'outils :</p>
-        <div className="flex flex-wrap gap-2">
-          {EXAMPLE_PROMPTS.map((example, index) => (
-            <Button
-              key={index}
-              type="button"
-              variant="outline"
-              size="sm"
-              className="text-xs h-auto py-1 px-2"
-              onClick={() => useExample(example)}
-            >
-              {example.slice(0, 40)}...
-            </Button>
-          ))}
+      {/* Example prompts by category */}
+      {currentExamples.length > 0 && (
+        <div>
+          <p className="text-sm font-medium mb-2">💡 Exemples pour {TOOL_CATEGORIES.find(c => c.id === category)?.label} :</p>
+          <div className="flex flex-wrap gap-2">
+            {currentExamples.map((example, index) => (
+              <Button
+                key={index}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-auto py-1.5 px-3 whitespace-normal text-left"
+                onClick={() => useExample(example)}
+              >
+                {example}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Bouton de génération */}
+      {/* Generate button */}
       <div className="flex gap-2">
         <Button
           type="button"
@@ -157,19 +273,20 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
         )}
       </div>
 
-      {/* État de génération réussie */}
+      {/* Success state */}
       {toolConfig.generatedCode && (
         <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
           <CardContent className="p-3 flex items-center gap-2">
             <Check className="h-4 w-4 text-green-600" />
             <span className="text-sm text-green-700 dark:text-green-300">
               Outil généré le {new Date(toolConfig.generatedAt!).toLocaleString('fr-FR')}
+              {toolConfig.category && ` (${TOOL_CATEGORIES.find(c => c.id === toolConfig.category)?.label})`}
             </span>
           </CardContent>
         </Card>
       )}
 
-      {/* Prévisualisation avec iframe sandboxé */}
+      {/* Preview with sandboxed iframe */}
       {showPreview && toolConfig.generatedCode && (
         <Card>
           <CardHeader className="pb-2">
@@ -189,7 +306,7 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId }: AIToolBu
   );
 }
 
-// Composant de prévisualisation sandboxé avec iframe
+// Sandboxed preview component with iframe
 function AIToolPreview({ code }: { code: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeHeight, setIframeHeight] = useState(300);
