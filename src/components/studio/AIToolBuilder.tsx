@@ -5,12 +5,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Sparkles, Loader2, RefreshCw, Check, Eye, EyeOff, Calculator, ListChecks, 
+  Sparkles, Loader2, RefreshCw, Check, Eye, Calculator, ListChecks, 
   HelpCircle, Gamepad2, SlidersHorizontal, FileText, MessageSquare, Code, 
-  Send, AlertTriangle, CheckCircle2
+  Send, AlertTriangle, CheckCircle2, Wand2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { AssistedToolWizard } from './AssistedToolWizard';
 
 interface AIToolBuilderProps {
   toolConfig: {
@@ -159,7 +160,8 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
   const [description, setDescription] = useState(toolConfig.description || '');
   const [category, setCategory] = useState(toolConfig.category || '');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'generate' | 'refine' | 'code'>('generate');
+  const [activeTab, setActiveTab] = useState<'generate' | 'assisted' | 'refine' | 'code'>('generate');
+  const [showWizard, setShowWizard] = useState(false);
   const [refinementMessage, setRefinementMessage] = useState('');
   const [editedCode, setEditedCode] = useState(toolConfig.generatedCode || '');
   const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; errors: string[] }>({ isValid: true, errors: [] });
@@ -283,6 +285,68 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
   const currentExamples = category ? EXAMPLE_PROMPTS_BY_CATEGORY[category] || [] : [];
   const hasGeneratedCode = !!toolConfig.generatedCode;
 
+  const handleWizardComplete = (generatedPrompt: string, wizardCategory: string) => {
+    setDescription(generatedPrompt);
+    setCategory(wizardCategory);
+    setShowWizard(false);
+    setActiveTab('generate');
+    // Auto-generate after wizard completion
+    setTimeout(() => {
+      generateToolWithPrompt(generatedPrompt, wizardCategory);
+    }, 100);
+  };
+
+  const generateToolWithPrompt = async (promptText: string, categoryId: string) => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-interactive-tool', {
+        body: { 
+          description: promptText, 
+          organizationId,
+          category: categoryId || undefined,
+          lessonContext,
+          courseContext,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        if (data.code === 'AI_CREDITS_LIMIT_REACHED') {
+          toast.error('Limite de crédits IA atteinte pour ce mois');
+        } else {
+          toast.error(data.error);
+        }
+        return;
+      }
+
+      if (data.nearLimit) {
+        toast.warning("Attention : vous approchez de votre limite de crédits IA (80%)", {
+          duration: 5000,
+        });
+      }
+
+      const newHistory = [{ role: 'user', content: promptText }, { role: 'assistant', content: 'Code généré avec succès' }];
+      setConversationHistory(newHistory);
+      setEditedCode(data.code);
+      
+      onChange({
+        description: promptText,
+        category: categoryId,
+        generatedCode: data.code,
+        generatedAt: new Date().toISOString(),
+        conversationHistory: newHistory,
+      });
+
+      toast.success('Outil généré avec succès !');
+    } catch (error: any) {
+      console.error('Error generating tool:', error);
+      toast.error(error.message || 'Erreur lors de la génération');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Context indicator */}
@@ -303,10 +367,14 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
 
       {/* Tabs for different modes */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="generate" className="gap-2">
             <Sparkles className="h-4 w-4" />
-            Générer
+            Libre
+          </TabsTrigger>
+          <TabsTrigger value="assisted" className="gap-2">
+            <Wand2 className="h-4 w-4" />
+            Assisté
           </TabsTrigger>
           <TabsTrigger value="refine" disabled={!hasGeneratedCode} className="gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -317,6 +385,39 @@ export function AIToolBuilder({ toolConfig, onChange, organizationId, lessonCont
             Code
           </TabsTrigger>
         </TabsList>
+
+        {/* Assisted Tab - Wizard Mode */}
+        <TabsContent value="assisted" className="mt-4">
+          {showWizard ? (
+            <AssistedToolWizard
+              onComplete={handleWizardComplete}
+              onCancel={() => setShowWizard(false)}
+              lessonContext={lessonContext}
+              courseContext={courseContext}
+            />
+          ) : (
+            <Card className="border-dashed border-2 border-primary/30">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Wand2 className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Mode assisté</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Répondez à quelques questions simples et l'IA créera automatiquement l'outil parfait pour votre formation.
+                </p>
+                <div className="space-y-3">
+                  <Button onClick={() => setShowWizard(true)} size="lg" className="gap-2">
+                    <Wand2 className="h-5 w-5" />
+                    Démarrer le questionnaire guidé
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    ~2 minutes • 7 étapes • Résultats optimisés
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         {/* Generate Tab */}
         <TabsContent value="generate" className="space-y-4 mt-4">
