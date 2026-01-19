@@ -4,20 +4,15 @@ import { Puzzle, Wand2, Infinity, Mail, CreditCard, Webhook, Tv, PartyPopper, Bo
 import { KapsulPublicFooter } from "@/components/shared/KapsulPublicFooter";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import CountdownTimer from "@/components/landing/CountdownTimer";
 import kapsulLogo from "@/assets/kapsul-logo.png";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTrackEvent } from "@/components/shared/TrackingScripts";
 import { SalesChatWidget } from "@/components/sales/SalesChatWidget";
+
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const {
-    trackAddToCart,
-    trackInitiateCheckout
-  } = useTrackEvent();
+  const { trackAddToCart, trackInitiateCheckout } = useTrackEvent();
 
   // Handle payment canceled
   useEffect(() => {
@@ -27,30 +22,7 @@ const Index = () => {
       window.history.replaceState({}, "", "/");
     }
   }, [searchParams]);
-  const handleFounderCheckout = async () => {
-    // Track AddToCart + InitiateCheckout before redirecting to Stripe
-    trackAddToCart("Offre Fondateur", 297, "EUR");
-    trackInitiateCheckout("Offre Fondateur", 297, "EUR");
-    setCheckoutLoading(true);
-    try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke("create-founder-checkout");
-      if (error) {
-        throw new Error(error.message || "Erreur lors de la création du paiement");
-      }
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("URL de paiement non reçue");
-      }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue";
-      toast.error(errorMessage);
-      setCheckoutLoading(false);
-    }
-  };
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -60,9 +32,8 @@ const Index = () => {
     }
   };
 
-  // Target date: December 31, 2025
-  const targetDate = new Date("2025-12-31T23:59:59");
-  return <div className="min-h-screen bg-background">
+  return (
+    <div className="min-h-screen bg-background">
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
@@ -94,11 +65,8 @@ const Index = () => {
               <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="text-muted-foreground hover:text-foreground px-2 sm:px-4">
                 Connexion
               </Button>
-              <Button variant="gradient" size="sm" onClick={handleFounderCheckout} disabled={checkoutLoading} className="shadow-lg shadow-[#DD2476]/25 text-xs sm:text-sm px-3 sm:px-4 whitespace-nowrap">
-                {checkoutLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
-                    <span className="hidden sm:inline">Profiter de l'offre Fondateur</span>
-                    <span className="sm:hidden">Offre Fondateur</span>
-                  </>}
+              <Button variant="gradient" size="sm" onClick={() => navigate("/coach-signup")} className="shadow-lg shadow-[#DD2476]/25 text-xs sm:text-sm px-3 sm:px-4 whitespace-nowrap">
+                Commencer gratuitement
               </Button>
             </div>
           </div>
@@ -130,9 +98,8 @@ const Index = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" variant="gradient" onClick={handleFounderCheckout} disabled={checkoutLoading} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
-              {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-              Profiter de l'offre Fondateur
+            <Button size="lg" variant="gradient" onClick={() => navigate("/coach-signup")} className="text-lg px-8 py-6 shadow-xl shadow-[#DD2476]/30 hover:shadow-2xl hover:shadow-[#DD2476]/40 transition-all">
+              Commencer gratuitement
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={() => scrollToSection("demo")}>
               Voir la démo
@@ -164,13 +131,14 @@ const Index = () => {
                   <div className="col-span-3 space-y-4">
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF512F] to-[#DD2476]"></div>
-                      <span className="font-semibold text-foreground text-sm">Mon Académie
-                    </span>
+                      <span className="font-semibold text-foreground text-sm">Mon Académie</span>
                     </div>
                     <div className="space-y-2">
-                      {["Dashboard", "Formations", "Élèves", "Emails"].map((item, i) => <div key={item} className={`px-3 py-2 rounded-lg text-sm ${i === 0 ? "bg-muted text-foreground font-medium" : "text-muted-foreground"}`}>
+                      {["Dashboard", "Formations", "Élèves", "Emails"].map((item, i) => (
+                        <div key={item} className={`px-3 py-2 rounded-lg text-sm ${i === 0 ? "bg-muted text-foreground font-medium" : "text-muted-foreground"}`}>
                           {item}
-                        </div>)}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -193,9 +161,9 @@ const Index = () => {
                     </div>
                     {/* Chart placeholder */}
                     <div className="bg-muted/20 rounded-xl p-4 h-32 flex items-end justify-between gap-2">
-                      {[40, 65, 45, 80, 60, 90, 75, 95, 85, 100, 88, 110].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t-sm opacity-80" style={{
-                      height: `${h}%`
-                    }}></div>)}
+                      {[40, 65, 45, 80, 60, 90, 75, 95, 85, 100, 88, 110].map((h, i) => (
+                        <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t-sm opacity-80" style={{ height: `${h}%` }}></div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -263,45 +231,24 @@ const Index = () => {
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[{
-            icon: BookOpen,
-            label: "Formations illimitées",
-            desc: "Créez autant de cours que vous voulez"
-          }, {
-            icon: Wand2,
-            label: "IA intégrée",
-            desc: "Landing pages, quiz, outils générés"
-          }, {
-            icon: Mail,
-            label: "Email marketing",
-            desc: "Séquences automatiques brandées"
-          }, {
-            icon: CreditCard,
-            label: "Paiements Stripe",
-            desc: "0% commission plateforme"
-          }, {
-            icon: Palette,
-            label: "Branding complet",
-            desc: "Logo, couleurs, domaine perso"
-          }, {
-            icon: BarChart3,
-            label: "Analytics temps réel",
-            desc: "Ventes, progression, engagement"
-          }, {
-            icon: Award,
-            label: "Certificats",
-            desc: "Diplômes PDF automatiques"
-          }, {
-            icon: MessageCircle,
-            label: "Support IA 24/7",
-            desc: "Assistant pour vos élèves"
-          }].map((feature, i) => <div key={i} className="bg-card rounded-2xl p-5 border border-border hover:border-border/80 hover:shadow-card transition-all group">
+            {[
+              { icon: BookOpen, label: "Formations illimitées", desc: "Créez autant de cours que vous voulez" },
+              { icon: Wand2, label: "IA intégrée", desc: "Landing pages, quiz, outils générés" },
+              { icon: Mail, label: "Email marketing", desc: "Séquences automatiques brandées" },
+              { icon: CreditCard, label: "Paiements Stripe", desc: "0% commission plateforme" },
+              { icon: Palette, label: "Branding complet", desc: "Logo, couleurs, domaine perso" },
+              { icon: BarChart3, label: "Analytics temps réel", desc: "Ventes, progression, engagement" },
+              { icon: Award, label: "Certificats", desc: "Diplômes PDF automatiques" },
+              { icon: MessageCircle, label: "Support IA 24/7", desc: "Assistant pour vos élèves" },
+            ].map((feature, i) => (
+              <div key={i} className="bg-card rounded-2xl p-5 border border-border hover:border-border/80 hover:shadow-card transition-all group">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF512F]/10 to-[#DD2476]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-6 h-6 text-[#DD2476]" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-bold text-foreground mb-1">{feature.label}</h3>
                 <p className="text-sm text-muted-foreground">{feature.desc}</p>
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -334,11 +281,13 @@ const Index = () => {
               {/* Course Editor Mockup */}
               <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                 <div className="space-y-2">
-                  {["Module 1 : Les fondamentaux", "Module 2 : Stratégies avancées", "Module 3 : Mise en pratique"].map((m, i) => <div key={i} className="bg-white/5 rounded-xl p-3 flex items-center gap-3 group-hover:bg-white/10 transition-colors">
+                  {["Module 1 : Les fondamentaux", "Module 2 : Stratégies avancées", "Module 3 : Mise en pratique"].map((m, i) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-3 flex items-center gap-3 group-hover:bg-white/10 transition-colors">
                       <GripVertical className="w-4 h-4 text-white/40" />
                       <span className="text-white/80 text-sm font-medium flex-1">{m}</span>
                       <span className="text-white/40 text-xs">{3 + i} leçons</span>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -439,9 +388,9 @@ const Index = () => {
                 </div>
               </div>
               <div className="h-20 flex items-end gap-1">
-                {[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 88, 100].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t opacity-80" style={{
-                height: `${h}%`
-              }} />)}
+                {[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 88, 100].map((h, i) => (
+                  <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t opacity-80" style={{ height: `${h}%` }} />
+                ))}
               </div>
             </div>
 
@@ -576,95 +525,7 @@ const Index = () => {
       <QualificationSection />
 
       {/* PRICING SECTION */}
-      <section id="pricing" className="py-24 px-6 bg-muted/30">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
-            Rejoignez les <span className="gradient-text">100 premiers fondateurs</span>
-          </h2>
-          <p className="text-center text-muted-foreground mb-16 text-lg">
-            Un modèle simple et transparent.
-          </p>
-
-          {/* PREMIUM FOUNDER CARD */}
-          <div className="max-w-lg mx-auto">
-            <div className="relative group">
-              {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF512F] via-[#F5AF19] to-[#DD2476] rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse"></div>
-              
-              {/* Card with animated gradient border */}
-              <div className="relative rounded-3xl p-[2px] bg-gradient-to-r from-[#F5AF19] via-[#FF512F] to-[#DD2476] overflow-hidden">
-                {/* Animated border shine */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_3s_infinite]"></div>
-                
-                {/* Inner card - Dark premium background */}
-                <div className="relative bg-gradient-to-br from-[#0A0F1C] via-[#111827] to-[#0F172A] rounded-[22px] p-8 overflow-hidden">
-                  {/* Subtle radial glow inside */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#DD2476]/10 rounded-full blur-3xl"></div>
-                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#FF512F]/10 rounded-full blur-3xl"></div>
-                  
-                  <div className="relative z-10">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#F5AF19] to-[#FF512F] text-black text-sm font-bold mb-6">
-                      🔥 PLACES LIMITÉES
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-2xl font-extrabold bg-gradient-to-r from-[#F5AF19] to-[#FF8C00] bg-clip-text text-transparent mb-2">
-                      LICENCE FONDATEUR
-                    </h3>
-
-                    {/* Price */}
-                    <div className="mb-2">
-                      <span className="text-6xl font-black text-white">297€</span>
-                      <span className="text-xl text-white/60 ml-3">LIFETIME</span>
-                    </div>
-                    <p className="text-white/50 mb-6">Paiement unique. Accès à vie.</p>
-
-                    {/* Guarantee badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 text-sm font-medium mb-6 text-primary bg-primary-foreground">
-                      <Shield className="w-4 h-4" />
-                      Garantie 30 Jours Satisfait ou Remboursé
-                    </div>
-
-                    <ul className="space-y-3 mb-8">
-                      {["Accès PRO à vie (67€/mois value)", "Formations illimitées", "Jusqu'à 1 000 étudiants", "5 000 crédits IA / mois", "Landing pages IA illimitées", "0% commission à vie", "Branding personnalisé", "Support prioritaire", "Badge \"Fondateur\" dans ton profil", "Vote sur la roadmap produit"].map((feature, i) => <li key={i} className="flex items-center gap-3">
-                          <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
-                          <span className="text-white/90">{feature}</span>
-                        </li>)}
-                    </ul>
-
-                    <Button size="lg" variant="gradient" className="w-full text-lg shadow-xl shadow-[#DD2476]/50 hover:shadow-2xl hover:shadow-[#DD2476]/60 transition-all" onClick={handleFounderCheckout} disabled={checkoutLoading}>
-                      {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                      Devenir fondateur - 297€
-                    </Button>
-
-                    {/* Token info */}
-                    <p className="text-center text-xs text-white/40 mt-4">
-                      Recharges disponibles dans l'app si besoin de plus de crédits.
-                    </p>
-
-                    <div className="mt-6 pt-6 border-t border-white/10">
-                      <p className="text-center text-sm text-white/60 mb-3">
-                        ⏰ Offre limitée aux 100 premiers
-                      </p>
-                      <div className="[&_*]:text-white">
-                        <CountdownTimer targetDate={targetDate} size="normal" />
-                      </div>
-                      <p className="text-center text-xs text-white/40 mt-3">
-                        jusqu'au 31/12/2025
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <p className="text-center text-muted-foreground mt-8">
-            Besoin de plus de crédits ? <span className="font-semibold text-foreground">Recharges disponibles dans l'application.</span>
-          </p>
-        </div>
-      </section>
+      <PricingSection />
 
       {/* GUARANTEE SECTION */}
       <GuaranteeSection />
@@ -672,39 +533,18 @@ const Index = () => {
       {/* FAQ SECTION */}
       <FAQSection />
 
-      {/* FOOTER URGENCY */}
+      {/* FOOTER CTA */}
       <section className="py-20 px-6 bg-gradient-to-br from-[#0F172A] to-[#1E293B]">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-white/70 text-lg mb-4">
-            ⏰ L'offre fondateur à 297€ disparaît dans :
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+            Prêt à lancer votre académie ?
+          </h2>
+          <p className="text-white/70 text-lg mb-8">
+            Commencez gratuitement, sans engagement. Passez à un plan payant quand vous êtes prêt.
           </p>
-          
-          <div className="mb-8 [&_*]:text-white">
-            <CountdownTimer targetDate={targetDate} size="large" />
-          </div>
-
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 mb-8 inline-block">
-            <p className="text-white/80 mb-4">Après le 31 décembre 2025 :</p>
-            <div className="space-y-2 text-left">
-              <p className="text-red-400 flex items-center gap-2">
-                <X className="w-4 h-4" /> Plus d'offre lifetime à 297€
-              </p>
-              <p className="text-red-400 flex items-center gap-2">
-                <X className="w-4 h-4" /> Plus de badge fondateur exclusif
-              </p>
-              <p className="text-red-400 flex items-center gap-2">
-                <X className="w-4 h-4" /> Plus de garantie 30 jours
-              </p>
-            </div>
-            <p className="text-white/60 mt-4 text-sm">Le prix passera à 67€/mois soit 804€/an après cette date.</p>
-          </div>
-
-          <div>
-            <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={handleFounderCheckout} disabled={checkoutLoading}>
-              {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-              Je deviens fondateur maintenant
-            </Button>
-          </div>
+          <Button size="lg" variant="gradient" className="text-lg px-10 shadow-xl shadow-[#DD2476]/30" onClick={() => navigate("/coach-signup")}>
+            Commencer gratuitement
+          </Button>
         </div>
       </section>
 
@@ -712,8 +552,152 @@ const Index = () => {
       <KapsulPublicFooter />
 
       {/* Sales Chatbot */}
-      <SalesChatWidget onFounderClick={handleFounderCheckout} />
-    </div>;
+      <SalesChatWidget />
+    </div>
+  );
+};
+
+// PRICING SECTION COMPONENT
+const PricingSection = () => {
+  const navigate = useNavigate();
+
+  const plans = [
+    {
+      name: "Gratuit",
+      price: 0,
+      description: "Pour découvrir Kapsul",
+      badge: null,
+      features: [
+        "1 formation",
+        "1 landing page",
+        "100 étudiants max",
+        "100 crédits IA / mois",
+        "100 emails / mois",
+        "8% commission sur ventes",
+      ],
+      cta: "Commencer gratuitement",
+      ctaVariant: "outline" as const,
+      highlighted: false,
+    },
+    {
+      name: "Pro",
+      price: 79,
+      description: "Pour les coachs actifs",
+      badge: "POPULAIRE",
+      features: [
+        "3 formations",
+        "3 landing pages",
+        "1 000 étudiants",
+        "500 crédits IA / mois",
+        "2 000 emails / mois",
+        "0% commission",
+        "Support prioritaire",
+      ],
+      cta: "Choisir Pro",
+      ctaVariant: "gradient" as const,
+      highlighted: true,
+    },
+    {
+      name: "Business",
+      price: 179,
+      description: "Pour les académies établies",
+      badge: null,
+      features: [
+        "Formations illimitées",
+        "Landing pages illimitées",
+        "Étudiants illimités",
+        "2 000 crédits IA / mois",
+        "5 000 emails / mois",
+        "0% commission",
+        "Support prioritaire",
+        "Domaine personnalisé",
+      ],
+      cta: "Choisir Business",
+      ctaVariant: "outline" as const,
+      highlighted: false,
+    },
+  ];
+
+  return (
+    <section id="pricing" className="py-24 px-6 bg-muted/30">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+          Un pricing <span className="gradient-text">simple et transparent</span>
+        </h2>
+        <p className="text-center text-muted-foreground mb-16 text-lg">
+          Commencez gratuitement, évoluez à votre rythme
+        </p>
+
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          {plans.map((plan, index) => (
+            <div
+              key={plan.name}
+              className={`relative rounded-3xl p-8 transition-all ${
+                plan.highlighted
+                  ? "bg-gradient-to-br from-[#0A0F1C] via-[#111827] to-[#0F172A] border-2 border-[#DD2476] shadow-2xl shadow-[#DD2476]/20 scale-105"
+                  : "bg-card border border-border hover:border-border/80 hover:shadow-card"
+              }`}
+            >
+              {plan.badge && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white text-xs font-bold shadow-lg">
+                    {plan.badge}
+                  </span>
+                </div>
+              )}
+
+              <div className="text-center mb-8">
+                <h3 className={`text-2xl font-bold mb-2 ${plan.highlighted ? "text-white" : "text-foreground"}`}>
+                  {plan.name}
+                </h3>
+                <p className={`text-sm mb-4 ${plan.highlighted ? "text-white/60" : "text-muted-foreground"}`}>
+                  {plan.description}
+                </p>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className={`text-5xl font-extrabold ${plan.highlighted ? "text-white" : "text-foreground"}`}>
+                    {plan.price}€
+                  </span>
+                  {plan.price > 0 && (
+                    <span className={`text-lg ${plan.highlighted ? "text-white/60" : "text-muted-foreground"}`}>
+                      /mois
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <Check className={`w-5 h-5 flex-shrink-0 ${plan.highlighted ? "text-green-400" : "text-green-500"}`} />
+                    <span className={`text-sm ${plan.highlighted ? "text-white/90" : "text-foreground"}`}>
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                size="lg"
+                variant={plan.ctaVariant}
+                className={`w-full ${
+                  plan.highlighted
+                    ? "shadow-xl shadow-[#DD2476]/50"
+                    : ""
+                }`}
+                onClick={() => navigate("/coach-signup")}
+              >
+                {plan.cta}
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-center text-muted-foreground mt-8 text-sm">
+          Tous les plans incluent : hébergement sécurisé, mises à jour automatiques, et support client.
+        </p>
+      </div>
+    </section>
+  );
 };
 
 // SCREENSHOT CAROUSEL COMPONENT
@@ -723,10 +707,12 @@ const ScreenshotCarousel = () => {
     align: "center"
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const screenshots = [{
-    title: "Dashboard Analytics",
-    caption: "Suivez vos ventes en temps réel",
-    content: <div className="p-4 space-y-3">
+  const screenshots = [
+    {
+      title: "Dashboard Analytics",
+      caption: "Suivez vos ventes en temps réel",
+      content: (
+        <div className="p-4 space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground">Revenus</p>
@@ -742,25 +728,33 @@ const ScreenshotCarousel = () => {
             </div>
           </div>
           <div className="h-20 flex items-end gap-1">
-            {[40, 55, 45, 70, 60, 85, 75, 90].map((h, i) => <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t" style={{
-          height: `${h}%`
-        }} />)}
+            {[40, 55, 45, 70, 60, 85, 75, 90].map((h, i) => (
+              <div key={i} className="flex-1 bg-gradient-to-t from-[#FF512F] to-[#DD2476] rounded-t" style={{ height: `${h}%` }} />
+            ))}
           </div>
         </div>
-  }, {
-    title: "Éditeur Formation",
-    caption: "Créez vos modules en drag & drop",
-    content: <div className="p-4 space-y-2">
-          {["Module 1 : Introduction", "Module 2 : Les bases", "Module 3 : Avancé"].map((m, i) => <div key={i} className="bg-muted/50 rounded-lg p-3 flex items-center gap-3">
+      )
+    },
+    {
+      title: "Éditeur Formation",
+      caption: "Créez vos modules en drag & drop",
+      content: (
+        <div className="p-4 space-y-2">
+          {["Module 1 : Introduction", "Module 2 : Les bases", "Module 3 : Avancé"].map((m, i) => (
+            <div key={i} className="bg-muted/50 rounded-lg p-3 flex items-center gap-3">
               <GripVertical className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium">{m}</span>
               <span className="ml-auto text-xs text-muted-foreground">{3 + i} leçons</span>
-            </div>)}
+            </div>
+          ))}
         </div>
-  }, {
-    title: "Espace Élève Mobile",
-    caption: "Expérience mobile parfaite",
-    content: <div className="p-4 flex justify-center">
+      )
+    },
+    {
+      title: "Espace Élève Mobile",
+      caption: "Expérience mobile parfaite",
+      content: (
+        <div className="p-4 flex justify-center">
           <div className="w-32 h-56 bg-foreground rounded-2xl p-1.5">
             <div className="w-full h-full bg-background rounded-xl overflow-hidden">
               <div className="bg-muted/50 h-6 flex items-center justify-center">
@@ -774,10 +768,13 @@ const ScreenshotCarousel = () => {
             </div>
           </div>
         </div>
-  }, {
-    title: "Interface Email",
-    caption: "Emails automatiques brandés",
-    content: <div className="p-4">
+      )
+    },
+    {
+      title: "Interface Email",
+      caption: "Emails automatiques brandés",
+      content: (
+        <div className="p-4">
           <div className="bg-muted/50 rounded-lg p-3 space-y-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476]" />
@@ -789,10 +786,13 @@ const ScreenshotCarousel = () => {
             <p className="text-xs text-muted-foreground">Salut [Prénom], tu as fait le premier pas...</p>
           </div>
         </div>
-  }, {
-    title: "Page de Vente",
-    caption: "Pages générées par l'IA",
-    content: <div className="p-4 space-y-2">
+      )
+    },
+    {
+      title: "Page de Vente",
+      caption: "Pages générées par l'IA",
+      content: (
+        <div className="p-4 space-y-2">
           <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-lg h-12 flex items-center justify-center">
             <span className="text-white text-xs font-bold">Ma Formation</span>
           </div>
@@ -802,10 +802,13 @@ const ScreenshotCarousel = () => {
             <span className="text-white text-xs">Acheter maintenant</span>
           </div>
         </div>
-  }, {
-    title: "Paramètres IA",
-    caption: "Votre assistant IA personnel",
-    content: <div className="p-4 space-y-2">
+      )
+    },
+    {
+      title: "Paramètres IA",
+      caption: "Votre assistant IA personnel",
+      content: (
+        <div className="p-4 space-y-2">
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
             <Bot className="w-4 h-4 text-[#DD2476]" />
             <span className="text-xs">Assistant activé</span>
@@ -818,9 +821,13 @@ const ScreenshotCarousel = () => {
             </div>
           </div>
         </div>
-  }];
+      )
+    }
+  ];
+
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
   useEffect(() => {
     if (!emblaApi) return;
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
@@ -829,7 +836,9 @@ const ScreenshotCarousel = () => {
       emblaApi.off("select", onSelect);
     };
   }, [emblaApi]);
-  return <section className="py-24 px-6 bg-muted/30">
+
+  return (
+    <section className="py-24 px-6 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
           Une interface pensée pour les <span className="gradient-text">créateurs</span>
@@ -839,7 +848,8 @@ const ScreenshotCarousel = () => {
         <div className="relative">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {screenshots.map((screen, index) => <div key={index} className="flex-[0_0_80%] md:flex-[0_0_45%] min-w-0 px-4">
+              {screenshots.map((screen, index) => (
+                <div key={index} className="flex-[0_0_80%] md:flex-[0_0_45%] min-w-0 px-4">
                   <div className={`bg-card rounded-2xl border border-border shadow-card overflow-hidden transition-all duration-300 ${selectedIndex === index ? "scale-100 opacity-100" : "scale-95 opacity-60"}`}>
                     {/* Browser header */}
                     <div className="bg-muted/50 px-3 py-2 flex items-center gap-2 border-b border-border">
@@ -848,363 +858,311 @@ const ScreenshotCarousel = () => {
                         <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
                         <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
                       </div>
-                      <div className="flex-1 text-center">
-                        <span className="text-xs text-muted-foreground">{screen.title}</span>
-                      </div>
+                      <div className="text-xs text-muted-foreground truncate ml-2">{screen.title}</div>
                     </div>
-                    {/* Content */}
-                    <div className="h-48">
-                      {screen.content}
+                    {/* Screen content */}
+                    <div className="min-h-[200px]">{screen.content}</div>
+                    <div className="px-4 py-3 bg-muted/30 border-t border-border">
+                      <p className="text-sm text-muted-foreground text-center">{screen.caption}</p>
                     </div>
                   </div>
-                  <p className="text-center text-sm text-muted-foreground mt-4">{screen.caption}</p>
-                </div>)}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Navigation */}
-          <button onClick={scrollPrev} className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors">
-            <ChevronLeft className="w-5 h-5" />
+          <button onClick={scrollPrev} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors">
+            <ChevronLeft className="w-6 h-6" />
           </button>
-          <button onClick={scrollNext} className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors">
-            <ChevronRight className="w-5 h-5" />
+          <button onClick={scrollNext} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors">
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
 
         {/* Dots */}
-        <div className="flex justify-center gap-2 mt-6">
-          {screenshots.map((_, i) => <button key={i} className={`w-2 h-2 rounded-full transition-all ${selectedIndex === i ? "w-6 bg-gradient-to-r from-[#FF512F] to-[#DD2476]" : "bg-muted-foreground/30"}`} />)}
+        <div className="flex justify-center gap-2 mt-8">
+          {screenshots.map((_, i) => (
+            <button
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all ${selectedIndex === i ? "bg-[#DD2476] w-6" : "bg-muted-foreground/30"}`}
+              onClick={() => emblaApi?.scrollTo(i)}
+            />
+          ))}
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
 // COMPARISON TABLE COMPONENT
 const ComparisonTable = () => {
-  const features = [{
-    name: "Hébergement formations",
-    wp: "warn",
-    kajabi: "yes",
-    systeme: "yes",
-    thrive: "no",
-    kapsul: "yes"
-  }, {
-    name: "Pages de vente",
-    wp: "warn",
-    kajabi: "yes",
-    systeme: "yes",
-    thrive: "yes",
-    kapsul: "yes"
-  }, {
-    name: "Email marketing",
-    wp: "no",
-    kajabi: "yes",
-    systeme: "yes",
-    thrive: "no",
-    kapsul: "yes"
-  }, {
-    name: "Paiements",
-    wp: "no",
-    kajabi: "yes",
-    systeme: "yes",
-    thrive: "yes",
-    kapsul: "yes"
-  }, {
-    name: "Espace élève premium",
-    wp: "warn",
-    kajabi: "yes",
-    systeme: "warn",
-    thrive: "no",
-    kapsul: "netflix"
-  }, {
-    name: "IA intégrée",
-    wp: "no",
-    kajabi: "no",
-    systeme: "no",
-    thrive: "no",
-    kapsul: "yes"
-  }, {
-    name: "Mise à jour technique",
-    wp: "toi",
-    kajabi: "eux",
-    systeme: "eux",
-    thrive: "eux",
-    kapsul: "auto"
-  }, {
-    name: "Prix/mois",
-    wp: "50-200€",
-    kajabi: "149€+",
-    systeme: "27€+",
-    thrive: "95€+",
-    kapsul: "297€ LIFE"
-  }];
-  const renderCell = (value: string, isKapsul: boolean = false) => {
-    switch (value) {
-      case "yes":
-        return <Check className={`w-6 h-6 mx-auto ${isKapsul ? "text-green-500" : "text-green-500/70"}`} strokeWidth={2.5} />;
-      case "no":
-        return <X className="w-6 h-6 text-red-400/70 mx-auto" strokeWidth={2.5} />;
-      case "warn":
-        return <AlertTriangle className="w-6 h-6 text-yellow-500/70 mx-auto" strokeWidth={2} />;
-      case "netflix":
-        return <span className="text-sm font-bold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent">✅ Interactif</span>;
-      case "toi":
-        return <span className="text-sm text-muted-foreground">😤 Toi</span>;
-      case "eux":
-        return <span className="text-sm text-muted-foreground/60">🤷 Eux</span>;
-      case "auto":
-        return <span className="text-sm font-bold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent">🎯 Auto</span>;
-      case "297€ LIFE":
-        return <span className="text-sm font-extrabold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent">297€ LIFE</span>;
-      default:
-        return <span className="text-sm text-muted-foreground">{value}</span>;
-    }
-  };
-  return <section id="comparison" className="py-24 px-6">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
-          Kapsul vs les <span className="gradient-text">outils habituels</span>
+  const features = [
+    { name: "Hébergement formations", kapsul: true, wordpress: "Plugin", kajabi: true, systeme: true, thrivecart: false },
+    { name: "Pages de vente IA", kapsul: true, wordpress: false, kajabi: false, systeme: false, thrivecart: false },
+    { name: "Email marketing inclus", kapsul: true, wordpress: "Plugin", kajabi: true, systeme: true, thrivecart: false },
+    { name: "Paiements 0% commission", kapsul: true, wordpress: true, kajabi: false, systeme: false, thrivecart: true },
+    { name: "Quiz & outils IA", kapsul: true, wordpress: "Plugin", kajabi: false, systeme: false, thrivecart: false },
+    { name: "Support IA élèves", kapsul: true, wordpress: false, kajabi: false, systeme: false, thrivecart: false },
+    { name: "Certificats automatiques", kapsul: true, wordpress: "Plugin", kajabi: true, systeme: true, thrivecart: false },
+    { name: "Prix mensuel", kapsul: "Dès 0€", wordpress: "~50€+", kajabi: "149$", systeme: "27€", thrivecart: "495$ one-time" },
+  ];
+
+  return (
+    <section id="comparison" className="py-24 px-6">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+          Pourquoi <span className="gradient-text">Kapsul</span> ?
         </h2>
+        <p className="text-center text-muted-foreground mb-16 text-lg">Comparez avec les alternatives populaires</p>
 
         <div className="overflow-x-auto">
-          <div className="bg-card rounded-3xl border border-border shadow-card overflow-hidden">
-            <table className="w-full min-w-[700px]">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-5 px-6 font-semibold text-foreground bg-muted/30">Fonctionnalité</th>
-                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">WordPress</th>
-                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">Kajabi</th>
-                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">Systeme.io</th>
-                  <th className="py-5 px-4 font-medium text-muted-foreground text-center bg-muted/30">Thrivecart</th>
-                  <th className="py-5 px-4 text-center bg-gradient-to-b from-[#FF512F]/20 to-[#DD2476]/20">
-                    <span className="font-bold bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent text-lg">Kapsul</span>
-                  </th>
+          <table className="w-full min-w-[800px]">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-4 px-4 font-medium text-muted-foreground">Fonctionnalité</th>
+                <th className="py-4 px-4 text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-bold">
+                    Kapsul
+                  </div>
+                </th>
+                <th className="py-4 px-4 text-center font-medium text-foreground">WordPress</th>
+                <th className="py-4 px-4 text-center font-medium text-foreground">Kajabi</th>
+                <th className="py-4 px-4 text-center font-medium text-foreground">Systeme.io</th>
+                <th className="py-4 px-4 text-center font-medium text-foreground">ThriveCart</th>
+              </tr>
+            </thead>
+            <tbody>
+              {features.map((feature, i) => (
+                <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-4 font-medium text-foreground">{feature.name}</td>
+                  <td className="py-4 px-4 text-center">
+                    {typeof feature.kapsul === "boolean" ? (
+                      feature.kapsul ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />
+                    ) : (
+                      <span className="text-sm font-medium text-[#DD2476]">{feature.kapsul}</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-4 text-center">
+                    {typeof feature.wordpress === "boolean" ? (
+                      feature.wordpress ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">{feature.wordpress}</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-4 text-center">
+                    {typeof feature.kajabi === "boolean" ? (
+                      feature.kajabi ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">{feature.kajabi}</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-4 text-center">
+                    {typeof feature.systeme === "boolean" ? (
+                      feature.systeme ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">{feature.systeme}</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-4 text-center">
+                    {typeof feature.thrivecart === "boolean" ? (
+                      feature.thrivecart ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">{feature.thrivecart}</span>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {features.map((feature, i) => <tr key={i} className={`
-                      border-b border-border/30 transition-colors hover:bg-muted/20
-                      ${i % 2 === 0 ? "bg-background" : "bg-muted/10"}
-                      ${i === features.length - 1 ? "font-bold border-b-0" : ""}
-                    `}>
-                    <td className="py-5 px-6 text-foreground font-medium">{feature.name}</td>
-                    <td className="py-5 px-4 text-center">{renderCell(feature.wp)}</td>
-                    <td className="py-5 px-4 text-center">{renderCell(feature.kajabi)}</td>
-                    <td className="py-5 px-4 text-center">{renderCell(feature.systeme)}</td>
-                    <td className="py-5 px-4 text-center">{renderCell(feature.thrive)}</td>
-                    <td className="py-5 px-4 text-center bg-gradient-to-b from-[#FF512F]/15 to-[#DD2476]/15">
-                      {renderCell(feature.kapsul, true)}
-                    </td>
-                  </tr>)}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        <p className="text-center mt-10">
-          <span className="font-bold text-foreground text-lg">Lifetime à 297€ </span>
-          <br />
-          <span className="text-lg bg-gradient-to-r from-[#FF512F] to-[#DD2476] bg-clip-text text-transparent font-semibold">Au lieu de 804€ / an à partir du 1er Janvier 2026</span>
-        </p>
       </div>
-    </section>;
+    </section>
+  );
 };
 
-// QUALIFICATION SECTION COMPONENT
+// DEMO VIDEO SECTION
+const DemoVideoSection = () => {
+  return (
+    <section id="demo" className="py-24 px-6">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+          Voyez Kapsul <span className="gradient-text">en action</span>
+        </h2>
+        <p className="text-muted-foreground mb-12 text-lg">
+          2 minutes pour comprendre comment lancer votre académie
+        </p>
+
+        <div className="relative aspect-video bg-muted rounded-2xl overflow-hidden border border-border shadow-2xl">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#FF512F]/10 to-[#DD2476]/10">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-xl">
+              <Play className="w-8 h-8 text-white ml-1" fill="white" />
+            </div>
+          </div>
+          <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-3 flex items-center gap-3">
+            <div className="flex-1 h-1 bg-white/30 rounded-full">
+              <div className="w-0 h-full bg-white rounded-full" />
+            </div>
+            <span className="text-white text-xs">0:00 / 2:15</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// QUALIFICATION SECTION
 const QualificationSection = () => {
-  const notFor = ["Tu cherches une plateforme gratuite", "Tu veux 100% personnaliser le code", "Tu as déjà une stack technique qui fonctionne parfaitement", "Tu n'as pas encore d'expertise à partager"];
-  const forYou = ["Tu veux lancer ton académie cette semaine, pas dans 6 mois", "Tu en as marre de jongler entre 5 outils", "Tu veux une expérience élève premium sans être dev", "Tu veux l'IA comme co-pilote, pas comme corvée"];
-  return <section className="py-24 px-6 bg-muted/30">
+  return (
+    <section className="py-24 px-6 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
-          Kapsul n'est <span className="gradient-text">PAS</span> pour tout le monde
+          Kapsul est <span className="gradient-text">fait pour vous</span> si...
         </h2>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* NOT FOR */}
-          <div className="bg-card rounded-3xl p-8 border-2 border-red-200 shadow-card">
-            <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <X className="w-6 h-6 text-red-500" />
-              Ce n'est PAS pour toi si :
-            </h3>
-            <ul className="space-y-4">
-              {notFor.map((item, i) => <li key={i} className="flex items-start gap-3">
-                  <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">{item}</span>
-                </li>)}
-            </ul>
-          </div>
-
-          {/* FOR YOU */}
-          <div className="bg-card rounded-3xl p-8 border-2 border-green-200 shadow-card">
-            <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+          {/* Pour vous */}
+          <div className="bg-card rounded-3xl p-8 border border-border shadow-card">
+            <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6">
               <Check className="w-6 h-6 text-green-500" />
-              C'est POUR toi si :
-            </h3>
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-6">Vous êtes au bon endroit</h3>
             <ul className="space-y-4">
-              {forYou.map((item, i) => <li key={i} className="flex items-start gap-3">
+              {[
+                "Vous êtes coach, formateur ou expert dans votre domaine",
+                "Vous voulez vendre vos formations en ligne",
+                "Vous en avez marre de la technique (WordPress, plugins...)",
+                "Vous voulez une solution tout-en-un moderne",
+                "Vous valorisez votre temps plus que l'argent",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">{item}</span>
-                </li>)}
+                  <span className="text-muted-foreground">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Pas pour vous */}
+          <div className="bg-card rounded-3xl p-8 border border-border shadow-card">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center mb-6">
+              <X className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-6">Ce n'est pas pour vous</h3>
+            <ul className="space-y-4">
+              {[
+                "Vous cherchez une solution 100% gratuite pour toujours",
+                "Vous voulez tout contrôler techniquement (serveurs, code...)",
+                "Vous avez déjà une équipe tech dédiée",
+                "Vous ne vendez pas de formations ou de coaching",
+                "Vous n'êtes pas prêt à investir dans votre business",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-muted-foreground">{item}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
-// DEMO VIDEO SECTION COMPONENT
-const DemoVideoSection = () => {
-  return <section id="demo" className="py-24 px-6 bg-muted/30">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
-          Voyez Kapsul <span className="gradient-text">en action.</span>
-        </h2>
-        <p className="text-center text-muted-foreground mb-12 text-lg">
-          De l'idée à la vente en moins de 5 minutes.
-        </p>
-
-        {/* Video Container */}
-        <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-border/50 bg-gradient-to-br from-[#0F172A] to-[#1E293B]">
-          {/* Video Placeholder / Cover */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] blur-3xl"></div>
-              <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-[#DD2476] to-[#FF512F] blur-3xl"></div>
-            </div>
-            
-            {/* Loom style placeholder text */}
-            <div className="absolute top-6 left-6 flex items-center gap-2 text-white/40">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                </svg>
-              </div>
-              <span className="text-sm font-medium">Démo Vidéo</span>
-            </div>
-
-            {/* Play Button */}
-            <button className="group relative z-10">
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-r from-[#FF512F] to-[#DD2476] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                <Play className="w-10 h-10 text-white ml-1" fill="white" />
-              </div>
-            </button>
-
-            {/* Duration badge */}
-            <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm text-white/70 text-sm">
-              4:32
-            </div>
-          </div>
-        </div>
-
-        <p className="text-center text-muted-foreground mt-6 text-sm">
-          Vidéo de présentation complète — Sans son, avec sous-titres
-        </p>
-      </div>
-    </section>;
-};
-
-// GUARANTEE SECTION COMPONENT
+// GUARANTEE SECTION
 const GuaranteeSection = () => {
-  return <section className="py-24 px-6">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
-          Notre promesse <span className="gradient-text">simple</span>
-        </h2>
-
-        {/* Single centered guarantee card */}
-        <div className="bg-card rounded-3xl p-10 border border-border shadow-elevated text-center max-w-2xl mx-auto">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FF512F] to-[#DD2476] flex items-center justify-center mx-auto mb-6">
-            <Shield className="w-10 h-10 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-4">Garantie 30 Jours Satisfait ou Remboursé</h3>
-          <p className="text-muted-foreground leading-relaxed text-lg">
-            Tu as <span className="font-bold text-foreground">30 jours complets</span> pour tester Kapsul à fond et créer ton académie. 
-            Si tu n'es pas 100% convaincu, on te rembourse intégralement. Sans question. Sans friction. Sans justification.
-          </p>
-          <p className="mt-6 text-sm text-muted-foreground">
-            Un simple email suffit. On traite les remboursements sous 48h.
-          </p>
+  return (
+    <section className="py-24 px-6">
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 mb-8">
+          <Shield className="w-10 h-10 text-green-500" />
         </div>
-
-        <p className="text-center text-xl font-bold text-foreground mt-12">
-          On prend le risque. <span className="gradient-text">Pas toi.</span>
+        <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-6">
+          Satisfait ou <span className="gradient-text">remboursé</span>
+        </h2>
+        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Testez Kapsul pendant 30 jours. Si vous n'êtes pas 100% satisfait, on vous rembourse intégralement. Sans conditions, sans questions.
         </p>
+        <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-green-500/10 border border-green-500/20 text-green-600 font-medium">
+          <Shield className="w-5 h-5" />
+          Garantie 30 jours - Remboursement intégral
+        </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
-// FAQ SECTION COMPONENT
+// FAQ SECTION
 const FAQSection = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const faqs = [{
-    question: "Qu'est-ce que l'offre Founder ?",
-    answer: "Accès PRO à vie pour 297€ au lieu de 804€/an. Limité aux 100 premiers. Expire le 31 décembre 2024."
-  }, {
-    question: "Puis-je être remboursé ?",
-    answer: "Oui, remboursement intégral sous 30 jours si Kapsul ne te convient pas. Sans condition."
-  }, {
-    question: "Ai-je besoin de compétences techniques ?",
-    answer: "Non, Kapsul est conçu pour les non-techniciens. L'IA génère tes landing pages, quiz et outils en quelques clics."
-  }, {
-    question: "Comment héberger mes vidéos de formation ?",
-    answer: "Kapsul ne stocke pas les vidéos (trop coûteux). Héberge-les gratuitement sur YouTube (non listé) ou Vimeo, puis colle le lien. Un guide est inclus."
-  }, {
-    question: "Quels outils pédagogiques sont disponibles ?",
-    answer: "Vidéos, quiz interactifs, ressources téléchargeables, et outils IA personnalisés pour engager tes étudiants."
-  }, {
-    question: "Combien de formations puis-je créer ?",
-    answer: "Illimité. Le plan Founder (= PRO à 67€/mois dès janvier) inclut jusqu'à 1 000 étudiants et 5 000 crédits IA/mois."
-  }, {
-    question: "Comment mes étudiants accèdent-ils aux formations ?",
-    answer: "Ils reçoivent un email automatique avec leurs identifiants et accèdent à leur espace sur ton domaine personnalisé."
-  }, {
-    question: "Puis-je suivre la progression de mes étudiants ?",
-    answer: "Oui, tableau de bord complet : progression par module, taux de complétion, statistiques de vente."
-  }, {
-    question: "Comment recevoir les paiements ?",
-    answer: "Via Stripe Connect. Tu connectes ton compte en 2 clics, les paiements arrivent directement chez toi."
-  }, {
-    question: "Y a-t-il des frais de transaction ?",
-    answer: "0% de commission Kapsul. Seul Stripe facture ~2,9% + 0,25€ par transaction (standard)."
-  }];
-  return <section id="faq" className="py-24 px-6 bg-muted/30">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-4">
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const faqs = [
+    {
+      question: "Qu'est-ce que Kapsul exactement ?",
+      answer: "Kapsul est une plateforme tout-en-un pour créer, héberger et vendre vos formations en ligne. Elle remplace WordPress, Kajabi, et Mailchimp en une seule solution simple et moderne, avec de l'IA intégrée pour vous aider à créer vos contenus."
+    },
+    {
+      question: "Est-ce que je peux commencer gratuitement ?",
+      answer: "Oui ! Le plan Gratuit vous permet de créer 1 formation, 1 landing page, et d'avoir jusqu'à 100 étudiants. C'est parfait pour tester la plateforme et lancer votre premier cours."
+    },
+    {
+      question: "Comment fonctionne la commission sur les ventes ?",
+      answer: "Avec le plan Gratuit, nous prélevons 8% sur chaque vente. Avec les plans Pro et Business, c'est 0% de commission Kapsul - vous ne payez que les frais Stripe standards (~2.9% + 0.30€)."
+    },
+    {
+      question: "Puis-je utiliser mon propre nom de domaine ?",
+      answer: "Oui, avec le plan Business vous pouvez connecter votre propre domaine personnalisé (ex: formations.votresite.com). Avec les autres plans, vous utilisez un sous-domaine Kapsul."
+    },
+    {
+      question: "Comment fonctionne l'IA intégrée ?",
+      answer: "Kapsul utilise l'IA pour vous aider à créer des landing pages, générer des quiz, créer des outils interactifs et même répondre aux questions de vos élèves. Vous avez un quota de crédits IA par mois selon votre plan."
+    },
+    {
+      question: "Puis-je migrer depuis une autre plateforme ?",
+      answer: "Oui ! Nous pouvons vous aider à migrer vos contenus depuis WordPress, Kajabi, Teachable ou toute autre plateforme. Contactez notre support pour un accompagnement personnalisé."
+    },
+    {
+      question: "Y a-t-il un engagement ?",
+      answer: "Non, tous nos abonnements sont sans engagement. Vous pouvez annuler à tout moment. De plus, nous offrons une garantie satisfait ou remboursé de 30 jours sur les plans payants."
+    },
+  ];
+
+  return (
+    <section id="faq" className="py-24 px-6">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center text-foreground mb-16">
           Questions <span className="gradient-text">fréquentes</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-12 text-lg">
-          Tout ce que tu dois savoir avant de te lancer
-        </p>
 
         <div className="space-y-4">
-          {faqs.map((faq, index) => <div key={index} className={`bg-card rounded-2xl border transition-all overflow-hidden ${openIndex === index ? "border-[#DD2476]/50 shadow-lg shadow-[#DD2476]/10" : "border-border hover:border-border/80"}`}>
-              <button onClick={() => setOpenIndex(openIndex === index ? null : index)} className="w-full p-6 flex items-center justify-between text-left">
-                <span className="text-lg font-semibold text-foreground pr-4">
-                  {faq.question}
-                </span>
-                <ChevronDown className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${openIndex === index ? "rotate-180 text-[#DD2476]" : ""}`} />
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="bg-card rounded-2xl border border-border overflow-hidden"
+            >
+              <button
+                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-muted/30 transition-colors"
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              >
+                <span className="font-semibold text-foreground pr-4">{faq.question}</span>
+                <ChevronDown
+                  className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${
+                    openIndex === index ? "rotate-180" : ""
+                  }`}
+                />
               </button>
-              
-              <div className={`overflow-hidden transition-all duration-200 ${openIndex === index ? "max-h-40" : "max-h-0"}`}>
-                <div className="px-6 pb-6">
-                  <p className="text-muted-foreground leading-relaxed">
-                    {faq.answer}
-                  </p>
+              {openIndex === index && (
+                <div className="px-6 pb-5">
+                  <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
                 </div>
-              </div>
-            </div>)}
+              )}
+            </div>
+          ))}
         </div>
-
-        <p className="text-center mt-10 text-muted-foreground">
-          D'autres questions ?{" "}
-          <a href="/faq" className="font-semibold text-foreground hover:text-[#DD2476] transition-colors">
-            Voir toutes les FAQ →
-          </a>
-        </p>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Index;
