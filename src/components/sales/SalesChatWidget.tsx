@@ -5,28 +5,26 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-interface SalesChatWidgetProps {
-  onFounderClick: () => void;
-}
-
 const QUICK_SUGGESTIONS = [
   "C'est quoi Kapsul en 2 mots ?",
   "Je débute, c'est fait pour moi ?",
   "Ça coûte combien ?",
-  "Il y a une offre en ce moment ?",
+  "Comment ça marche ?",
 ];
 
 const EMAIL_ASK_MESSAGE = "Au fait, si vous voulez que je vous envoie un récap de nos échanges ou qu'on puisse reprendre cette conversation plus tard, laissez-moi votre email ! 📧 (Promis, zéro spam)";
 
 const EMAIL_REGEX = /[\w.-]+@[\w.-]+\.\w+/;
 
-export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
+export function SalesChatWidget() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showPulse, setShowPulse] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -244,7 +242,7 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
     streamChat(suggestion);
   };
 
-  const handleFounderClick = async () => {
+  const handleStartFree = async () => {
     // Mark as converted in database
     if (leadId) {
       await supabase
@@ -252,7 +250,7 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
         .update({ converted: true })
         .eq('id', leadId);
     }
-    onFounderClick();
+    navigate("/coach-signup");
   };
 
   return (
@@ -373,11 +371,11 @@ export function SalesChatWidget({ onFounderClick }: SalesChatWidgetProps) {
         {/* CTA Button */}
         <div className="p-3 pt-0">
           <Button
-            onClick={handleFounderClick}
+            onClick={handleStartFree}
             variant="outline"
             className="w-full border-[#DD2476]/30 hover:bg-[#DD2476]/10 text-foreground"
           >
-            🚀 Profiter de l'offre Fondateur
+            🚀 Essayer gratuitement
           </Button>
         </div>
       </div>

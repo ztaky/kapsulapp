@@ -176,16 +176,8 @@ https://kapsul.app
 }
 
 // Generate welcome email HTML
-function generateWelcomeEmailHTML(coachName: string, academyName: string, academySlug: string, baseUrl: string, isFounder: boolean) {
+function generateWelcomeEmailHTML(coachName: string, academyName: string, academySlug: string, baseUrl: string) {
   const studioUrl = `${baseUrl}/school/${academySlug}/studio`;
-  
-  const founderBadge = isFounder ? `
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(90deg, #f97316, #ec4899); border-radius: 9999px; color: white; font-weight: bold; font-size: 14px;">
-        ✨ FONDATEUR
-      </div>
-    </div>
-  ` : '';
   
   return `
 <!DOCTYPE html>
@@ -214,8 +206,6 @@ function generateWelcomeEmailHTML(coachName: string, academyName: string, academ
               <div style="text-align: center; margin-bottom: 24px;">
                 <span style="font-size: 64px;">🎉</span>
               </div>
-              
-              ${founderBadge}
               
               <!-- Title -->
               <h1 style="margin: 0 0 16px; font-size: 28px; font-weight: 700; color: #1e293b; text-align: center; line-height: 1.3;">
@@ -344,13 +334,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { academyName, slug, userId, isFounder } = await req.json();
+    const { academyName, slug, userId } = await req.json();
 
     if (!academyName || !slug || !userId) {
       throw new Error('Missing required fields: academyName, slug, userId');
     }
 
-    console.log('Creating academy:', { academyName, slug, userId, isFounder });
+    console.log('Creating academy:', { academyName, slug, userId });
 
     // Get user email and name for welcome email
     const { data: profile } = await supabase
@@ -359,14 +349,10 @@ serve(async (req) => {
       .eq('id', userId)
       .single();
 
-    // Determine plan limits based on founder status
-    const planConfig = isFounder ? {
-      is_founder_plan: true,
-      max_students: 1000,  // Founders get 1000 students max
-      max_coaches: 1,      // Founders get 1 coach (themselves)
-    } : {
+    // All new accounts start on the free plan
+    const planConfig = {
       is_founder_plan: false,
-      max_students: null,  // Free/future plans - to be defined
+      max_students: 100,  // Free plan: 100 students
       max_coaches: 1,
     };
 
@@ -440,7 +426,7 @@ serve(async (req) => {
 
     if (legalError) {
       console.error('Legal pages creation error:', legalError);
-      // Non-blocking error - academy creation should still succeed
+      // Non-blocking error
     } else {
       console.log('Legal pages created successfully');
     }
@@ -448,44 +434,47 @@ serve(async (req) => {
     // 5. Send welcome email
     if (profile?.email) {
       try {
-        // Get base URL from request origin or fallback
-        const origin = req.headers.get('origin') || 'https://kapsul.app';
-        
+        console.log('Sending welcome email to:', profile.email);
+        const baseUrl = req.headers.get('origin') || 'https://kapsul.app';
         const emailHtml = generateWelcomeEmailHTML(
           profile.full_name || '',
           academyName,
           slug,
-          origin,
-          isFounder || false
+          baseUrl
         );
 
-        const emailResponse = await resend.emails.send({
-          from: 'Kapsul <onboarding@resend.dev>',
+        await resend.emails.send({
+          from: 'Kapsul <hello@kapsul.app>',
           to: [profile.email],
-          subject: isFounder 
-            ? `🎉 Bienvenue Fondateur ! Votre académie "${academyName}" est prête`
-            : `🎉 Bienvenue sur Kapsul ! Votre académie "${academyName}" est prête`,
+          subject: `🎉 Bienvenue sur Kapsul, ${profile.full_name || 'Coach'} !`,
           html: emailHtml,
         });
 
-        console.log('Welcome email sent:', emailResponse);
+        console.log('Welcome email sent successfully');
       } catch (emailError) {
-        console.error('Welcome email error (non-blocking):', emailError);
-        // Non-blocking - academy creation should still succeed
+        console.error('Error sending welcome email:', emailError);
+        // Non-blocking error
       }
     }
 
-    console.log('Academy creation complete with plan:', planConfig);
-
     return new Response(
-      JSON.stringify({ organization, slug }),
+      JSON.stringify({ 
+        success: true, 
+        organization: { 
+          id: organization.id, 
+          slug: organization.slug,
+          name: organization.name
+        } 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error: any) {
-    console.error('Function error:', error);
+  } catch (error) {
+    console.error('Error in create-coach-academy:', error);
     return new Response(
-      JSON.stringify({ error: error?.message || 'Unknown error occurred' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
